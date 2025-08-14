@@ -87,6 +87,13 @@ pub fn handle_close_command(
     // Save the updated ticket
     storage.save(&ticket)?;
 
+    // Notify MCP about ticket closure
+    #[cfg(feature = "mcp")]
+    crate::integration::notify_ticket_closed(
+        &ticket_id,
+        message.clone().unwrap_or_else(|| "Ticket closed".to_string()),
+    );
+
     // Clear active ticket if this was the active one
     if let Some(active_id) = storage.get_active()? {
         if active_id == ticket_id {

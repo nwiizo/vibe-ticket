@@ -98,20 +98,44 @@ impl IntegrationService {
 }
 
 /// Global integration service instance
+#[cfg(not(test))]
 static INTEGRATION: once_cell::sync::OnceCell<Arc<IntegrationService>> =
     once_cell::sync::OnceCell::new();
+
+/// Global integration service instance for tests (allows replacement)
+#[cfg(test)]
+static INTEGRATION: std::sync::RwLock<Option<Arc<IntegrationService>>> = 
+    std::sync::RwLock::new(None);
 
 /// Initialize the integration service
 pub fn init_integration(storage: Arc<FileStorage>) {
     let service = Arc::new(IntegrationService::new(storage));
-    INTEGRATION
-        .set(service)
-        .expect("Integration already initialized");
+    
+    #[cfg(not(test))]
+    {
+        INTEGRATION
+            .set(service)
+            .expect("Integration already initialized");
+    }
+    
+    #[cfg(test)]
+    {
+        let mut integration = INTEGRATION.write().unwrap();
+        *integration = Some(service);
+    }
 }
 
 /// Get the integration service
+#[cfg(not(test))]
 pub fn integration() -> Option<&'static Arc<IntegrationService>> {
     INTEGRATION.get()
+}
+
+/// Get the integration service (test version)
+#[cfg(test)]
+pub fn integration() -> Option<Arc<IntegrationService>> {
+    let integration = INTEGRATION.read().unwrap();
+    integration.clone()
 }
 
 /// Helper function to notify about ticket creation

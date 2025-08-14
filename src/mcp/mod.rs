@@ -7,6 +7,7 @@
 pub mod auth;
 pub mod config;
 pub mod error;
+pub mod event_bridge;
 pub mod handlers;
 pub mod server;
 pub mod service;

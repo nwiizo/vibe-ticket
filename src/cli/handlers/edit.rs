@@ -162,6 +162,10 @@ pub fn handle_edit_command(
     // Save the updated ticket
     storage.save(&ticket)?;
 
+    // Notify MCP about ticket update
+    #[cfg(feature = "mcp")]
+    crate::integration::notify_ticket_updated(&ticket);
+
     // Output results
     if output.is_json() {
         output.print_json(&serde_json::json!({

@@ -72,11 +72,20 @@ pub fn handle_new_command(
     // Save the ticket
     storage.save(&ticket)?;
 
+    // Notify MCP about ticket creation
+    #[cfg(feature = "mcp")]
+    crate::integration::notify_ticket_created(&ticket);
+
     // If --start flag is provided, start working on the ticket immediately
     if start {
+        let old_status = ticket.status.clone();
         ticket.start();
         storage.save(&ticket)?;
         storage.set_active(&ticket.id)?;
+
+        // Notify MCP about status change
+        #[cfg(feature = "mcp")]
+        crate::integration::notify_status_changed(&ticket.id, old_status, ticket.status.clone());
 
         if output.is_json() {
             output.print_json(&serde_json::json!({

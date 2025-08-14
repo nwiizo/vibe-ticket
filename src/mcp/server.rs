@@ -39,6 +39,10 @@ impl McpServer {
     pub async fn start_stdio(&self) -> McpResult<()> {
         info!("Starting MCP server with stdio transport");
 
+        // Initialize the integration service for CLI-MCP synchronization
+        #[cfg(feature = "mcp")]
+        crate::integration::init_integration(self.storage.clone());
+
         // Get project root from storage path (parent of .vibe-ticket)
         let project_root = self
             .config
@@ -49,6 +53,15 @@ impl McpServer {
 
         // Create service
         let service = VibeTicketService::new((*self.storage).clone(), project_root);
+
+        // Start the event bridge to handle CLI events
+        #[cfg(feature = "mcp")]
+        {
+            use crate::mcp::handlers::events::McpEventHandler;
+            use std::sync::Arc;
+            let mcp_handler = McpEventHandler::new(Arc::new(service.clone()));
+            crate::mcp::event_bridge::start_event_bridge(mcp_handler).await;
+        }
 
         // Create stdio transport
         let transport = (tokio::io::stdin(), tokio::io::stdout());
