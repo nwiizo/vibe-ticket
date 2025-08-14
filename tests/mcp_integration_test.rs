@@ -2,16 +2,16 @@
 
 #[cfg(all(feature = "mcp", feature = "integration"))]
 mod mcp_tests {
+    use serial_test::serial;
+    use std::sync::Arc;
+    use std::time::Duration;
     use tempfile::TempDir;
+    use tokio::time::sleep;
     use vibe_ticket::{
         cli::{OutputFormatter, handlers::handle_new_command},
         core::{Priority, Status},
         storage::FileStorage,
     };
-    use std::sync::Arc;
-    use std::time::Duration;
-    use tokio::time::sleep;
-    use serial_test::serial;
 
     #[tokio::test]
     #[serial]
@@ -23,7 +23,7 @@ mod mcp_tests {
 
         // Initialize storage
         let storage = FileStorage::new(&vibe_ticket_dir);
-        
+
         // Initialize project state
         let state = vibe_ticket::storage::ProjectState {
             name: "Test Project".to_string(),
@@ -37,7 +37,7 @@ mod mcp_tests {
 
         // Integration service initialization would go here
         // For now, skipping since integration module isn't exported
-        
+
         // Mock receiver for testing
         let (tx, mut receiver) = tokio::sync::broadcast::channel(100);
 
@@ -69,7 +69,7 @@ mod mcp_tests {
                 assert_eq!(ticket.title, "Test Integration");
                 assert_eq!(ticket.priority, Priority::High);
                 assert_eq!(ticket.tags, vec!["integration", "test"]);
-            }
+            },
             Ok(other) => panic!("Expected TicketCreated event, got {:?}", other),
             Err(e) => panic!("Failed to receive event: {:?}", e),
         }
@@ -85,7 +85,7 @@ mod mcp_tests {
 
         // Initialize storage
         let storage = FileStorage::new(&vibe_ticket_dir);
-        
+
         // Initialize project state
         let state = vibe_ticket::storage::ProjectState {
             name: "Test Project".to_string(),
@@ -99,7 +99,7 @@ mod mcp_tests {
 
         // Integration service initialization would go here
         // For now, skipping since integration module isn't exported
-        
+
         // Mock receiver for testing
         let (tx, mut receiver) = tokio::sync::broadcast::channel(100);
 
@@ -118,19 +118,22 @@ mod mcp_tests {
             &output,
         );
 
-        assert!(result.is_ok(), "Creating and starting ticket should succeed");
+        assert!(
+            result.is_ok(),
+            "Creating and starting ticket should succeed"
+        );
 
         // Wait for events to be processed
         sleep(Duration::from_millis(100)).await;
 
         // We should receive two events: TicketCreated and StatusChanged
         use vibe_ticket::integration::IntegrationEvent;
-        
+
         // First event should be TicketCreated
         match receiver.try_recv() {
             Ok(IntegrationEvent::TicketCreated { ticket }) => {
                 assert!(ticket.slug.ends_with("-test-status"));
-            }
+            },
             Ok(other) => panic!("Expected TicketCreated event first, got {:?}", other),
             Err(e) => panic!("Failed to receive first event: {:?}", e),
         }
@@ -144,7 +147,7 @@ mod mcp_tests {
             }) => {
                 assert_eq!(old_status, Status::Todo);
                 assert_eq!(new_status, Status::Doing);
-            }
+            },
             Ok(other) => panic!("Expected StatusChanged event second, got {:?}", other),
             Err(e) => panic!("Failed to receive second event: {:?}", e),
         }

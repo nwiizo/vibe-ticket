@@ -64,7 +64,7 @@ pub fn handle_start_command(
     }
 
     // Update ticket status and start time
-    let old_status = ticket.status.clone();
+    let old_status = ticket.status;
     ticket.status = Status::Doing;
     ticket.started_at = Some(Utc::now());
 
@@ -73,7 +73,7 @@ pub fn handle_start_command(
 
     // Notify MCP about status change
     #[cfg(feature = "mcp")]
-    crate::integration::notify_status_changed(&ticket_id, old_status, ticket.status.clone());
+    crate::integration::notify_status_changed(&ticket_id, old_status, ticket.status);
 
     // Set as active ticket
     storage.set_active(&ticket_id)?;

@@ -91,7 +91,9 @@ pub fn handle_close_command(
     #[cfg(feature = "mcp")]
     crate::integration::notify_ticket_closed(
         &ticket_id,
-        message.clone().unwrap_or_else(|| "Ticket closed".to_string()),
+        message
+            .clone()
+            .unwrap_or_else(|| "Ticket closed".to_string()),
     );
 
     // Clear active ticket if this was the active one

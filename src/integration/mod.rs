@@ -104,20 +104,20 @@ static INTEGRATION: once_cell::sync::OnceCell<Arc<IntegrationService>> =
 
 /// Global integration service instance for tests (allows replacement)
 #[cfg(test)]
-static INTEGRATION: std::sync::RwLock<Option<Arc<IntegrationService>>> = 
+static INTEGRATION: std::sync::RwLock<Option<Arc<IntegrationService>>> =
     std::sync::RwLock::new(None);
 
 /// Initialize the integration service
 pub fn init_integration(storage: Arc<FileStorage>) {
     let service = Arc::new(IntegrationService::new(storage));
-    
+
     #[cfg(not(test))]
     {
         INTEGRATION
             .set(service)
             .expect("Integration already initialized");
     }
-    
+
     #[cfg(test)]
     {
         let mut integration = INTEGRATION.write().unwrap();

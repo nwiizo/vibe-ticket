@@ -78,14 +78,14 @@ pub fn handle_new_command(
 
     // If --start flag is provided, start working on the ticket immediately
     if start {
-        let old_status = ticket.status.clone();
+        let old_status = ticket.status;
         ticket.start();
         storage.save(&ticket)?;
         storage.set_active(&ticket.id)?;
 
         // Notify MCP about status change
         #[cfg(feature = "mcp")]
-        crate::integration::notify_status_changed(&ticket.id, old_status, ticket.status.clone());
+        crate::integration::notify_status_changed(&ticket.id, old_status, ticket.status);
 
         if output.is_json() {
             output.print_json(&serde_json::json!({
