@@ -20,6 +20,7 @@
 mod archive;
 mod check;
 mod close;
+mod common;
 mod config;
 mod edit;
 mod export;

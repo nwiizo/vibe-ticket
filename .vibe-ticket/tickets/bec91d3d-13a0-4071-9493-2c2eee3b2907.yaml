@@ -9,5 +9,20 @@ created_at: 2025-07-28T02:31:34.169155Z
 started_at: 2025-07-28T02:31:39.889597Z
 closed_at: null
 assignee: null
-tasks: []
+tasks:
+- id: e3a15b66-ed49-4e7f-9fd7-b9dcdea2b351
+  title: worktree作成機能のテスト
+  completed: false
+  created_at: 2025-08-14T16:16:54.503540Z
+  completed_at: null
+- id: 62887d95-3c22-471f-a496-7a4b166c2257
+  title: worktree削除機能のテスト
+  completed: false
+  created_at: 2025-08-14T16:16:59.237627Z
+  completed_at: null
+- id: 37dbbbca-e6fd-4af5-a6ea-0df59b9570cc
+  title: 複数worktreeの同時管理テスト
+  completed: false
+  created_at: 2025-08-14T16:17:03.916791Z
+  completed_at: null
 metadata: {}

@@ -3,13 +3,29 @@ slug: csv-test-1
 title: CSV Import Test 1
 description: Testing CSV import with basic data
 priority: high
-status: todo
+status: done
 tags:
 - csv
 - manual-test
 created_at: 2025-07-28T15:30:00Z
-started_at: null
-closed_at: null
+started_at: 2025-08-14T16:42:43.365255Z
+closed_at: 2025-08-14T16:43:23.047369Z
 assignee: null
-tasks: []
-metadata: {}
+tasks:
+- id: 457a3775-6a5a-409e-b815-0de330a66a99
+  title: CSVファイルのフォーマット検証
+  completed: true
+  created_at: 2025-08-14T16:42:47.886191Z
+  completed_at: 2025-08-14T16:43:08.501502Z
+- id: 440f0354-3cd5-493c-afc6-ee332b552578
+  title: CSVからチケットへの変換テスト
+  completed: true
+  created_at: 2025-08-14T16:42:52.601896Z
+  completed_at: 2025-08-14T16:43:13.334702Z
+- id: 9fe691d0-2169-417a-9f8b-f6eeeaecab36
+  title: 大量データのCSVインポートパフォーマンステスト
+  completed: true
+  created_at: 2025-08-14T16:42:57.324459Z
+  completed_at: 2025-08-14T16:43:18.383779Z
+metadata:
+  closing_message: CSVインポート/エクスポートテストが全て成功

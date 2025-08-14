@@ -1,0 +1,47 @@
+id: 64f320c4-549c-46bf-8c7e-b1399d37923f
+slug: refactor-duplicate-code
+title: 重複コードのリファクタリング - similarity-rs分析結果対応
+description: |-
+  similarity-rsの分析で106個の重複コードブロックが検出されました。最も影響の大きい以下の重複から順次リファクタリングを実施:
+  1. CLI出力メソッド統合 (97-98%の類似性)
+  2. タスクハンドラーの共通化 (90-99%の類似性)
+  3. Specハンドラーのテンプレート化 (91-96%の類似性)
+  4. ストレージ層の共通操作抽出
+  5. ビルダーパターンの実装
+priority: high
+status: doing
+tags:
+- refactoring
+- code-quality
+- technical-debt
+created_at: 2025-08-14T16:42:58.263248Z
+started_at: 2025-08-14T16:43:02.314549Z
+closed_at: null
+assignee: null
+tasks:
+- id: 2ce92ad6-f172-4573-b0bd-6c79e15314d4
+  title: CLI出力メソッドの統合 (success/error/warning/info)
+  completed: true
+  created_at: 2025-08-14T16:43:06.690220Z
+  completed_at: 2025-08-14T18:09:06.598973Z
+- id: 5cbf7e5d-20b3-4c42-ab45-c513412401a9
+  title: タスクハンドラーの共通ロジック抽出
+  completed: true
+  created_at: 2025-08-14T16:43:10.489627Z
+  completed_at: 2025-08-14T18:32:36.400724Z
+- id: 73358edf-9e13-4bec-ae3b-b5f13d3d3e55
+  title: Specハンドラーのテンプレートシステム作成
+  completed: false
+  created_at: 2025-08-14T16:43:14.676303Z
+  completed_at: null
+- id: 3f413ab7-2d96-45a4-a7a2-651e0d8dac91
+  title: ストレージ層の共通ファイル操作抽出
+  completed: false
+  created_at: 2025-08-14T16:43:18.926412Z
+  completed_at: null
+- id: 11ef7911-755b-441d-93d2-b03cc4a58724
+  title: Ticket/Taskコンストラクタのビルダーパターン実装
+  completed: false
+  created_at: 2025-08-14T16:43:23.384109Z
+  completed_at: null
+metadata: {}

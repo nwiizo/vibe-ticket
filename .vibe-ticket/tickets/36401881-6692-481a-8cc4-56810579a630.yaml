@@ -1,0 +1,16 @@
+id: 36401881-6692-481a-8cc4-56810579a630
+slug: improve-mcp-error-handling
+title: MCPツールのエラーハンドリング改善
+description: MCPツール実行時のエラーメッセージが不明瞭な場合があるため、より詳細なエラー情報とリカバリー方法を提供する必要がある
+priority: medium
+status: todo
+tags:
+- mcp
+- error-handling
+- ux
+created_at: 2025-08-14T16:19:09.706716Z
+started_at: null
+closed_at: null
+assignee: null
+tasks: []
+metadata: {}

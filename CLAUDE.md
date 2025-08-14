@@ -125,6 +125,11 @@ When using vibe-ticket through MCP, the following tools are available:
 - `vibe-ticket_task_list` - List tasks for a ticket
 - `vibe-ticket_task_remove` - Remove a task
 
+#### Specification Management (New)
+- `vibe-ticket_spec_add` - Add specifications to a ticket
+- `vibe-ticket_spec_update` - Update specifications for a ticket
+- `vibe-ticket_spec_check` - Check specification status
+
 #### Worktree Management
 - `vibe-ticket_worktree_list` - List worktrees
 - `vibe-ticket_worktree_remove` - Remove a worktree
@@ -313,6 +318,40 @@ None - all documentation tests are now passing
 
 ---
 Generated on: 2025-07-22
+
+## Retrospective: MCP Task Management - 2025-08-14
+
+### Summary
+Successfully managed tickets through MCP tools, added tasks to previously task-less tickets, and identified areas for improvement.
+
+### What Went Well
+- MCP tools worked seamlessly for ticket management
+- Successfully added meaningful tasks to 4 tickets that lacked them
+- Completed and closed tickets efficiently through MCP
+- Created new tickets for discovered issues
+
+### Challenges Encountered
+- Some tickets have many tasks but unclear completion criteria
+- Manual task status updates could be automated
+- Batch operations for tasks would improve efficiency
+
+### Improvements for Next Time
+- Implement batch task operations for efficiency
+- Add automatic status updates when all tasks complete
+- Improve error handling in MCP tools
+
+### Follow-up Tickets Created
+- `improve-mcp-error-handling` - MCPツールのエラーハンドリング改善
+- `add-batch-task-operations` - タスクの一括操作機能追加
+- `auto-status-update` - チケットステータスの自動更新機能
+
+### Lessons Learned
+- MCP integration significantly speeds up ticket management
+- Task definitions are crucial for tracking progress
+- Automation opportunities exist in workflow management
+
+---
+Generated on: 2025-08-14
 
 
 ## Project Initialization

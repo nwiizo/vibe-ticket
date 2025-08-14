@@ -1,0 +1,16 @@
+id: f8769205-7aca-4658-bcd8-b88efeaab9e6
+slug: fix-output-formatter-compilation
+title: OutputFormatterのコンパイルエラー修正
+description: print_messageメソッドが見つからないエラーを修正する必要がある
+priority: critical
+status: todo
+tags:
+- bug
+- compilation
+- urgent
+created_at: 2025-08-14T16:44:29.695566Z
+started_at: null
+closed_at: null
+assignee: null
+tasks: []
+metadata: {}

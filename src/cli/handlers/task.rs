@@ -25,33 +25,21 @@ pub fn handle_task_add(
     project_dir: Option<String>,
     output: &OutputFormatter,
 ) -> Result<()> {
-    // Ensure project is initialized
-    let project_root = find_project_root(project_dir.as_deref())?;
-    let vibe_ticket_dir = project_root.join(".vibe-ticket");
-
-    // Initialize storage
-    let storage = FileStorage::new(&vibe_ticket_dir);
-
-    // Get the active ticket if no ticket specified
-    let ticket_id = if let Some(ref_str) = ticket_ref {
-        resolve_ticket_ref(&storage, &ref_str)?
-    } else {
-        // Get active ticket
-        storage
-            .get_active()?
-            .ok_or(VibeTicketError::NoActiveTicket)?
-    };
-
+    use super::common::{HandlerContext, TicketOperation};
+    
+    // Create handler context
+    let ctx = HandlerContext::new(project_dir.as_deref())?;
+    
     // Load the ticket
-    let mut ticket = storage.load(&ticket_id)?;
-
+    let mut ticket = ctx.load_ticket(ticket_ref.as_deref())?;
+    
     // Create new task
     let task = Task::new(title);
     ticket.tasks.push(task.clone());
-
+    
     // Save the updated ticket
-    storage.save(&ticket)?;
-
+    ctx.save_ticket(&ticket)?;
+    
     // Output results
     if output.is_json() {
         output.print_json(&serde_json::json!({
@@ -71,7 +59,7 @@ pub fn handle_task_add(
         output.info(&format!("Title: {}", task.title));
         output.info(&format!("Total tasks: {}", ticket.tasks.len()));
     }
-
+    
     Ok(())
 }
 

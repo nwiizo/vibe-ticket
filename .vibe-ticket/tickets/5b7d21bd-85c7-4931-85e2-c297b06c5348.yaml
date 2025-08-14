@@ -1,0 +1,27 @@
+id: 5b7d21bd-85c7-4931-85e2-c297b06c5348
+slug: mcp-demo-ticket
+title: MCPツールのデモンストレーション
+description: vibe-ticketのMCP機能をテストして確認するためのチケット
+priority: low
+status: done
+tags:
+- demo
+- mcp
+- test
+created_at: 2025-08-14T16:12:55.974857Z
+started_at: 2025-08-14T16:13:24.438284Z
+closed_at: 2025-08-14T16:13:37.410403Z
+assignee: demo-user
+tasks:
+- id: fedee2e3-a076-4a29-ac26-bd19429d37a4
+  title: MCP機能の動作確認
+  completed: true
+  created_at: 2025-08-14T16:13:00.486007Z
+  completed_at: 2025-08-14T16:13:13.365330Z
+- id: 91caa7af-0e88-4662-8af4-f85b6a68aa28
+  title: ドキュメントの更新
+  completed: false
+  created_at: 2025-08-14T16:13:04.685852Z
+  completed_at: null
+metadata:
+  closing_message: MCPデモンストレーション完了

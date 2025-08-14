@@ -1,0 +1,16 @@
+id: 1dcf02ff-8843-49ba-8586-8fa9d0c81e96
+slug: auto-status-update
+title: チケットステータスの自動更新機能
+description: 全タスクが完了したらチケットのステータスを自動的にdoneまたはreviewに変更する機能。手動更新の手間を削減
+priority: medium
+status: todo
+tags:
+- automation
+- workflow
+- status
+created_at: 2025-08-14T16:19:21.883406Z
+started_at: null
+closed_at: null
+assignee: null
+tasks: []
+metadata: {}

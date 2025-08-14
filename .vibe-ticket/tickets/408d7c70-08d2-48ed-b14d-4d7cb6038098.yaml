@@ -3,34 +3,35 @@ slug: 202507312330-define-tasks-for-taskless-tickets
 title: Define tasks for tickets without task definitions
 description: 'Several tickets in the system are marked as ''doing'' but have no defined tasks, making it difficult to track progress or determine completion criteria. This ticket will address defining specific, actionable tasks for: unit tests, worktree testing, caching implementation, and test coverage improvement.'
 priority: high
-status: todo
+status: done
 tags:
 - maintenance
 - project-management
 - tasks
 created_at: 2025-07-31T17:31:45.180756Z
-started_at: null
-closed_at: null
+started_at: 2025-08-14T16:16:20.515104Z
+closed_at: 2025-08-14T16:18:44.978505Z
 assignee: null
 tasks:
 - id: ddc27898-641b-4f21-8406-77440e6a3b62
   title: Define tasks for 'Add comprehensive unit tests' ticket
-  completed: false
+  completed: true
   created_at: 2025-07-31T17:31:49.573159Z
-  completed_at: null
+  completed_at: 2025-08-14T16:16:44.209696Z
 - id: 8e6d73b9-d3fb-4a02-baa5-aae4eae333e7
   title: Define tasks for 'Test worktree feature' ticket
-  completed: false
+  completed: true
   created_at: 2025-07-31T17:31:55.379733Z
-  completed_at: null
+  completed_at: 2025-08-14T16:17:10.398844Z
 - id: f2678a1f-c0b1-4cf5-8584-acf107eccea7
   title: Define tasks for 'Implement caching mechanism' ticket
-  completed: false
+  completed: true
   created_at: 2025-07-31T17:31:59.496181Z
-  completed_at: null
+  completed_at: 2025-08-14T16:17:56.779644Z
 - id: 376a36ad-74d3-4761-98b3-fe220102627d
   title: Define tasks for 'Improve test coverage to 80%' ticket
-  completed: false
+  completed: true
   created_at: 2025-07-31T17:32:03.912212Z
-  completed_at: null
-metadata: {}
+  completed_at: 2025-08-14T16:18:39.615485Z
+metadata:
+  closing_message: 全てのタスクレスチケットにタスク定義を追加完了

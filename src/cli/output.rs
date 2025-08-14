@@ -5,7 +5,17 @@ use std::io::Write as IoWrite;
 use crate::core::{Priority, Status, Ticket};
 use crate::error::Result;
 
+/// Message level for output formatting
+#[derive(Debug, Clone, Copy)]
+pub enum MessageLevel {
+    Success,
+    Error,
+    Warning,
+    Info,
+}
+
 /// Output formatter for CLI commands
+#[derive(Clone)]
 pub struct OutputFormatter {
     json: bool,
 }
@@ -55,29 +65,35 @@ impl OutputFormatter {
 
     /// Prints a success message
     pub fn success(&self, message: &str) {
-        if !self.json {
-            println!("{} {}", "✓".green(), message);
-        }
+        self.print_message(message, MessageLevel::Success);
     }
 
     /// Prints an error message
     pub fn error(&self, message: &str) {
-        if !self.json {
-            eprintln!("{} {}", "✗".red(), message);
-        }
+        self.print_message(message, MessageLevel::Error);
     }
 
     /// Prints a warning message
     pub fn warning(&self, message: &str) {
-        if !self.json {
-            eprintln!("{} {}", "⚠".yellow(), message);
-        }
+        self.print_message(message, MessageLevel::Warning);
     }
 
     /// Prints an info message
     pub fn info(&self, message: &str) {
-        if !self.json {
-            println!("{} {}", "ℹ".blue(), message);
+        self.print_message(message, MessageLevel::Info);
+    }
+
+    /// Unified message printing method
+    fn print_message(&self, message: &str, level: MessageLevel) {
+        if self.json {
+            return;
+        }
+        
+        match level {
+            MessageLevel::Success => println!("{} {}", "✓".green(), message),
+            MessageLevel::Error => eprintln!("{} {}", "✗".red(), message),
+            MessageLevel::Warning => eprintln!("{} {}", "⚠".yellow(), message),
+            MessageLevel::Info => println!("{} {}", "ℹ".blue(), message),
         }
     }
 
@@ -100,6 +116,7 @@ impl OutputFormatter {
         }
         Ok(())
     }
+
 
     /// Prints data as JSON
     pub fn print_json<T: Serialize + ?Sized>(&self, data: &T) -> Result<()> {

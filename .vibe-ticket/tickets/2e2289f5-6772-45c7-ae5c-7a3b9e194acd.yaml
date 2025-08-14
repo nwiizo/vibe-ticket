@@ -9,5 +9,20 @@ created_at: 2025-07-28T02:49:40.242605Z
 started_at: 2025-07-28T02:49:44.792877Z
 closed_at: null
 assignee: null
-tasks: []
+tasks:
+- id: 36ab9ef7-f38e-404b-aef0-76515b65321b
+  title: キャッシュストレージの設計
+  completed: false
+  created_at: 2025-08-14T16:17:33.327096Z
+  completed_at: null
+- id: 6cdfc55e-2a06-4e65-9191-3ad25b11438e
+  title: キャッシュインターフェースの実装
+  completed: false
+  created_at: 2025-08-14T16:17:37.506915Z
+  completed_at: null
+- id: fdfcb6d5-d2f6-4c37-803d-8e7bb498dd2f
+  title: キャッシュ無効化ロジックの実装
+  completed: false
+  created_at: 2025-08-14T16:17:42.046047Z
+  completed_at: null
 metadata: {}
