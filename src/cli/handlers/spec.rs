@@ -487,7 +487,7 @@ pub fn handle_spec_list(
 
 /// Handle spec show command
 pub fn handle_spec_show(
-    spec: &str,
+    spec: String,
     all: bool,
     markdown: bool,
     project: Option<&str>,
@@ -551,7 +551,7 @@ pub fn handle_spec_show(
 
 /// Handle spec delete command
 pub fn handle_spec_delete(
-    spec: &str,
+    spec: String,
     force: bool,
     project: Option<&str>,
     formatter: &OutputFormatter,
@@ -589,9 +589,9 @@ pub fn handle_spec_delete(
 
 /// Handle spec approve command
 pub fn handle_spec_approve(
-    spec: &str,
-    phase: &str,
-    message: Option<&str>,
+    spec: String,
+    phase: String,
+    message: Option<String>,
     project: Option<&str>,
     formatter: &OutputFormatter,
 ) -> Result<()> {
@@ -652,7 +652,7 @@ pub fn handle_spec_approve(
 
 /// Handle spec activate command
 pub fn handle_spec_activate(
-    spec: &str,
+    spec: String,
     project: Option<&str>,
     formatter: &OutputFormatter,
 ) -> Result<()> {
@@ -729,10 +729,10 @@ mod tests {
 
         let formatter = create_test_formatter();
         let result = handle_spec_init(
-            "Test Spec",
-            Some("Test description"),
+            "Test Spec".to_string(),
+            Some("Test description".to_string()),
             None,
-            Some("test,spec"),
+            Some("test,spec".to_string()),
             None,
             &formatter,
         );
@@ -757,7 +757,7 @@ mod tests {
         std::env::set_current_dir(temp_dir.path()).unwrap();
 
         let formatter = create_test_formatter();
-        let result = handle_spec_init("Test Spec", None, None, None, None, &formatter);
+        let result = handle_spec_init("Test Spec".to_string(), None, None, None, None, &formatter);
 
         assert!(result.is_err());
         assert!(matches!(
@@ -796,8 +796,8 @@ mod tests {
 
         // Initialize spec
         let result = handle_spec_init(
-            "Lifecycle Test",
-            Some("Testing spec lifecycle"),
+            "Lifecycle Test".to_string(),
+            Some("Testing spec lifecycle".to_string()),
             None,
             None,
             None,
@@ -825,7 +825,7 @@ mod tests {
         let formatter = create_test_formatter();
 
         // Try delete without force (should just show warning)
-        let result = handle_spec_delete("test-spec", false, None, &formatter);
+        let result = handle_spec_delete("test-spec".to_string(), false, None, &formatter);
         assert!(result.is_ok()); // Doesn't actually delete without force
     }
 
@@ -841,7 +841,7 @@ mod tests {
 
         // Create a spec first
         handle_spec_init(
-            "Approve Test",
+            "Approve Test".to_string(),
             None,
             None,
             None,
@@ -852,8 +852,8 @@ mod tests {
 
         // Try to approve with invalid phase
         let result = handle_spec_approve(
-            "test-spec",
-            "invalid-phase",
+            "test-spec".to_string(),
+            "invalid-phase".to_string(),
             None,
             None,
             &formatter,
