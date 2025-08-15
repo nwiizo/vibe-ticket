@@ -15,16 +15,16 @@ use std::path::Path;
 
 /// Handle spec init command
 pub fn handle_spec_init(
-    title: String,
-    description: Option<String>,
-    ticket: Option<String>,
-    tags: Option<String>,
-    project: Option<String>,
+    title: &str,
+    description: Option<&str>,
+    ticket: Option<&str>,
+    tags: Option<&str>,
+    project: Option<&str>,
     formatter: &OutputFormatter,
 ) -> Result<()> {
     // Change to project directory if specified
     if let Some(project_path) = project {
-        std::env::set_current_dir(&project_path)
+        std::env::set_current_dir(project_path)
             .with_context(|| format!("Failed to change to project directory: {project_path}"))?;
     }
 
@@ -44,9 +44,9 @@ pub fn handle_spec_init(
 
     // Create new specification
     let spec = Specification::new(
-        title.clone(),
-        description.clone().unwrap_or_default(),
-        ticket,
+        title.to_string(),
+        description.unwrap_or_default().to_string(),
+        ticket.map(|s| s.to_string()),
         tag_list,
     );
 
@@ -88,7 +88,7 @@ pub fn handle_spec_init(
 pub fn handle_spec_requirements(
     spec_id: String,
     editor: Option<String>,
-    project: Option<String>,
+    project: Option<&str>,
     formatter: &OutputFormatter,
 ) -> Result<()> {
     use super::spec_common::{RequirementsHandler, SpecPhaseHandler};
@@ -101,7 +101,7 @@ pub fn handle_spec_design(
     spec: Option<String>,
     editor: bool,
     complete: bool,
-    project: Option<String>,
+    project: Option<&str>,
     formatter: &OutputFormatter,
 ) -> Result<()> {
     use super::spec_common::{DesignHandler, SpecPhaseHandler};
@@ -115,7 +115,7 @@ pub fn handle_spec_design(
     // Keep existing complex logic for backward compatibility
     // Change to project directory if specified
     if let Some(project_path) = project {
-        std::env::set_current_dir(&project_path)
+        std::env::set_current_dir(project_path)
             .with_context(|| format!("Failed to change to project directory: {project_path}"))?;
     }
 
@@ -203,12 +203,12 @@ pub fn handle_spec_tasks(
     editor: bool,
     complete: bool,
     export_tickets: bool,
-    project: Option<String>,
+    project: Option<&str>,
     formatter: &OutputFormatter,
 ) -> Result<()> {
     // Change to project directory if specified
     if let Some(project_path) = project {
-        std::env::set_current_dir(&project_path)
+        std::env::set_current_dir(project_path)
             .with_context(|| format!("Failed to change to project directory: {project_path}"))?;
     }
 
@@ -297,12 +297,12 @@ pub fn handle_spec_tasks(
 pub fn handle_spec_status(
     spec: Option<String>,
     detailed: bool,
-    project: Option<String>,
+    project: Option<&str>,
     formatter: &OutputFormatter,
 ) -> Result<()> {
     // Change to project directory if specified
     if let Some(project_path) = project {
-        std::env::set_current_dir(&project_path)
+        std::env::set_current_dir(project_path)
             .with_context(|| format!("Failed to change to project directory: {project_path}"))?;
     }
 
@@ -392,12 +392,12 @@ pub fn handle_spec_list(
     status: Option<String>,
     phase: Option<String>,
     _archived: bool,
-    project: Option<String>,
+    project: Option<&str>,
     formatter: &OutputFormatter,
 ) -> Result<()> {
     // Change to project directory if specified
     if let Some(project_path) = project {
-        std::env::set_current_dir(&project_path)
+        std::env::set_current_dir(project_path)
             .with_context(|| format!("Failed to change to project directory: {project_path}"))?;
     }
 
@@ -490,12 +490,12 @@ pub fn handle_spec_show(
     spec: String,
     all: bool,
     markdown: bool,
-    project: Option<String>,
+    project: Option<&str>,
     formatter: &OutputFormatter,
 ) -> Result<()> {
     // Change to project directory if specified
     if let Some(project_path) = project {
-        std::env::set_current_dir(&project_path)
+        std::env::set_current_dir(project_path)
             .with_context(|| format!("Failed to change to project directory: {project_path}"))?;
     }
 
@@ -553,12 +553,12 @@ pub fn handle_spec_show(
 pub fn handle_spec_delete(
     spec: String,
     force: bool,
-    project: Option<String>,
+    project: Option<&str>,
     formatter: &OutputFormatter,
 ) -> Result<()> {
     // Change to project directory if specified
     if let Some(project_path) = project {
-        std::env::set_current_dir(&project_path)
+        std::env::set_current_dir(project_path)
             .with_context(|| format!("Failed to change to project directory: {project_path}"))?;
     }
 
@@ -592,12 +592,12 @@ pub fn handle_spec_approve(
     spec: String,
     phase: String,
     message: Option<String>,
-    project: Option<String>,
+    project: Option<&str>,
     formatter: &OutputFormatter,
 ) -> Result<()> {
     // Change to project directory if specified
     if let Some(project_path) = project {
-        std::env::set_current_dir(&project_path)
+        std::env::set_current_dir(project_path)
             .with_context(|| format!("Failed to change to project directory: {project_path}"))?;
     }
 
@@ -653,12 +653,12 @@ pub fn handle_spec_approve(
 /// Handle spec activate command
 pub fn handle_spec_activate(
     spec: String,
-    project: Option<String>,
+    project: Option<&str>,
     formatter: &OutputFormatter,
 ) -> Result<()> {
     // Change to project directory if specified
     if let Some(project_path) = project {
-        std::env::set_current_dir(&project_path)
+        std::env::set_current_dir(project_path)
             .with_context(|| format!("Failed to change to project directory: {project_path}"))?;
     }
 

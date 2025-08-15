@@ -61,7 +61,7 @@ impl McpServer {
             use crate::mcp::handlers::events::McpEventHandler;
             use std::sync::Arc;
             let mcp_handler = McpEventHandler::new(Arc::new(service.clone()));
-            crate::mcp::event_bridge::start_event_bridge(mcp_handler).await;
+            crate::mcp::event_bridge::start_event_bridge(mcp_handler);
         }
 
         // Create stdio transport

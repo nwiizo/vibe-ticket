@@ -78,10 +78,10 @@ pub trait SpecPhaseHandler {
         &self,
         spec_id: String,
         editor: Option<String>,
-        project: Option<String>,
+        project: Option<&str>,
         formatter: &OutputFormatter,
     ) -> Result<()> {
-        let ctx = SpecContext::new(project.as_deref(), formatter.clone())?;
+        let ctx = SpecContext::new(project, formatter.clone())?;
 
         // Load existing spec or create new one
         let mut spec = match ctx.spec_manager.load_spec(&spec_id) {
