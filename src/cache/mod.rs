@@ -56,8 +56,7 @@ impl TicketCache {
     /// Gets a single ticket from cache
     #[must_use]
     pub fn get_ticket(&self, id: &TicketId) -> Option<Ticket> {
-        let cache = self.cache.read().ok()?;
-        let entry = cache.get(&CacheKey::Ticket(id.clone()))?;
+        let entry = self.cache.read().ok()?.get(&CacheKey::Ticket(id.clone()))?.clone();
 
         if self.is_expired(&entry.timestamp) {
             return None;
@@ -65,7 +64,7 @@ impl TicketCache {
 
         match &entry.data {
             CacheValue::Ticket(ticket) => Some((**ticket).clone()),
-            _ => None,
+            CacheValue::Tickets(_) => None,
         }
     }
 
@@ -83,8 +82,7 @@ impl TicketCache {
     /// Gets all tickets from cache
     #[must_use]
     pub fn get_all_tickets(&self) -> Option<Vec<Ticket>> {
-        let cache = self.cache.read().ok()?;
-        let entry = cache.get(&CacheKey::AllTickets)?;
+        let entry = self.cache.read().ok()?.get(&CacheKey::AllTickets)?.clone();
 
         if self.is_expired(&entry.timestamp) {
             return None;
@@ -92,7 +90,7 @@ impl TicketCache {
 
         match &entry.data {
             CacheValue::Tickets(tickets) => Some(tickets.clone()),
-            _ => None,
+            CacheValue::Ticket(_) => None,
         }
     }
 

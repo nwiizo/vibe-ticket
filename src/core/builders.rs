@@ -35,18 +35,21 @@ impl TicketBuilder {
     }
 
     /// Set the slug
+    #[must_use]
     pub fn slug(mut self, slug: impl Into<String>) -> Self {
         self.slug = Some(slug.into());
         self
     }
 
     /// Set the title
+    #[must_use]
     pub fn title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
         self
     }
 
     /// Set the description
+    #[must_use]
     pub fn description(mut self, description: impl Into<String>) -> Self {
         self.description = Some(description.into());
         self
@@ -74,6 +77,7 @@ impl TicketBuilder {
     }
 
     /// Add a single tag
+    #[must_use]
     pub fn tag(mut self, tag: impl Into<String>) -> Self {
         self.tags.push(tag.into());
         self
@@ -101,6 +105,7 @@ impl TicketBuilder {
     }
 
     /// Set assignee
+    #[must_use]
     pub fn assignee(mut self, assignee: impl Into<String>) -> Self {
         self.assignee = Some(assignee.into());
         self
@@ -172,6 +177,7 @@ impl TaskBuilder {
     }
 
     /// Set the title
+    #[must_use]
     pub fn title(mut self, title: impl Into<String>) -> Self {
         self.title = Some(title.into());
         self

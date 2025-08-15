@@ -329,7 +329,7 @@ fn run(cli: Cli, formatter: &OutputFormatter) -> Result<()> {
                 tags,
             } => {
                 use vibe_ticket::cli::handlers::handle_spec_init;
-                handle_spec_init(title, description, ticket, tags, cli.project, formatter)
+                handle_spec_init(&title, description.as_deref(), ticket.as_deref(), tags.as_deref(), cli.project.as_deref(), formatter)
             },
             SpecCommands::Requirements {
                 spec,
@@ -341,7 +341,7 @@ fn run(cli: Cli, formatter: &OutputFormatter) -> Result<()> {
                 // Need to adjust the call to match the new signature
                 let spec_id = spec.unwrap_or_default();
                 let editor_opt = if editor { Some(String::new()) } else { None };
-                handle_spec_requirements(spec_id, editor_opt, cli.project, formatter)
+                handle_spec_requirements(spec_id, editor_opt, cli.project.as_deref(), formatter)
             },
             SpecCommands::Design {
                 spec,
@@ -349,7 +349,7 @@ fn run(cli: Cli, formatter: &OutputFormatter) -> Result<()> {
                 complete,
             } => {
                 use vibe_ticket::cli::handlers::handle_spec_design;
-                handle_spec_design(spec, editor, complete, cli.project, formatter)
+                handle_spec_design(spec, editor, complete, cli.project.as_deref(), formatter)
             },
             SpecCommands::Tasks {
                 spec,
@@ -363,13 +363,13 @@ fn run(cli: Cli, formatter: &OutputFormatter) -> Result<()> {
                     editor,
                     complete,
                     export_tickets,
-                    cli.project,
+                    cli.project.as_deref(),
                     formatter,
                 )
             },
             SpecCommands::Status { spec, detailed } => {
                 use vibe_ticket::cli::handlers::handle_spec_status;
-                handle_spec_status(spec, detailed, cli.project, formatter)
+                handle_spec_status(spec, detailed, cli.project.as_deref(), formatter)
             },
             SpecCommands::List {
                 status,
@@ -377,7 +377,7 @@ fn run(cli: Cli, formatter: &OutputFormatter) -> Result<()> {
                 archived,
             } => {
                 use vibe_ticket::cli::handlers::handle_spec_list;
-                handle_spec_list(status, phase, archived, cli.project, formatter)
+                handle_spec_list(status, phase, archived, cli.project.as_deref(), formatter)
             },
             SpecCommands::Show {
                 spec,
@@ -385,11 +385,11 @@ fn run(cli: Cli, formatter: &OutputFormatter) -> Result<()> {
                 markdown,
             } => {
                 use vibe_ticket::cli::handlers::handle_spec_show;
-                handle_spec_show(spec, all, markdown, cli.project, formatter)
+                handle_spec_show(spec, all, markdown, cli.project.as_deref(), formatter)
             },
             SpecCommands::Delete { spec, force } => {
                 use vibe_ticket::cli::handlers::handle_spec_delete;
-                handle_spec_delete(spec, force, cli.project, formatter)
+                handle_spec_delete(spec, force, cli.project.as_deref(), formatter)
             },
             SpecCommands::Approve {
                 spec,
@@ -397,11 +397,11 @@ fn run(cli: Cli, formatter: &OutputFormatter) -> Result<()> {
                 message,
             } => {
                 use vibe_ticket::cli::handlers::handle_spec_approve;
-                handle_spec_approve(spec, phase, message, cli.project, formatter)
+                handle_spec_approve(spec, phase, message, cli.project.as_deref(), formatter)
             },
             SpecCommands::Activate { spec } => {
                 use vibe_ticket::cli::handlers::handle_spec_activate;
-                handle_spec_activate(spec, cli.project, formatter)
+                handle_spec_activate(spec, cli.project.as_deref(), formatter)
             },
         },
         Commands::Worktree { command } => match command {

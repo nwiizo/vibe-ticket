@@ -176,7 +176,7 @@ pub fn handle_search(service: &VibeTicketService, arguments: Value) -> Result<Va
 }
 
 /// Handle exporting tickets
-pub async fn handle_export(service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
+pub fn handle_export(service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
     #[derive(Deserialize)]
     struct Args {
         format: String,
@@ -189,7 +189,7 @@ pub async fn handle_export(service: &VibeTicketService, arguments: Value) -> Res
     let tickets = if let Some(ticket_ref) = args.ticket {
         // Export specific ticket
         let ticket_id =
-            crate::mcp::handlers::tickets::resolve_ticket_ref(service, &ticket_ref).await?;
+            crate::mcp::handlers::tickets::resolve_ticket_ref(service, &ticket_ref)?;
         let ticket = service
             .storage
             .load(&ticket_id)

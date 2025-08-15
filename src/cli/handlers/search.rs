@@ -221,17 +221,13 @@ fn get_match_excerpt(
         text.to_lowercase().find(&query.to_lowercase())
     };
 
-    if let Some(pos) = match_pos {
+    match_pos.map(|pos| {
         let start = pos.saturating_sub(CONTEXT_CHARS);
         let end = (pos + query.len() + CONTEXT_CHARS).min(text.len());
 
         let excerpt = &text[start..end];
-        let excerpt = excerpt.replace('\n', " ").trim().to_string();
-
-        Some(excerpt)
-    } else {
-        None
-    }
+        excerpt.replace('\n', " ").trim().to_string()
+    })
 }
 
 #[cfg(test)]

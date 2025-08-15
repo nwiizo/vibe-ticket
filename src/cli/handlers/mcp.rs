@@ -28,11 +28,10 @@ pub fn handle_mcp_serve(
     }
 
     // Get storage path
-    let storage_path = if let Some(path) = project_path {
-        PathBuf::from(path).join(".vibe-ticket")
-    } else {
-        PathBuf::from(".vibe-ticket")
-    };
+    let storage_path = project_path.map_or_else(
+        || PathBuf::from(".vibe-ticket"),
+        |path| PathBuf::from(path).join(".vibe-ticket")
+    );
 
     mcp_config.storage_path = storage_path.clone();
 
@@ -56,7 +55,7 @@ pub fn handle_mcp_serve(
     // Run server
     let runtime = tokio::runtime::Runtime::new()?;
     runtime.block_on(async {
-        if let Err(e) = server.start().await {
+        if let Err(e) = Box::pin(server.start()).await {
             error!("MCP server error: {}", e);
             return Err(anyhow::anyhow!("MCP server error: {}", e));
         }

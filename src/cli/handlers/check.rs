@@ -36,152 +36,188 @@ pub fn handle_check_command(
     project_dir: Option<&str>,
     output: &OutputFormatter,
 ) -> Result<()> {
-    // Ensure project is initialized
+    // Gather all data
+    let check_data = gather_check_data(detailed, stats, project_dir)?;
+    
+    // Output results
+    if output.is_json() {
+        output_json(&check_data, output)?;
+    } else {
+        output_text(&check_data, detailed, output);
+    }
+
+    Ok(())
+}
+
+/// Data structure for check command
+struct CheckData {
+    project_root: std::path::PathBuf,
+    project_state: crate::storage::ProjectState,
+    active_ticket: Option<Ticket>,
+    current_branch: Option<String>,
+    statistics: Option<Statistics>,
+    recent_tickets: Vec<Ticket>,
+}
+
+/// Gather all data needed for check command
+fn gather_check_data(detailed: bool, stats: bool, project_dir: Option<&str>) -> Result<CheckData> {
     let project_root = find_project_root(project_dir)?;
     let vibe_ticket_dir = project_root.join(".vibe-ticket");
-
-    // Initialize storage
     let storage = FileStorage::new(&vibe_ticket_dir);
-
-    // Load project state
+    
     let project_state = storage.load_state()?;
-
-    // Get active ticket
     let active_ticket_id = storage.get_active()?;
     let active_ticket = if let Some(id) = &active_ticket_id {
         Some(storage.load(id)?)
     } else {
         None
     };
-
-    // Get current Git branch
+    
     let current_branch = get_current_git_branch(&project_root);
-
-    // Get statistics if requested
     let statistics = if stats || detailed {
         Some(calculate_statistics(&storage)?)
     } else {
         None
     };
-
-    // Get recent tickets if detailed
+    
     let recent_tickets = if detailed {
         get_recent_tickets(&storage, 5)?
     } else {
         vec![]
     };
+    
+    Ok(CheckData {
+        project_root,
+        project_state,
+        active_ticket,
+        current_branch,
+        statistics,
+        recent_tickets,
+    })
+}
 
-    // Output results
-    if output.is_json() {
-        output.print_json(&serde_json::json!({
-            "project": {
-                "name": project_state.name,
-                "description": project_state.description,
-                "created_at": project_state.created_at,
-                "path": project_root,
-            },
-            "active_ticket": active_ticket.as_ref().map(|t| serde_json::json!({
-                "id": t.id.to_string(),
-                "slug": t.slug,
-                "title": t.title,
-                "status": t.status.to_string(),
-                "priority": t.priority.to_string(),
-                "started_at": t.started_at,
-            })),
-            "git_branch": current_branch,
-            "statistics": statistics,
-            "recent_tickets": recent_tickets.iter().map(|t| serde_json::json!({
-                "id": t.id.to_string(),
-                "slug": t.slug,
-                "title": t.title,
-                "status": t.status.to_string(),
-            })).collect::<Vec<_>>(),
-        }))?;
-    } else {
-        // Display project information
-        output.info(&format!("Project: {}", project_state.name));
-        if let Some(desc) = &project_state.description {
-            output.info(&format!("Description: {desc}"));
-        }
-        output.info(&format!("Path: {}", project_root.display()));
-        output.info(&format!(
-            "Created: {}",
-            format_datetime(project_state.created_at)
-        ));
+/// Output check data as JSON
+fn output_json(data: &CheckData, output: &OutputFormatter) -> Result<()> {
+    output.print_json(&serde_json::json!({
+        "project": {
+            "name": data.project_state.name,
+            "description": data.project_state.description,
+            "created_at": data.project_state.created_at,
+            "path": data.project_root,
+        },
+        "active_ticket": data.active_ticket.as_ref().map(|t| serde_json::json!({
+            "id": t.id.to_string(),
+            "slug": t.slug,
+            "title": t.title,
+            "status": t.status.to_string(),
+            "priority": t.priority.to_string(),
+            "started_at": t.started_at,
+        })),
+        "git_branch": data.current_branch,
+        "statistics": data.statistics,
+        "recent_tickets": data.recent_tickets.iter().map(|t| serde_json::json!({
+            "id": t.id.to_string(),
+            "slug": t.slug,
+            "title": t.title,
+            "status": t.status.to_string(),
+        })).collect::<Vec<_>>(),
+    }))
+}
 
-        // Display Git branch
-        if let Some(branch) = &current_branch {
-            output.info(&format!("Git branch: {branch}"));
-        }
-
-        output.info("");
-
-        // Display active ticket
-        if let Some(ticket) = &active_ticket {
-            output.success("Active Ticket:");
-            output.info(&format!("  ID: {}", ticket.id));
-            output.info(&format!("  Slug: {}", ticket.slug));
-            output.info(&format!("  Title: {}", ticket.title));
-            output.info(&format!("  Status: {}", ticket.status));
-            output.info(&format!("  Priority: {}", ticket.priority));
-
-            if let Some(started_at) = ticket.started_at {
-                let duration = Utc::now() - started_at;
-                let hours = duration.num_hours();
-                let minutes = duration.num_minutes() % 60;
-                output.info(&format!("  Time spent: {hours}h {minutes}m"));
-            }
-
-            if !ticket.tasks.is_empty() {
-                let completed = ticket.tasks.iter().filter(|t| t.completed).count();
-                output.info(&format!("  Tasks: {}/{}", completed, ticket.tasks.len()));
-            }
-        } else {
-            output.info("No active ticket");
-        }
-
-        // Display statistics
-        if let Some(stats) = &statistics {
-            output.info("");
-            output.info("Statistics:");
-            output.info(&format!("  Total tickets: {}", stats.total));
-            output.info(&format!("  Todo: {}", stats.todo));
-            output.info(&format!("  In progress: {}", stats.doing));
-            output.info(&format!("  In review: {}", stats.review));
-            output.info(&format!("  Blocked: {}", stats.blocked));
-            output.info(&format!("  Done: {}", stats.done));
-
-            if detailed {
-                output.info("");
-                output.info("Priority breakdown:");
-                output.info(&format!("  Critical: {}", stats.critical));
-                output.info(&format!("  High: {}", stats.high));
-                output.info(&format!("  Medium: {}", stats.medium));
-                output.info(&format!("  Low: {}", stats.low));
-            }
-        }
-
-        // Display recent tickets in detailed mode
-        if detailed && !recent_tickets.is_empty() {
-            output.info("");
-            output.info("Recent tickets:");
-            for ticket in &recent_tickets {
-                let status_emoji = match ticket.status {
-                    Status::Todo => "📋",
-                    Status::Doing => "🔄",
-                    Status::Review => "👀",
-                    Status::Blocked => "🚫",
-                    Status::Done => "✅",
-                };
-                output.info(&format!(
-                    "  {} {} - {} ({})",
-                    status_emoji, ticket.slug, ticket.title, ticket.priority
-                ));
-            }
-        }
+/// Output check data as text
+fn output_text(data: &CheckData, detailed: bool, output: &OutputFormatter) {
+    // Project info
+    output.info(&format!("Project: {}", data.project_state.name));
+    if let Some(desc) = &data.project_state.description {
+        output.info(&format!("Description: {desc}"));
     }
+    output.info(&format!("Path: {}", data.project_root.display()));
+    output.info(&format!("Created: {}", format_datetime(data.project_state.created_at)));
+    
+    if let Some(branch) = &data.current_branch {
+        output.info(&format!("Git branch: {branch}"));
+    }
+    
+    output.info("");
+    
+    // Active ticket
+    if let Some(ticket) = &data.active_ticket {
+        display_active_ticket(ticket, output);
+    } else {
+        output.info("No active ticket");
+    }
+    
+    // Statistics
+    if let Some(stats) = &data.statistics {
+        display_statistics(stats, detailed, output);
+    }
+    
+    // Recent tickets
+    if detailed && !data.recent_tickets.is_empty() {
+        display_recent_tickets(&data.recent_tickets, output);
+    }
+}
 
-    Ok(())
+/// Display active ticket information
+fn display_active_ticket(ticket: &Ticket, output: &OutputFormatter) {
+    output.success("Active Ticket:");
+    output.info(&format!("  ID: {}", ticket.id));
+    output.info(&format!("  Slug: {}", ticket.slug));
+    output.info(&format!("  Title: {}", ticket.title));
+    output.info(&format!("  Status: {}", ticket.status));
+    output.info(&format!("  Priority: {}", ticket.priority));
+    
+    if let Some(started_at) = ticket.started_at {
+        let duration = Utc::now() - started_at;
+        let hours = duration.num_hours();
+        let minutes = duration.num_minutes() % 60;
+        output.info(&format!("  Time spent: {hours}h {minutes}m"));
+    }
+    
+    if !ticket.tasks.is_empty() {
+        let completed = ticket.tasks.iter().filter(|t| t.completed).count();
+        output.info(&format!("  Tasks: {}/{}", completed, ticket.tasks.len()));
+    }
+}
+
+/// Display statistics
+fn display_statistics(stats: &Statistics, detailed: bool, output: &OutputFormatter) {
+    output.info("");
+    output.info("Statistics:");
+    output.info(&format!("  Total tickets: {}", stats.total));
+    output.info(&format!("  Todo: {}", stats.todo));
+    output.info(&format!("  In progress: {}", stats.doing));
+    output.info(&format!("  In review: {}", stats.review));
+    output.info(&format!("  Blocked: {}", stats.blocked));
+    output.info(&format!("  Done: {}", stats.done));
+    
+    if detailed {
+        output.info("");
+        output.info("Priority breakdown:");
+        output.info(&format!("  Critical: {}", stats.critical));
+        output.info(&format!("  High: {}", stats.high));
+        output.info(&format!("  Medium: {}", stats.medium));
+        output.info(&format!("  Low: {}", stats.low));
+    }
+}
+
+/// Display recent tickets
+fn display_recent_tickets(tickets: &[Ticket], output: &OutputFormatter) {
+    output.info("");
+    output.info("Recent tickets:");
+    for ticket in tickets {
+        let status_emoji = match ticket.status {
+            Status::Todo => "📋",
+            Status::Doing => "🔄",
+            Status::Review => "👀",
+            Status::Blocked => "🚫",
+            Status::Done => "✅",
+        };
+        output.info(&format!(
+            "  {} {} - {} ({})",
+            status_emoji, ticket.slug, ticket.title, ticket.priority
+        ));
+    }
 }
 
 /// Project statistics

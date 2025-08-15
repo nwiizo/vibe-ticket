@@ -205,7 +205,7 @@ pub fn register_tools() -> Vec<Tool> {
 }
 
 /// Helper to resolve ticket reference (ID or slug)
-pub async fn resolve_ticket_ref(
+pub fn resolve_ticket_ref(
     service: &VibeTicketService,
     ticket_ref: &str,
 ) -> Result<TicketId, String> {
@@ -369,7 +369,7 @@ pub fn handle_list(service: &VibeTicketService, arguments: Value) -> Result<Valu
 }
 
 /// Handle showing ticket details
-pub async fn handle_show(service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
+pub fn handle_show(service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
     #[derive(Deserialize)]
     struct Args {
         ticket: String,
@@ -378,7 +378,7 @@ pub async fn handle_show(service: &VibeTicketService, arguments: Value) -> Resul
     let args: Args =
         serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
-    let ticket_id = resolve_ticket_ref(service, &args.ticket).await?;
+    let ticket_id = resolve_ticket_ref(service, &args.ticket)?;
     let ticket = service
         .storage
         .load(&ticket_id)
@@ -408,7 +408,7 @@ pub async fn handle_show(service: &VibeTicketService, arguments: Value) -> Resul
 }
 
 /// Handle editing a ticket
-pub async fn handle_edit(service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
+pub fn handle_edit(service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
     #[derive(Deserialize)]
     struct Args {
         ticket: String,
@@ -423,7 +423,7 @@ pub async fn handle_edit(service: &VibeTicketService, arguments: Value) -> Resul
     let args: Args =
         serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
-    let ticket_id = resolve_ticket_ref(service, &args.ticket).await?;
+    let ticket_id = resolve_ticket_ref(service, &args.ticket)?;
     let mut ticket = service
         .storage
         .load(&ticket_id)
@@ -502,7 +502,7 @@ pub async fn handle_edit(service: &VibeTicketService, arguments: Value) -> Resul
 }
 
 /// Handle closing a ticket
-pub async fn handle_close(service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
+pub fn handle_close(service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
     #[derive(Deserialize)]
     struct Args {
         ticket: String,
@@ -512,7 +512,7 @@ pub async fn handle_close(service: &VibeTicketService, arguments: Value) -> Resu
     let args: Args =
         serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
-    let ticket_id = resolve_ticket_ref(service, &args.ticket).await?;
+    let ticket_id = resolve_ticket_ref(service, &args.ticket)?;
     let mut ticket = service
         .storage
         .load(&ticket_id)
@@ -552,7 +552,7 @@ pub async fn handle_close(service: &VibeTicketService, arguments: Value) -> Resu
 }
 
 /// Handle starting work on a ticket
-pub async fn handle_start(service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
+pub fn handle_start(service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
     #[derive(Deserialize)]
     struct Args {
         ticket: String,
@@ -562,7 +562,7 @@ pub async fn handle_start(service: &VibeTicketService, arguments: Value) -> Resu
     let args: Args =
         serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
-    let ticket_id = resolve_ticket_ref(service, &args.ticket).await?;
+    let ticket_id = resolve_ticket_ref(service, &args.ticket)?;
     let mut ticket = service
         .storage
         .load(&ticket_id)

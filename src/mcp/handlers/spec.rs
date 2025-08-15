@@ -83,7 +83,7 @@ pub fn register_tools() -> Vec<Tool> {
 }
 
 /// Handle adding specifications
-pub async fn handle_add(service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
+pub fn handle_add(service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
     #[derive(Deserialize)]
     struct Args {
         ticket: String,
@@ -95,7 +95,7 @@ pub async fn handle_add(service: &VibeTicketService, arguments: Value) -> Result
         serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
     let ticket_id =
-        crate::mcp::handlers::tickets::resolve_ticket_ref(service, &args.ticket).await?;
+        crate::mcp::handlers::tickets::resolve_ticket_ref(service, &args.ticket)?;
     let mut ticket = service
         .storage
         .load(&ticket_id)
@@ -130,13 +130,13 @@ pub async fn handle_add(service: &VibeTicketService, arguments: Value) -> Result
 }
 
 /// Handle updating specifications
-pub async fn handle_update(service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
+pub fn handle_update(service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
     // Update uses the same logic as add
-    handle_add(service, arguments).await
+    handle_add(service, arguments)
 }
 
 /// Handle checking specification status
-pub async fn handle_check(service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
+pub fn handle_check(service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
     #[derive(Deserialize)]
     struct Args {
         ticket: String,
@@ -146,7 +146,7 @@ pub async fn handle_check(service: &VibeTicketService, arguments: Value) -> Resu
         serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
     let ticket_id =
-        crate::mcp::handlers::tickets::resolve_ticket_ref(service, &args.ticket).await?;
+        crate::mcp::handlers::tickets::resolve_ticket_ref(service, &args.ticket)?;
     let ticket = service
         .storage
         .load(&ticket_id)

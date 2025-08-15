@@ -129,7 +129,7 @@ pub fn handle_list(service: &VibeTicketService, arguments: Value) -> Result<Valu
 }
 
 /// Handle removing a worktree
-pub async fn handle_remove(service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
+pub fn handle_remove(service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
     #[derive(Deserialize)]
     struct Args {
         ticket: String,
@@ -141,7 +141,7 @@ pub async fn handle_remove(service: &VibeTicketService, arguments: Value) -> Res
 
     // Resolve ticket to get the worktree path
     let ticket_id =
-        crate::mcp::handlers::tickets::resolve_ticket_ref(service, &args.ticket).await?;
+        crate::mcp::handlers::tickets::resolve_ticket_ref(service, &args.ticket)?;
     let ticket = service
         .storage
         .load(&ticket_id)
