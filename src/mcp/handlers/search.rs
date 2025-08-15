@@ -11,6 +11,7 @@ use std::borrow::Cow;
 use std::sync::Arc;
 
 /// Register all search and export tools
+#[must_use]
 pub fn register_tools() -> Vec<Tool> {
     vec![
         // Search tool
@@ -98,7 +99,7 @@ pub fn handle_search(service: &VibeTicketService, arguments: Value) -> Result<Va
     }
 
     let args: Args =
-        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {}", e))?;
+        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
     let query = args.query.to_lowercase();
     let search_all = !args.in_title.unwrap_or(false)
@@ -108,7 +109,7 @@ pub fn handle_search(service: &VibeTicketService, arguments: Value) -> Result<Va
     let tickets = service
         .storage
         .load_all()
-        .map_err(|e| format!("Failed to list tickets: {}", e))?;
+        .map_err(|e| format!("Failed to list tickets: {e}"))?;
 
     let mut results = Vec::new();
 
@@ -183,7 +184,7 @@ pub async fn handle_export(service: &VibeTicketService, arguments: Value) -> Res
     }
 
     let args: Args =
-        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {}", e))?;
+        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
     let tickets = if let Some(ticket_ref) = args.ticket {
         // Export specific ticket
@@ -192,21 +193,21 @@ pub async fn handle_export(service: &VibeTicketService, arguments: Value) -> Res
         let ticket = service
             .storage
             .load(&ticket_id)
-            .map_err(|e| format!("Failed to load ticket: {}", e))?;
+            .map_err(|e| format!("Failed to load ticket: {e}"))?;
         vec![ticket]
     } else {
         // Export all tickets
         service
             .storage
             .load_all()
-            .map_err(|e| format!("Failed to list tickets: {}", e))?
+            .map_err(|e| format!("Failed to list tickets: {e}"))?
     };
 
     let exported_data = match args.format.as_str() {
         "json" => serde_json::to_string_pretty(&tickets)
-            .map_err(|e| format!("Failed to serialize to JSON: {}", e))?,
+            .map_err(|e| format!("Failed to serialize to JSON: {e}"))?,
         "yaml" => serde_yaml::to_string(&tickets)
-            .map_err(|e| format!("Failed to serialize to YAML: {}", e))?,
+            .map_err(|e| format!("Failed to serialize to YAML: {e}"))?,
         "csv" => export_to_csv(&tickets)?,
         "markdown" => export_to_markdown(&tickets),
         _ => return Err(format!("Invalid format: {}", args.format)),
@@ -228,17 +229,17 @@ pub fn handle_import(service: &VibeTicketService, arguments: Value) -> Result<Va
     }
 
     let args: Args =
-        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {}", e))?;
+        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
     let format = args.format.unwrap_or_else(|| "json".to_string());
 
     let tickets: Vec<Ticket> =
         match format.as_str() {
             "json" => serde_json::from_str(&args.data)
-                .map_err(|e| format!("Failed to parse JSON: {}", e))?,
+                .map_err(|e| format!("Failed to parse JSON: {e}"))?,
             "yaml" => serde_yaml::from_str(&args.data)
-                .map_err(|e| format!("Failed to parse YAML: {}", e))?,
-            _ => return Err(format!("Invalid format: {}", format)),
+                .map_err(|e| format!("Failed to parse YAML: {e}"))?,
+            _ => return Err(format!("Invalid format: {format}")),
         };
 
     let mut imported_count = 0;
@@ -262,7 +263,7 @@ pub fn handle_import(service: &VibeTicketService, arguments: Value) -> Result<Va
         }
 
         match service.storage.save(&ticket) {
-            Ok(_) => imported_count += 1,
+            Ok(()) => imported_count += 1,
             Err(e) => errors.push(format!("Failed to import '{}': {}", ticket.slug, e)),
         }
     }
@@ -288,7 +289,7 @@ fn export_to_csv(tickets: &[Ticket]) -> Result<String, String> {
 
     // Write header
     writeln!(&mut csv_data, "ID,Slug,Title,Status,Priority,Assignee,Tags,Created,Started,Closed,Tasks Total,Tasks Completed")
-        .map_err(|e| format!("Failed to write CSV header: {}", e))?;
+        .map_err(|e| format!("Failed to write CSV header: {e}"))?;
 
     // Write ticket rows
     for ticket in tickets {
@@ -318,10 +319,10 @@ fn export_to_csv(tickets: &[Ticket]) -> Result<String, String> {
             tasks_total,
             tasks_completed
         )
-        .map_err(|e| format!("Failed to write CSV row: {}", e))?;
+        .map_err(|e| format!("Failed to write CSV row: {e}"))?;
     }
 
-    String::from_utf8(csv_data).map_err(|e| format!("Failed to convert CSV to string: {}", e))
+    String::from_utf8(csv_data).map_err(|e| format!("Failed to convert CSV to string: {e}"))
 }
 
 /// Export tickets to Markdown format
@@ -346,7 +347,7 @@ fn export_to_markdown(tickets: &[Ticket]) -> String {
         writeln!(&mut md, "- **Priority**: {:?}", ticket.priority).unwrap();
 
         if let Some(assignee) = &ticket.assignee {
-            writeln!(&mut md, "- **Assignee**: {}", assignee).unwrap();
+            writeln!(&mut md, "- **Assignee**: {assignee}").unwrap();
         }
 
         if !ticket.tags.is_empty() {

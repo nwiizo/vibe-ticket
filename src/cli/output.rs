@@ -22,6 +22,7 @@ pub struct OutputFormatter {
 
 impl OutputFormatter {
     /// Creates a new output formatter
+    #[must_use]
     pub fn new(json: bool, no_color: bool) -> Self {
         if no_color {
             colored::control::set_override(false);
@@ -30,6 +31,7 @@ impl OutputFormatter {
     }
 
     /// Check if JSON output is enabled
+    #[must_use]
     pub const fn is_json(&self) -> bool {
         self.json
     }
@@ -43,6 +45,7 @@ impl OutputFormatter {
     }
 
     /// Create a progress bar
+    #[must_use]
     pub fn progress_bar(&self, message: &str) -> indicatif::ProgressBar {
         if self.json {
             // In JSON mode, return a hidden progress bar
@@ -286,6 +289,7 @@ pub struct ProgressBar {
 
 impl ProgressBar {
     /// Creates a new progress bar
+    #[must_use]
     pub fn new(message: &str, total: usize) -> Self {
         Self {
             message: message.to_string(),

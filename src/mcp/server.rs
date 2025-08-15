@@ -17,6 +17,7 @@ pub struct McpServer {
 
 impl McpServer {
     /// Create a new MCP server
+    #[must_use]
     pub fn new(config: McpConfig, storage: FileStorage) -> Self {
         Self {
             config,

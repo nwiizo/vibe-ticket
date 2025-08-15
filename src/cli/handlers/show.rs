@@ -182,7 +182,7 @@ fn output_plain(
         if ticket
             .metadata
             .get("archived")
-            .and_then(|v| v.as_bool())
+            .and_then(serde_json::Value::as_bool)
             .unwrap_or(false)
         {
             output.info("  Status: Archived");

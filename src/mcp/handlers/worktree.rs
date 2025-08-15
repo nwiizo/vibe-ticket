@@ -10,6 +10,7 @@ use std::borrow::Cow;
 use std::sync::Arc;
 
 /// Register all worktree management tools
+#[must_use]
 pub fn register_tools() -> Vec<Tool> {
     vec![
         // List worktrees tool
@@ -68,7 +69,7 @@ pub fn handle_list(service: &VibeTicketService, arguments: Value) -> Result<Valu
     }
 
     let args: Args =
-        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {}", e))?;
+        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
     // Execute git worktree list
     let output = std::process::Command::new("git")
@@ -77,7 +78,7 @@ pub fn handle_list(service: &VibeTicketService, arguments: Value) -> Result<Valu
         .arg("--porcelain")
         .current_dir(&service.project_root)
         .output()
-        .map_err(|e| format!("Failed to execute git worktree list: {}", e))?;
+        .map_err(|e| format!("Failed to execute git worktree list: {e}"))?;
 
     if !output.status.success() {
         return Err(format!(
@@ -136,7 +137,7 @@ pub async fn handle_remove(service: &VibeTicketService, arguments: Value) -> Res
     }
 
     let args: Args =
-        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {}", e))?;
+        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
     // Resolve ticket to get the worktree path
     let ticket_id =
@@ -144,7 +145,7 @@ pub async fn handle_remove(service: &VibeTicketService, arguments: Value) -> Res
     let ticket = service
         .storage
         .load(&ticket_id)
-        .map_err(|e| format!("Failed to load ticket: {}", e))?;
+        .map_err(|e| format!("Failed to load ticket: {e}"))?;
 
     // Construct worktree path pattern
     let worktree_pattern = format!("vibeticket-{}", ticket.slug);
@@ -156,7 +157,7 @@ pub async fn handle_remove(service: &VibeTicketService, arguments: Value) -> Res
         .arg("--porcelain")
         .current_dir(&service.project_root)
         .output()
-        .map_err(|e| format!("Failed to list worktrees: {}", e))?;
+        .map_err(|e| format!("Failed to list worktrees: {e}"))?;
 
     let output_str = String::from_utf8_lossy(&list_output.stdout);
     let mut worktree_path = None;
@@ -186,7 +187,7 @@ pub async fn handle_remove(service: &VibeTicketService, arguments: Value) -> Res
 
     let output = remove_cmd
         .output()
-        .map_err(|e| format!("Failed to remove worktree: {}", e))?;
+        .map_err(|e| format!("Failed to remove worktree: {e}"))?;
 
     if !output.status.success() {
         return Err(format!(
@@ -211,7 +212,7 @@ pub fn handle_prune(_service: &VibeTicketService, _arguments: Value) -> Result<V
         .arg("prune")
         .arg("--verbose")
         .output()
-        .map_err(|e| format!("Failed to prune worktrees: {}", e))?;
+        .map_err(|e| format!("Failed to prune worktrees: {e}"))?;
 
     if !output.status.success() {
         return Err(format!(
@@ -230,7 +231,7 @@ pub fn handle_prune(_service: &VibeTicketService, _arguments: Value) -> Result<V
         "status": "pruned",
         "pruned_count": pruned_count,
         "message": if pruned_count > 0 {
-            format!("Pruned {} stale worktree(s)", pruned_count)
+            format!("Pruned {pruned_count} stale worktree(s)")
         } else {
             "No stale worktrees found".to_string()
         }

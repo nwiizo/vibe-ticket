@@ -64,6 +64,7 @@ impl Status {
     }
 
     /// Returns all possible status values
+    #[must_use]
     pub fn all() -> Vec<Self> {
         vec![
             Self::Todo,
@@ -75,26 +76,31 @@ impl Status {
     }
 
     /// Returns whether the status represents active work
+    #[must_use]
     pub const fn is_active(&self) -> bool {
         matches!(self, Self::Doing | Self::Review)
     }
 
     /// Returns whether the status represents completed work
+    #[must_use]
     pub const fn is_completed(&self) -> bool {
         matches!(self, Self::Done)
     }
 
     /// Returns whether the status allows starting work
+    #[must_use]
     pub const fn can_start(&self) -> bool {
         matches!(self, Self::Todo | Self::Blocked)
     }
 
     /// Returns the emoji representation of the status
+    #[must_use]
     pub const fn emoji(&self) -> &'static str {
         self.visual().emoji
     }
 
     /// Returns the color code for terminal output
+    #[must_use]
     pub const fn color(&self) -> &'static str {
         self.visual().color
     }
@@ -130,7 +136,7 @@ impl std::str::FromStr for Status {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Self::try_from(s).map_err(|_| format!("Invalid status: {}", s))
+        Self::try_from(s).map_err(|_| format!("Invalid status: {s}"))
     }
 }
 

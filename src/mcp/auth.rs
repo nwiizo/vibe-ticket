@@ -11,11 +11,13 @@ pub struct AuthMiddleware {
 
 impl AuthMiddleware {
     /// Create new authentication middleware
-    pub fn new(config: AuthConfig) -> Self {
+    #[must_use]
+    pub const fn new(config: AuthConfig) -> Self {
         Self { config }
     }
 
     /// Authenticate a request
+    #[must_use]
     pub fn authenticate(
         &self,
         _api_key: Option<&str>,

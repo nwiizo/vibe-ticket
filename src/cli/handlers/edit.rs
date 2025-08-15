@@ -217,7 +217,7 @@ fn edit_in_editor(
 
     // Serialize ticket to YAML
     let yaml_content = serde_yaml::to_string(&ticket)
-        .map_err(|e| VibeTicketError::custom(format!("Failed to serialize YAML: {}", e)))?;
+        .map_err(|e| VibeTicketError::custom(format!("Failed to serialize YAML: {e}")))?;
 
     // Write to temporary file
     let mut file = std::fs::File::create(&temp_file)

@@ -116,7 +116,7 @@ mod tests {
     use tempfile::TempDir;
 
     fn create_test_ticket(slug: &str) -> Ticket {
-        Ticket::new(slug.to_string(), format!("Test ticket {}", slug))
+        Ticket::new(slug.to_string(), format!("Test ticket {slug}"))
     }
 
     #[test]
@@ -147,7 +147,7 @@ mod tests {
 
         // Save multiple tickets
         let tickets: Vec<_> = (0..3)
-            .map(|i| create_test_ticket(&format!("test-{}", i)))
+            .map(|i| create_test_ticket(&format!("test-{i}")))
             .collect();
 
         for ticket in &tickets {

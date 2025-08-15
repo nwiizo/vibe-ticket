@@ -13,7 +13,7 @@ mod tests {
             id: Uuid::new_v4().into(),
             slug: format!("test-{}", title.to_lowercase().replace(' ', "-")),
             title: title.to_string(),
-            description: format!("Description for {}", title),
+            description: format!("Description for {title}"),
             priority: Priority::Medium,
             status: Status::Todo,
             tags: vec!["test".to_string()],
@@ -44,7 +44,7 @@ mod tests {
                 barrier_clone.wait();
 
                 // Try to create a ticket
-                let ticket = create_test_ticket(&format!("Concurrent Ticket {}", i));
+                let ticket = create_test_ticket(&format!("Concurrent Ticket {i}"));
                 storage_clone.save_ticket(&ticket).unwrap();
             });
 
@@ -86,8 +86,8 @@ mod tests {
 
                 // Load, modify, and save the ticket
                 let mut ticket = storage_clone.load_ticket(&id).unwrap();
-                ticket.description = format!("Modified by thread {}", i);
-                ticket.tags.push(format!("thread-{}", i));
+                ticket.description = format!("Modified by thread {i}");
+                ticket.tags.push(format!("thread-{i}"));
                 storage_clone.save_ticket(&ticket).unwrap();
             });
 
@@ -119,7 +119,7 @@ mod tests {
         // Create multiple tickets
         let mut ticket_ids = vec![];
         for i in 0..5 {
-            let ticket = create_test_ticket(&format!("Active Test {}", i));
+            let ticket = create_test_ticket(&format!("Active Test {i}"));
             let id = ticket.id.clone();
             storage.save_ticket(&ticket).unwrap();
             ticket_ids.push(id);

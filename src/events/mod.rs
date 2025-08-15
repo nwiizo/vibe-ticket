@@ -43,6 +43,7 @@ pub struct EventBus {
 #[cfg(feature = "mcp")]
 impl EventBus {
     /// Create a new event bus
+    #[must_use]
     pub fn new() -> Self {
         Self {
             handlers: Arc::new(RwLock::new(Vec::new())),
@@ -67,7 +68,7 @@ impl EventBus {
 
             let task = tokio::spawn(async move {
                 if let Err(e) = handler.handle_event(event).await {
-                    eprintln!("Event handler error: {}", e);
+                    eprintln!("Event handler error: {e}");
                 }
             });
 
@@ -92,10 +93,11 @@ impl Default for EventBus {
 
 /// Global event bus instance
 #[cfg(feature = "mcp")]
-static EVENT_BUS: once_cell::sync::Lazy<EventBus> = once_cell::sync::Lazy::new(EventBus::new);
+static EVENT_BUS: std::sync::LazyLock<EventBus> = std::sync::LazyLock::new(EventBus::new);
 
 /// Get the global event bus
 #[cfg(feature = "mcp")]
+#[must_use]
 pub fn event_bus() -> &'static EventBus {
     &EVENT_BUS
 }

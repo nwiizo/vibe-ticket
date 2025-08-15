@@ -13,22 +13,23 @@ use std::sync::Arc;
 struct ConfigManager;
 
 impl ConfigManager {
-    fn new() -> Self {
+    const fn new() -> Self {
         Self
     }
 
     fn load_from_path(&self, path: &std::path::Path) -> Result<Config, String> {
-        Config::load_from_path(path).map_err(|e| format!("Failed to load config: {}", e))
+        Config::load_from_path(path).map_err(|e| format!("Failed to load config: {e}"))
     }
 
     fn save_to_path(&self, config: &Config, path: &std::path::Path) -> Result<(), String> {
         config
             .save_to_path(path)
-            .map_err(|e| format!("Failed to save config: {}", e))
+            .map_err(|e| format!("Failed to save config: {e}"))
     }
 }
 
 /// Register all configuration management tools
+#[must_use]
 pub fn register_tools() -> Vec<Tool> {
     vec![
         // Show config tool
@@ -76,7 +77,7 @@ pub fn handle_show(service: &VibeTicketService, arguments: Value) -> Result<Valu
     }
 
     let args: Args =
-        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {}", e))?;
+        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
     let config_path = service
         .project_root
@@ -85,7 +86,7 @@ pub fn handle_show(service: &VibeTicketService, arguments: Value) -> Result<Valu
     let config_manager = ConfigManager::new();
     let config = config_manager
         .load_from_path(&config_path)
-        .map_err(|e| format!("Failed to load configuration: {}", e))?;
+        .map_err(|e| format!("Failed to load configuration: {e}"))?;
 
     if let Some(key) = args.key {
         // Show specific key
@@ -105,7 +106,7 @@ pub fn handle_show(service: &VibeTicketService, arguments: Value) -> Result<Valu
 
             "ui.date_format" => json!(config.ui.date_format),
 
-            _ => return Err(format!("Unknown configuration key: {}", key)),
+            _ => return Err(format!("Unknown configuration key: {key}")),
         };
 
         Ok(json!({
@@ -146,7 +147,7 @@ pub fn handle_set(service: &VibeTicketService, arguments: Value) -> Result<Value
     }
 
     let args: Args =
-        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {}", e))?;
+        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
     let config_path = service
         .project_root
@@ -155,7 +156,7 @@ pub fn handle_set(service: &VibeTicketService, arguments: Value) -> Result<Value
     let config_manager = ConfigManager::new();
     let mut config = config_manager
         .load_from_path(&config_path)
-        .map_err(|e| format!("Failed to load configuration: {}", e))?;
+        .map_err(|e| format!("Failed to load configuration: {e}"))?;
 
     // Parse and set the value
     match args.key.as_str() {
@@ -167,7 +168,7 @@ pub fn handle_set(service: &VibeTicketService, arguments: Value) -> Result<Value
                 .to_string();
         },
         "project.description" => {
-            config.project.description = args.value.as_str().map(|s| s.to_string());
+            config.project.description = args.value.as_str().map(std::string::ToString::to_string);
         },
         "project.default_priority" => {
             config.project.default_priority = args
@@ -177,7 +178,8 @@ pub fn handle_set(service: &VibeTicketService, arguments: Value) -> Result<Value
                 .to_string();
         },
         "project.default_assignee" => {
-            config.project.default_assignee = args.value.as_str().map(|s| s.to_string());
+            config.project.default_assignee =
+                args.value.as_str().map(std::string::ToString::to_string);
         },
 
         "git.auto_branch" => {
@@ -191,7 +193,7 @@ pub fn handle_set(service: &VibeTicketService, arguments: Value) -> Result<Value
                 .to_string();
         },
         "git.commit_template" => {
-            config.git.commit_template = args.value.as_str().map(|s| s.to_string());
+            config.git.commit_template = args.value.as_str().map(std::string::ToString::to_string);
         },
         "git.worktree_enabled" => {
             config.git.worktree_enabled = args.value.as_bool().ok_or("Value must be a boolean")?;
@@ -225,7 +227,7 @@ pub fn handle_set(service: &VibeTicketService, arguments: Value) -> Result<Value
     // Save the updated configuration
     config_manager
         .save_to_path(&config, &config_path)
-        .map_err(|e| format!("Failed to save configuration: {}", e))?;
+        .map_err(|e| format!("Failed to save configuration: {e}"))?;
 
     Ok(json!({
         "status": "updated",

@@ -97,16 +97,19 @@ impl Ticket {
     }
 
     /// Returns the number of completed tasks
+    #[must_use]
     pub fn completed_tasks_count(&self) -> usize {
         self.tasks.iter().filter(|task| task.completed).count()
     }
 
     /// Returns the total number of tasks
+    #[must_use]
     pub fn total_tasks_count(&self) -> usize {
         self.tasks.len()
     }
 
     /// Calculates the completion percentage
+    #[must_use]
     pub fn completion_percentage(&self) -> f32 {
         if self.tasks.is_empty() {
             0.0
@@ -122,6 +125,7 @@ impl Ticket {
     }
 
     /// Returns the working duration (from start to close/now)
+    #[must_use]
     pub fn working_duration(&self) -> Option<chrono::Duration> {
         self.started_at.map(|start| {
             let end_time = self.closed_at.unwrap_or_else(Utc::now);

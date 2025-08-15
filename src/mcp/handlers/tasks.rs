@@ -11,6 +11,7 @@ use std::borrow::Cow;
 use std::sync::Arc;
 
 /// Register all task management tools
+#[must_use]
 pub fn register_tools() -> Vec<Tool> {
     vec![
         // Add task tool
@@ -111,7 +112,7 @@ async fn resolve_ticket_ref(
         service
             .storage
             .get_active()
-            .map_err(|e| format!("Failed to get active ticket: {}", e))?
+            .map_err(|e| format!("Failed to get active ticket: {e}"))?
             .ok_or_else(|| "No active ticket. Please specify a ticket ID or slug.".to_string())
     }
 }
@@ -125,13 +126,13 @@ pub async fn handle_add(service: &VibeTicketService, arguments: Value) -> Result
     }
 
     let args: Args =
-        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {}", e))?;
+        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
     let ticket_id = resolve_ticket_ref(service, args.ticket.as_deref()).await?;
     let mut ticket = service
         .storage
         .load(&ticket_id)
-        .map_err(|e| format!("Failed to load ticket: {}", e))?;
+        .map_err(|e| format!("Failed to load ticket: {e}"))?;
 
     let task = Task::new(args.title);
     let task_id = task.id.clone();
@@ -141,7 +142,7 @@ pub async fn handle_add(service: &VibeTicketService, arguments: Value) -> Result
     service
         .storage
         .save(&ticket)
-        .map_err(|e| format!("Failed to save ticket: {}", e))?;
+        .map_err(|e| format!("Failed to save ticket: {e}"))?;
 
     Ok(json!({
         "status": "added",
@@ -168,13 +169,13 @@ pub async fn handle_complete(
     }
 
     let args: Args =
-        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {}", e))?;
+        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
     let ticket_id = resolve_ticket_ref(service, args.ticket.as_deref()).await?;
     let mut ticket = service
         .storage
         .load(&ticket_id)
-        .map_err(|e| format!("Failed to load ticket: {}", e))?;
+        .map_err(|e| format!("Failed to load ticket: {e}"))?;
 
     let task_id = TaskId::parse_str(&args.task_id)
         .map_err(|_| format!("Invalid task ID: {}", args.task_id))?;
@@ -202,7 +203,7 @@ pub async fn handle_complete(
     service
         .storage
         .save(&ticket)
-        .map_err(|e| format!("Failed to save ticket: {}", e))?;
+        .map_err(|e| format!("Failed to save ticket: {e}"))?;
 
     let completed_count = ticket.tasks.iter().filter(|t| t.completed).count();
     let total_count = ticket.tasks.len();
@@ -233,13 +234,13 @@ pub async fn handle_list(service: &VibeTicketService, arguments: Value) -> Resul
     }
 
     let args: Args =
-        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {}", e))?;
+        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
     let ticket_id = resolve_ticket_ref(service, args.ticket.as_deref()).await?;
     let ticket = service
         .storage
         .load(&ticket_id)
-        .map_err(|e| format!("Failed to load ticket: {}", e))?;
+        .map_err(|e| format!("Failed to load ticket: {e}"))?;
 
     let mut tasks: Vec<&Task> = ticket.tasks.iter().collect();
 
@@ -280,13 +281,13 @@ pub async fn handle_remove(service: &VibeTicketService, arguments: Value) -> Res
     }
 
     let args: Args =
-        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {}", e))?;
+        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
     let ticket_id = resolve_ticket_ref(service, args.ticket.as_deref()).await?;
     let mut ticket = service
         .storage
         .load(&ticket_id)
-        .map_err(|e| format!("Failed to load ticket: {}", e))?;
+        .map_err(|e| format!("Failed to load ticket: {e}"))?;
 
     let task_id = TaskId::parse_str(&args.task_id)
         .map_err(|_| format!("Invalid task ID: {}", args.task_id))?;
@@ -303,7 +304,7 @@ pub async fn handle_remove(service: &VibeTicketService, arguments: Value) -> Res
     service
         .storage
         .save(&ticket)
-        .map_err(|e| format!("Failed to save ticket: {}", e))?;
+        .map_err(|e| format!("Failed to save ticket: {e}"))?;
 
     Ok(json!({
         "status": "removed",

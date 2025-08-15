@@ -32,6 +32,7 @@ pub fn find_project_root(start_dir: Option<&str>) -> Result<PathBuf> {
 }
 
 /// Gets the .vibe-ticket directory path
+#[must_use]
 pub fn get_vibe_ticket_dir(project_root: &Path) -> PathBuf {
     project_root.join(".vibe-ticket")
 }
@@ -60,6 +61,7 @@ pub fn validate_slug(slug: &str) -> Result<()> {
 }
 
 /// Generates a slug from a title
+#[must_use]
 pub fn slugify(title: &str) -> String {
     title
         .to_lowercase()
@@ -73,6 +75,7 @@ pub fn slugify(title: &str) -> String {
 }
 
 /// Gets the default editor from environment variables
+#[must_use]
 pub fn get_editor() -> String {
     env::var("EDITOR")
         .or_else(|_| env::var("VISUAL"))
@@ -96,6 +99,7 @@ pub fn parse_tags(tags_str: &str) -> Vec<String> {
 }
 
 /// Formats duration in a human-readable way
+#[must_use]
 pub fn format_duration(duration: chrono::Duration) -> String {
     let days = duration.num_days();
     let hours = duration.num_hours() % 24;

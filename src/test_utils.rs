@@ -11,11 +11,13 @@ pub mod test {
     use tempfile::TempDir;
 
     /// Creates a test ticket with default values
+    #[must_use]
     pub fn create_test_ticket() -> Ticket {
         create_test_ticket_with_id(TicketId::new())
     }
 
     /// Creates a test ticket with a specific ID
+    #[must_use]
     pub fn create_test_ticket_with_id(id: TicketId) -> Ticket {
         Ticket {
             id,
@@ -46,27 +48,32 @@ pub mod test {
     }
 
     impl TestTicketBuilder {
+        #[must_use]
         pub fn new() -> Self {
             Self {
                 ticket: create_test_ticket(),
             }
         }
 
+        #[must_use]
         pub fn with_slug(mut self, slug: &str) -> Self {
             self.ticket.slug = slug.to_string();
             self
         }
 
+        #[must_use]
         pub fn with_title(mut self, title: &str) -> Self {
             self.ticket.title = title.to_string();
             self
         }
 
+        #[must_use]
         pub fn with_status(mut self, status: Status) -> Self {
             self.ticket.status = status;
             self
         }
 
+        #[must_use]
         pub fn with_priority(mut self, priority: Priority) -> Self {
             self.ticket.priority = priority;
             self
@@ -80,22 +87,26 @@ pub mod test {
             self
         }
 
+        #[must_use]
         pub fn with_task(mut self, title: &str) -> Self {
             self.ticket.tasks.push(Task::new(title.to_string()));
             self
         }
 
+        #[must_use]
         pub fn build(self) -> Ticket {
             self.ticket
         }
     }
 
     /// Creates a temporary directory for testing
+    #[must_use]
     pub fn create_temp_dir() -> TempDir {
         TempDir::new().expect("Failed to create temp directory")
     }
 
     /// Creates a test project directory structure
+    #[must_use]
     pub fn create_test_project() -> (TempDir, std::path::PathBuf) {
         let temp_dir = create_temp_dir();
         let project_dir = temp_dir.path().join(".vibe-ticket");

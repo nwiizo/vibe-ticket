@@ -15,17 +15,17 @@ macro_rules! define_id_type {
 
         impl $name {
             /// Creates a new random ID
-            pub fn new() -> Self {
+            #[must_use] pub fn new() -> Self {
                 Self(Uuid::new_v4())
             }
 
             /// Creates an ID from a UUID
-            pub const fn from_uuid(uuid: Uuid) -> Self {
+            #[must_use] pub const fn from_uuid(uuid: Uuid) -> Self {
                 Self(uuid)
             }
 
             /// Returns the inner UUID
-            pub const fn as_uuid(&self) -> &Uuid {
+            #[must_use] pub const fn as_uuid(&self) -> &Uuid {
                 &self.0
             }
 
@@ -35,7 +35,7 @@ macro_rules! define_id_type {
             }
 
             /// Returns a shortened version of the ID for display
-            pub fn short(&self) -> String {
+            #[must_use] pub fn short(&self) -> String {
                 self.0.to_string()[..8].to_string()
             }
         }

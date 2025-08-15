@@ -62,8 +62,7 @@ impl SpecContext {
                     .info(&format!("Tags: {}", spec.metadata.tags.join(", ")));
             }
             if let Some(ticket) = &spec.metadata.ticket_id {
-                self.formatter
-                    .info(&format!("Linked to ticket: {}", ticket));
+                self.formatter.info(&format!("Linked to ticket: {ticket}"));
             }
         }
         Ok(())
@@ -127,7 +126,7 @@ impl SpecPhaseHandler for RequirementsHandler {
         SpecPhase::Requirements
     }
 
-    fn get_phase_name(&self) -> &str {
+    fn get_phase_name(&self) -> &'static str {
         "requirements"
     }
 }
@@ -140,7 +139,7 @@ impl SpecPhaseHandler for DesignHandler {
         SpecPhase::Design
     }
 
-    fn get_phase_name(&self) -> &str {
+    fn get_phase_name(&self) -> &'static str {
         "design"
     }
 }

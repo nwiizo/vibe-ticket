@@ -22,12 +22,14 @@ pub struct TicketBuilder {
 
 impl TicketBuilder {
     /// Create a new ticket builder
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Set the ticket ID
-    pub fn id(mut self, id: TicketId) -> Self {
+    #[must_use]
+    pub const fn id(mut self, id: TicketId) -> Self {
         self.id = Some(id);
         self
     }
@@ -51,18 +53,21 @@ impl TicketBuilder {
     }
 
     /// Set the priority
-    pub fn priority(mut self, priority: Priority) -> Self {
+    #[must_use]
+    pub const fn priority(mut self, priority: Priority) -> Self {
         self.priority = Some(priority);
         self
     }
 
     /// Set the status
-    pub fn status(mut self, status: Status) -> Self {
+    #[must_use]
+    pub const fn status(mut self, status: Status) -> Self {
         self.status = Some(status);
         self
     }
 
     /// Add tags
+    #[must_use]
     pub fn tags(mut self, tags: Vec<String>) -> Self {
         self.tags = tags;
         self
@@ -74,20 +79,23 @@ impl TicketBuilder {
         self
     }
 
-    /// Set created_at timestamp
-    pub fn created_at(mut self, created_at: DateTime<Utc>) -> Self {
+    /// Set `created_at` timestamp
+    #[must_use]
+    pub const fn created_at(mut self, created_at: DateTime<Utc>) -> Self {
         self.created_at = Some(created_at);
         self
     }
 
-    /// Set started_at timestamp
-    pub fn started_at(mut self, started_at: DateTime<Utc>) -> Self {
+    /// Set `started_at` timestamp
+    #[must_use]
+    pub const fn started_at(mut self, started_at: DateTime<Utc>) -> Self {
         self.started_at = Some(started_at);
         self
     }
 
-    /// Set closed_at timestamp
-    pub fn closed_at(mut self, closed_at: DateTime<Utc>) -> Self {
+    /// Set `closed_at` timestamp
+    #[must_use]
+    pub const fn closed_at(mut self, closed_at: DateTime<Utc>) -> Self {
         self.closed_at = Some(closed_at);
         self
     }
@@ -99,18 +107,21 @@ impl TicketBuilder {
     }
 
     /// Add tasks
+    #[must_use]
     pub fn tasks(mut self, tasks: Vec<Task>) -> Self {
         self.tasks = tasks;
         self
     }
 
     /// Add a single task
+    #[must_use]
     pub fn task(mut self, task: Task) -> Self {
         self.tasks.push(task);
         self
     }
 
     /// Set metadata
+    #[must_use]
     pub fn metadata(mut self, metadata: HashMap<String, serde_json::Value>) -> Self {
         self.metadata = metadata;
         self
@@ -148,12 +159,14 @@ pub struct TaskBuilder {
 
 impl TaskBuilder {
     /// Create a new task builder
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }
 
     /// Set the task ID
-    pub fn id(mut self, id: TaskId) -> Self {
+    #[must_use]
+    pub const fn id(mut self, id: TaskId) -> Self {
         self.id = Some(id);
         self
     }
@@ -165,19 +178,22 @@ impl TaskBuilder {
     }
 
     /// Set completion status
-    pub fn completed(mut self, completed: bool) -> Self {
+    #[must_use]
+    pub const fn completed(mut self, completed: bool) -> Self {
         self.completed = completed;
         self
     }
 
-    /// Set created_at timestamp
-    pub fn created_at(mut self, created_at: DateTime<Utc>) -> Self {
+    /// Set `created_at` timestamp
+    #[must_use]
+    pub const fn created_at(mut self, created_at: DateTime<Utc>) -> Self {
         self.created_at = Some(created_at);
         self
     }
 
-    /// Set completed_at timestamp
-    pub fn completed_at(mut self, completed_at: DateTime<Utc>) -> Self {
+    /// Set `completed_at` timestamp
+    #[must_use]
+    pub const fn completed_at(mut self, completed_at: DateTime<Utc>) -> Self {
         self.completed_at = Some(completed_at);
         self
     }

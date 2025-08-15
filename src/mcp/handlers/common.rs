@@ -25,6 +25,7 @@ pub struct McpContext {
 
 impl McpContext {
     /// Create a new MCP context
+    #[must_use]
     pub fn new(project_dir: &Path) -> Self {
         let vibe_ticket_dir = project_dir.join(".vibe-ticket");
         let storage = FileStorage::new(&vibe_ticket_dir);
@@ -53,7 +54,7 @@ impl McpContext {
         #[cfg(feature = "mcp")]
         {
             CallToolResult {
-                content: vec![rmcp::model::Content::text(format!("Error: {}", error))],
+                content: vec![rmcp::model::Content::text(format!("Error: {error}"))],
                 is_error: Some(true),
             }
         }
@@ -66,9 +67,10 @@ impl McpContext {
     }
 
     /// Create JSON result
+    #[must_use]
     pub fn json_result(value: &Value) -> CallToolResult {
         let json_str = serde_json::to_string_pretty(value)
-            .unwrap_or_else(|e| format!("Error serializing JSON: {}", e));
+            .unwrap_or_else(|e| format!("Error serializing JSON: {e}"));
 
         #[cfg(feature = "mcp")]
         {
@@ -127,6 +129,7 @@ pub struct TicketFilter {
 
 impl TicketFilter {
     /// Apply filter to tickets
+    #[must_use]
     pub fn apply(self, tickets: Vec<Ticket>) -> Vec<Ticket> {
         tickets
             .into_iter()
