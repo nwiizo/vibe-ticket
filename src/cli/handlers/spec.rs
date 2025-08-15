@@ -84,86 +84,16 @@ pub fn handle_spec_init(
     Ok(())
 }
 
-/// Handle spec requirements command
+/// Handle spec requirements command  
 pub fn handle_spec_requirements(
-    spec: Option<String>,
-    editor: bool,
-    complete: bool,
+    spec_id: String,
+    editor: Option<String>,
     project: Option<String>,
     formatter: &OutputFormatter,
 ) -> Result<()> {
-    // Change to project directory if specified
-    if let Some(project_path) = project {
-        std::env::set_current_dir(&project_path)
-            .with_context(|| format!("Failed to change to project directory: {project_path}"))?;
-    }
-
-    let current_dir = env::current_dir().context("Failed to get current directory")?;
-    let project_dir = current_dir.join(".vibe-ticket");
-
-    if !project_dir.exists() {
-        return Err(VibeTicketError::ProjectNotInitialized);
-    }
-
-    let spec_manager = SpecManager::new(project_dir.join("specs"));
-
-    // Get spec ID (from parameter or active spec)
-    let spec_id = match spec {
-        Some(id) => id,
-        None => get_active_spec(&project_dir)?,
-    };
-
-    // Load specification
-    let mut specification = spec_manager.load(&spec_id)?;
-
-    if complete {
-        // Mark requirements phase as complete
-        specification.metadata.progress.requirements_completed = true;
-        specification.metadata.updated_at = Utc::now();
-        spec_manager.save(&specification)?;
-
-        formatter.success(&format!(
-            "Marked requirements phase as complete for spec '{}'",
-            specification.metadata.title
-        ));
-        return Ok(());
-    }
-
-    // Get or create requirements document
-    let doc_path = spec_manager.get_document_path(&spec_id, SpecDocumentType::Requirements);
-
-    if !doc_path.exists() {
-        // Create from template
-        let mut engine = TemplateEngine::new();
-        engine.set_variable("spec_id".to_string(), spec_id);
-
-        let template = SpecTemplate::for_document_type(
-            SpecDocumentType::Requirements,
-            specification.metadata.title.clone(),
-            Some(specification.metadata.description),
-        );
-
-        let content = engine.generate(&template);
-        fs::write(&doc_path, content).context("Failed to create requirements document")?;
-
-        formatter.info(&format!(
-            "Created requirements document: {}",
-            doc_path.display()
-        ));
-    }
-
-    if editor {
-        // Open in editor
-        open_in_editor(&doc_path)?;
-        formatter.success("Requirements document saved");
-    } else {
-        // Display content
-        let content =
-            fs::read_to_string(&doc_path).context("Failed to read requirements document")?;
-        formatter.info(&content);
-    }
-
-    Ok(())
+    use super::spec_common::{RequirementsHandler, SpecPhaseHandler};
+    let handler = RequirementsHandler;
+    handler.handle_phase_operation(spec_id, editor, project, formatter)
 }
 
 /// Handle spec design command
@@ -174,6 +104,15 @@ pub fn handle_spec_design(
     project: Option<String>,
     formatter: &OutputFormatter,
 ) -> Result<()> {
+    use super::spec_common::{DesignHandler, SpecPhaseHandler};
+    
+    // If using the simplified phase handler
+    if spec.is_some() && !complete && !editor {
+        let handler = DesignHandler;
+        return handler.handle_phase_operation(spec.unwrap(), None, project, formatter);
+    }
+    
+    // Keep existing complex logic for backward compatibility
     // Change to project directory if specified
     if let Some(project_path) = project {
         std::env::set_current_dir(&project_path)
@@ -231,11 +170,11 @@ pub fn handle_spec_design(
         };
 
         let mut engine = TemplateEngine::new();
-        engine.set_variable("spec_id".to_string(), spec_id);
+        engine.set_variable("spec_id".to_string(), spec_id.clone());
 
         let template = SpecTemplate::for_document_type(
             SpecDocumentType::Design,
-            specification.metadata.title,
+            specification.metadata.title.clone(),
             Some(requirements_summary.to_string()),
         );
 

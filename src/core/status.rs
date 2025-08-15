@@ -126,6 +126,13 @@ impl TryFrom<&str> for Status {
         }
     }
 }
+impl std::str::FromStr for Status {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(s).map_err(|_| format!("Invalid status: {}", s))
+    }
+}
 
 #[cfg(test)]
 mod tests {

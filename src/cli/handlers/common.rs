@@ -20,6 +20,7 @@ impl HandlerContext {
     }
     
     /// Get storage reference
+    #[allow(dead_code)]
     pub fn storage(&self) -> &FileStorage {
         &self.storage
     }

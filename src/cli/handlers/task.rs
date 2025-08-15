@@ -65,11 +65,11 @@ pub fn handle_task_add(
 
 /// Handler for the `task complete` subcommand
 ///
-/// Marks a task as completed.
+/// Marks a task as completed in a ticket.
 ///
 /// # Arguments
 ///
-/// * `task_id` - ID of the task to complete
+/// * `task_id` - ID of the task to complete (can be index or UUID)
 /// * `ticket_ref` - Optional ticket ID or slug (defaults to active ticket)
 /// * `project_dir` - Optional project directory path
 /// * `output` - Output formatter for displaying results
@@ -79,91 +79,72 @@ pub fn handle_task_complete(
     project_dir: Option<String>,
     output: &OutputFormatter,
 ) -> Result<()> {
-    // Ensure project is initialized
-    let project_root = find_project_root(project_dir.as_deref())?;
-    let vibe_ticket_dir = project_root.join(".vibe-ticket");
-
-    // Initialize storage
-    let storage = FileStorage::new(&vibe_ticket_dir);
-
-    // Get the active ticket if no ticket specified
-    let ticket_id = if let Some(ref_str) = ticket_ref {
-        resolve_ticket_ref(&storage, &ref_str)?
-    } else {
-        // Get active ticket
-        storage
-            .get_active()?
-            .ok_or(VibeTicketError::NoActiveTicket)?
-    };
-
+    use super::common::{HandlerContext, TicketOperation};
+    
+    // Create handler context
+    let ctx = HandlerContext::new(project_dir.as_deref())?;
+    
     // Load the ticket
-    let mut ticket = storage.load(&ticket_id)?;
-
-    // Parse task ID
-    let task_id = TaskId::parse_str(&task_id)
-        .map_err(|_| VibeTicketError::custom(format!("Invalid task ID: {task_id}")))?;
-
-    // Find and complete the task
-    let mut task_found = false;
-    for task in &mut ticket.tasks {
-        if task.id == task_id {
-            if task.completed {
-                return Err(VibeTicketError::custom("Task is already completed"));
-            }
-            task.completed = true;
-            task.completed_at = Some(Utc::now());
-            task_found = true;
-            break;
+    let mut ticket = ctx.load_ticket(ticket_ref.as_deref())?;
+    
+    // Parse task ID (could be index or UUID)
+    let task_index = if let Ok(index) = task_id.parse::<usize>() {
+        if index == 0 || index > ticket.tasks.len() {
+            return Err(VibeTicketError::InvalidInput(
+                format!("Task index {} is out of range (1-{})", index, ticket.tasks.len())
+            ));
         }
-    }
-
-    if !task_found {
-        return Err(VibeTicketError::custom(format!(
-            "Task '{task_id}' not found in ticket"
-        )));
-    }
-
+        index - 1
+    } else {
+        // Try to find by UUID
+        ticket.tasks.iter().position(|t| t.id.to_string() == task_id)
+            .ok_or_else(|| VibeTicketError::TaskNotFound { id: task_id.clone() })?
+    };
+    
+    // Mark task as completed
+    ticket.tasks[task_index].complete();
+    
     // Save the updated ticket
-    storage.save(&ticket)?;
-
-    // Calculate completion stats
-    let completed_count = ticket.tasks.iter().filter(|t| t.completed).count();
-    let total_count = ticket.tasks.len();
-
+    ctx.save_ticket(&ticket)?;
+    
     // Output results
     if output.is_json() {
         output.print_json(&serde_json::json!({
             "status": "success",
             "ticket_id": ticket.id.to_string(),
             "ticket_slug": ticket.slug,
-            "task_id": task_id.to_string(),
+            "task": {
+                "id": ticket.tasks[task_index].id.to_string(),
+                "title": ticket.tasks[task_index].title.clone(),
+                "completed": true,
+            },
             "progress": {
-                "completed": completed_count,
-                "total": total_count,
-                "percentage": if total_count > 0 { (completed_count * 100) / total_count } else { 0 },
+                "completed": ticket.completed_tasks_count(),
+                "total": ticket.total_tasks_count(),
+                "percentage": ticket.completion_percentage(),
             }
         }))?;
     } else {
         output.success(&format!("Completed task in ticket '{}'", ticket.slug));
+        output.info(&format!("Task: {}", ticket.tasks[task_index].title));
         output.info(&format!(
-            "Progress: {completed_count}/{total_count} tasks completed"
+            "Progress: {}/{} ({}%)",
+            ticket.completed_tasks_count(),
+            ticket.total_tasks_count(),
+            ticket.completion_percentage()
         ));
-
-        if completed_count == total_count && total_count > 0 {
-            output.info("🎉 All tasks completed!");
-        }
     }
-
+    
     Ok(())
 }
 
 /// Handler for the `task uncomplete` subcommand
 ///
-/// Marks a completed task as incomplete.
+/// Marks a task as not completed in a ticket.
 ///
 /// # Arguments
 ///
-/// * `task_id` - ID of the task to uncomplete
+/// * `task_id` - ID of the task to uncomplete (can be index or UUID)
 /// * `ticket_ref` - Optional ticket ID or slug (defaults to active ticket)
 /// * `project_dir` - Optional project directory path
 /// * `output` - Output formatter for displaying results
@@ -173,80 +154,62 @@ pub fn handle_task_uncomplete(
     project_dir: Option<String>,
     output: &OutputFormatter,
 ) -> Result<()> {
-    // Ensure project is initialized
-    let project_root = find_project_root(project_dir.as_deref())?;
-    let vibe_ticket_dir = project_root.join(".vibe-ticket");
-
-    // Initialize storage
-    let storage = FileStorage::new(&vibe_ticket_dir);
-
-    // Get the active ticket if no ticket specified
-    let ticket_id = if let Some(ref_str) = ticket_ref {
-        resolve_ticket_ref(&storage, &ref_str)?
-    } else {
-        // Get active ticket
-        storage
-            .get_active()?
-            .ok_or(VibeTicketError::NoActiveTicket)?
-    };
-
+    use super::common::{HandlerContext, TicketOperation};
+    
+    // Create handler context
+    let ctx = HandlerContext::new(project_dir.as_deref())?;
+    
     // Load the ticket
-    let mut ticket = storage.load(&ticket_id)?;
-
-    // Parse task ID
-    let task_id = TaskId::parse_str(&task_id)
-        .map_err(|_| VibeTicketError::custom(format!("Invalid task ID: {task_id}")))?;
-
-    // Find and uncomplete the task
-    let mut task_found = false;
-    for task in &mut ticket.tasks {
-        if task.id == task_id {
-            if !task.completed {
-                return Err(VibeTicketError::custom("Task is not completed"));
-            }
-            task.completed = false;
-            task.completed_at = None;
-            task_found = true;
-            break;
+    let mut ticket = ctx.load_ticket(ticket_ref.as_deref())?;
+    
+    // Parse task ID (could be index or UUID)
+    let task_index = if let Ok(index) = task_id.parse::<usize>() {
+        if index == 0 || index > ticket.tasks.len() {
+            return Err(VibeTicketError::InvalidInput(
+                format!("Task index {} is out of range (1-{})", index, ticket.tasks.len())
+            ));
         }
-    }
-
-    if !task_found {
-        return Err(VibeTicketError::custom(format!(
-            "Task '{task_id}' not found in ticket"
-        )));
-    }
-
+        index - 1
+    } else {
+        // Try to find by UUID
+        ticket.tasks.iter().position(|t| t.id.to_string() == task_id)
+            .ok_or_else(|| VibeTicketError::TaskNotFound { id: task_id.clone() })?
+    };
+    
+    // Mark task as not completed
+    ticket.tasks[task_index].uncomplete();
+    
     // Save the updated ticket
-    storage.save(&ticket)?;
-
-    // Calculate completion stats
-    let completed_count = ticket.tasks.iter().filter(|t| t.completed).count();
-    let total_count = ticket.tasks.len();
-
+    ctx.save_ticket(&ticket)?;
+    
     // Output results
     if output.is_json() {
         output.print_json(&serde_json::json!({
             "status": "success",
             "ticket_id": ticket.id.to_string(),
             "ticket_slug": ticket.slug,
-            "task_id": task_id.to_string(),
+            "task": {
+                "id": ticket.tasks[task_index].id.to_string(),
+                "title": ticket.tasks[task_index].title.clone(),
+                "completed": false,
+            },
             "progress": {
-                "completed": completed_count,
-                "total": total_count,
-                "percentage": if total_count > 0 { (completed_count * 100) / total_count } else { 0 },
+                "completed": ticket.completed_tasks_count(),
+                "total": ticket.total_tasks_count(),
+                "percentage": ticket.completion_percentage(),
             }
         }))?;
     } else {
-        output.success(&format!(
-            "Marked task as incomplete in ticket '{}'",
-            ticket.slug
-        ));
+        output.success(&format!("Marked task as incomplete in ticket '{}'", ticket.slug));
+        output.info(&format!("Task: {}", ticket.tasks[task_index].title));
         output.info(&format!(
-            "Progress: {completed_count}/{total_count} tasks completed"
+            "Progress: {}/{} ({}%)",
+            ticket.completed_tasks_count(),
+            ticket.total_tasks_count(),
+            ticket.completion_percentage()
         ));
     }
-
+    
     Ok(())
 }
 
@@ -268,82 +231,79 @@ pub fn handle_task_list(
     project_dir: Option<String>,
     output: &OutputFormatter,
 ) -> Result<()> {
-    // Ensure project is initialized
-    let project_root = find_project_root(project_dir.as_deref())?;
-    let vibe_ticket_dir = project_root.join(".vibe-ticket");
-
-    // Initialize storage
-    let storage = FileStorage::new(&vibe_ticket_dir);
-
-    // Get the active ticket if no ticket specified
-    let ticket_id = if let Some(ref_str) = ticket_ref {
-        resolve_ticket_ref(&storage, &ref_str)?
-    } else {
-        // Get active ticket
-        storage
-            .get_active()?
-            .ok_or(VibeTicketError::NoActiveTicket)?
-    };
-
+    use super::common::{HandlerContext, TicketOperation};
+    
+    // Create handler context
+    let ctx = HandlerContext::new(project_dir.as_deref())?;
+    
     // Load the ticket
-    let ticket = storage.load(&ticket_id)?;
-
-    // Filter tasks based on flags
-    let mut tasks: Vec<&Task> = ticket.tasks.iter().collect();
-    if completed_only {
-        tasks.retain(|t| t.completed);
-    } else if incomplete_only {
-        tasks.retain(|t| !t.completed);
-    }
-
-    // Calculate stats
-    let total_count = ticket.tasks.len();
-    let completed_count = ticket.tasks.iter().filter(|t| t.completed).count();
-
+    let ticket = ctx.load_ticket(ticket_ref.as_deref())?;
+    
+    // Filter tasks
+    let tasks: Vec<_> = ticket.tasks.iter().enumerate()
+        .filter(|(_, task)| {
+            if completed_only {
+                task.completed
+            } else if incomplete_only {
+                !task.completed
+            } else {
+                true
+            }
+        })
+        .collect();
+    
     // Output results
     if output.is_json() {
+        let tasks_json: Vec<_> = tasks.iter()
+            .map(|(idx, task)| serde_json::json!({
+                "index": idx + 1,
+                "id": task.id.to_string(),
+                "title": task.title.clone(),
+                "completed": task.completed,
+                "created_at": task.created_at,
+                "completed_at": task.completed_at,
+            }))
+            .collect();
+        
         output.print_json(&serde_json::json!({
             "ticket_id": ticket.id.to_string(),
             "ticket_slug": ticket.slug,
-            "ticket_title": ticket.title,
-            "progress": {
-                "completed": completed_count,
-                "total": total_count,
-                "percentage": if total_count > 0 { (completed_count * 100) / total_count } else { 0 },
-            },
-            "tasks": tasks.iter().map(|t| serde_json::json!({
-                "id": t.id.to_string(),
-                "title": t.title,
-                "completed": t.completed,
-                "created_at": t.created_at,
-                "completed_at": t.completed_at,
-            })).collect::<Vec<_>>(),
+            "tasks": tasks_json,
+            "total": tasks.len(),
+            "completed": ticket.completed_tasks_count(),
+            "percentage": ticket.completion_percentage(),
         }))?;
     } else {
-        output.info(&format!("Tasks for ticket: {}", ticket.slug));
-        output.info(&format!("Title: {}", ticket.title));
-        output.info(&format!(
-            "Progress: {completed_count}/{total_count} completed"
-        ));
-
         if tasks.is_empty() {
-            output.info("\nNo tasks found");
+            let filter_msg = if completed_only {
+                " (completed)"
+            } else if incomplete_only {
+                " (incomplete)"
+            } else {
+                ""
+            };
+            output.info(&format!("No tasks{} in ticket '{}'", filter_msg, ticket.slug));
         } else {
-            output.info("\nTasks:");
-            for task in tasks {
-                let checkbox = if task.completed { "✓" } else { "○" };
-                let status = if task.completed { "(completed)" } else { "" };
-                output.info(&format!(
-                    "  {} [{}] {} {}",
-                    checkbox,
-                    &task.id.to_string()[..8], // Show first 8 chars of ID
-                    task.title,
-                    status
-                ));
+            output.info(&format!("Tasks in ticket '{}':", ticket.slug));
+            output.info(&format!(
+                "Progress: {}/{} ({}%)\n",
+                ticket.completed_tasks_count(),
+                ticket.total_tasks_count(),
+                ticket.completion_percentage()
+            ));
+            
+            for (idx, task) in tasks {
+                let status = if task.completed { "✓" } else { "○" };
+                println!("{} {}. {} - {}", status, idx + 1, task.title, task.id);
+                if task.completed {
+                    if let Some(completed_at) = task.completed_at {
+                        println!("     Completed: {}", completed_at.format("%Y-%m-%d %H:%M"));
+                    }
+                }
             }
         }
     }
-
+    
     Ok(())
 }
 
