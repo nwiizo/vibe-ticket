@@ -334,7 +334,7 @@ fn run(cli: Cli, formatter: &OutputFormatter) -> Result<()> {
             SpecCommands::Requirements {
                 spec,
                 editor,
-                complete,
+                complete: _,
             } => {
                 use vibe_ticket::cli::handlers::handle_spec_requirements;
                 // The function signature has changed after refactoring

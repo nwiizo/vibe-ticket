@@ -3,11 +3,11 @@
 //! This module implements the logic for managing tasks within tickets,
 //! including adding, completing, listing, and removing tasks.
 
-use crate::cli::{OutputFormatter, find_project_root, handlers::resolve_ticket_ref};
+use crate::cli::{OutputFormatter, find_project_root};
+use crate::cli::handlers::common::resolve_ticket_ref;
 use crate::core::{Task, TaskId};
 use crate::error::{Result, VibeTicketError};
 use crate::storage::{ActiveTicketRepository, FileStorage, TicketRepository};
-use chrono::Utc;
 
 /// Handler for the `task add` subcommand
 ///
@@ -63,16 +63,6 @@ pub fn handle_task_add(
     Ok(())
 }
 
-/// Handler for the `task complete` subcommand
-///
-/// Marks a task as completed in a ticket.
-///
-/// # Arguments
-///
-/// * `task_id` - ID of the task to complete (can be index or UUID)
-/// * `ticket_ref` - Optional ticket ID or slug (defaults to active ticket)
-/// * `project_dir` - Optional project directory path
-/// * `output` - Output formatter for displaying results
 pub fn handle_task_complete(
     task_id: String,
     ticket_ref: Option<String>,
@@ -100,6 +90,13 @@ pub fn handle_task_complete(
         ticket.tasks.iter().position(|t| t.id.to_string() == task_id)
             .ok_or_else(|| VibeTicketError::TaskNotFound { id: task_id.clone() })?
     };
+    
+    // Check if task is already completed
+    if ticket.tasks[task_index].completed {
+        return Err(VibeTicketError::InvalidInput(
+            format!("Task '{}' is already completed", ticket.tasks[task_index].title)
+        ));
+    }
     
     // Mark task as completed
     ticket.tasks[task_index].complete();
@@ -505,8 +502,7 @@ mod tests {
 
         // Add a completed task
         let mut task = Task::new("Already completed".to_string());
-        task.completed = true;
-        task.completed_at = Some(Utc::now());
+        task.complete();
         let task_id = task.id.to_string();
         ticket.tasks.push(task);
         storage.save(&ticket).unwrap();
@@ -535,8 +531,7 @@ mod tests {
 
         // Add a completed task
         let mut task = Task::new("Completed task".to_string());
-        task.completed = true;
-        task.completed_at = Some(Utc::now());
+        task.complete();
         let task_id_str = task.id.to_string();
         ticket.tasks.push(task);
         storage.save(&ticket).unwrap();
@@ -566,8 +561,7 @@ mod tests {
         ticket.tasks.push(Task::new("Task 1".to_string()));
         ticket.tasks.push(Task::new("Task 2".to_string()));
         let mut completed_task = Task::new("Completed Task".to_string());
-        completed_task.completed = true;
-        completed_task.completed_at = Some(Utc::now());
+        completed_task.complete();
         ticket.tasks.push(completed_task);
         storage.save(&ticket).unwrap();
 
@@ -591,8 +585,7 @@ mod tests {
         // Add mixed tasks
         ticket.tasks.push(Task::new("Pending Task".to_string()));
         let mut completed_task = Task::new("Completed Task".to_string());
-        completed_task.completed = true;
-        completed_task.completed_at = Some(Utc::now());
+        completed_task.complete();
         ticket.tasks.push(completed_task);
         storage.save(&ticket).unwrap();
 

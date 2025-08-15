@@ -2,13 +2,10 @@ use crate::cli::output::OutputFormatter;
 use crate::error::{Result, VibeTicketError, ErrorContext};
 use crate::specs::{Specification, SpecManager, SpecPhase};
 use std::env;
-use std::path::PathBuf;
 
-/// Common context for spec operations
 pub struct SpecContext {
     pub spec_manager: SpecManager,
     pub formatter: OutputFormatter,
-    pub project_dir: PathBuf,
 }
 
 impl SpecContext {
@@ -32,14 +29,7 @@ impl SpecContext {
         Ok(Self {
             spec_manager,
             formatter,
-            project_dir,
         })
-    }
-    
-    /// Parse tags from comma-separated string
-    pub fn parse_tags(tags: Option<String>) -> Vec<String> {
-        tags.map(|t| t.split(',').map(|s| s.trim().to_string()).collect())
-            .unwrap_or_default()
     }
     
     /// Common success output for spec operations
@@ -65,33 +55,6 @@ impl SpecContext {
             }
             if let Some(ticket) = &spec.metadata.ticket_id {
                 self.formatter.info(&format!("Linked to ticket: {}", ticket));
-            }
-        }
-        Ok(())
-    }
-    
-    /// Common list output for specifications
-    pub fn output_spec_list(&self, specs: Vec<Specification>) -> Result<()> {
-        if self.formatter.is_json() {
-            self.formatter.print_json(&specs)?;
-        } else if specs.is_empty() {
-            self.formatter.info("No specifications found");
-        } else {
-            self.formatter.info(&format!("Found {} specification(s):", specs.len()));
-            for spec in specs {
-                println!("\n{}", "=".repeat(60));
-                println!("Title: {}", spec.metadata.title);
-                println!("ID: {}", spec.metadata.id);
-                println!("Phase: {:?}", spec.metadata.progress.current_phase);
-                if !spec.metadata.description.is_empty() {
-                    println!("Description: {}", spec.metadata.description);
-                }
-                if !spec.metadata.tags.is_empty() {
-                    println!("Tags: {}", spec.metadata.tags.join(", "));
-                }
-                if let Some(ticket) = &spec.metadata.ticket_id {
-                    println!("Ticket: {}", ticket);
-                }
             }
         }
         Ok(())
@@ -170,18 +133,5 @@ impl SpecPhaseHandler for DesignHandler {
     
     fn get_phase_name(&self) -> &str {
         "design"
-    }
-}
-
-/// Implementation for tasks phase
-pub struct TasksHandler;
-
-impl SpecPhaseHandler for TasksHandler {
-    fn get_phase(&self) -> SpecPhase {
-        SpecPhase::Tasks
-    }
-    
-    fn get_phase_name(&self) -> &str {
-        "tasks"
     }
 }

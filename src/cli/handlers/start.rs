@@ -3,7 +3,8 @@
 //! This module implements the logic for starting work on a ticket,
 //! including Git branch creation and status updates.
 
-use crate::cli::{OutputFormatter, find_project_root, handlers::resolve_ticket_ref};
+use crate::cli::{OutputFormatter, find_project_root};
+use crate::cli::handlers::common::resolve_ticket_ref;
 use crate::config::Config;
 use crate::core::Status;
 use crate::error::{Result, VibeTicketError};

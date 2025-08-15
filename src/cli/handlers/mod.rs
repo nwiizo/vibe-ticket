@@ -25,7 +25,6 @@ mod config;
 mod edit;
 mod export;
 mod import;
-mod import_export_common;
 mod init;
 mod list;
 #[cfg(feature = "mcp")]
@@ -38,7 +37,6 @@ mod spec_common;
 mod start;
 mod task;
 mod worktree;
-mod worktree_common;
 
 // Re-export handlers
 pub use archive::handle_archive_command;
@@ -184,78 +182,6 @@ pub fn parse_tags(tags_str: Option<String>) -> Vec<String> {
         .map(|s| s.trim().to_string())
         .filter(|s| !s.is_empty())
         .collect()
-}
-
-/// Resolve a ticket reference (ID, partial ID, or slug) to a ticket ID
-///
-/// This function attempts to find a ticket by:
-/// 1. Full UUID match
-/// 2. Exact slug match
-/// 3. Partial UUID match (prefix)
-///
-/// # Arguments
-///
-/// * `storage` - The storage instance to use
-/// * `ticket_ref` - The ticket reference (UUID, partial UUID, or slug)
-///
-/// # Errors
-///
-/// Returns an error if:
-/// - No ticket is found
-/// - Multiple tickets match a partial UUID
-#[allow(dead_code)]
-pub fn resolve_ticket_ref(
-    storage: &crate::storage::FileStorage,
-    ticket_ref: &str,
-) -> Result<crate::core::TicketId> {
-    use crate::core::TicketId;
-    use crate::error::VibeTicketError;
-    use crate::storage::TicketRepository;
-
-    // First try to parse as full ticket ID
-    if let Ok(ticket_id) = TicketId::parse_str(ticket_ref) {
-        // Verify the ticket exists
-        if storage.load(&ticket_id).is_ok() {
-            return Ok(ticket_id);
-        }
-    }
-
-    // Try to find by partial ID or slug
-    let all_tickets = storage.load_all()?;
-    let mut matches = Vec::new();
-
-    for ticket in all_tickets {
-        // Check if it matches the slug exactly
-        if ticket.slug == ticket_ref {
-            return Ok(ticket.id);
-        }
-
-        // Check if it's a partial ID match
-        let id_str = ticket.id.to_string();
-        if id_str.starts_with(ticket_ref) {
-            matches.push(ticket);
-        }
-    }
-
-    // If we found exactly one match with partial ID, use it
-    if matches.len() == 1 {
-        return Ok(matches[0].id.clone());
-    } else if matches.len() > 1 {
-        // Multiple matches found, return error with suggestions
-        let suggestions: Vec<String> = matches
-            .iter()
-            .map(|t| format!("{} ({})", t.id, t.slug))
-            .collect();
-        return Err(VibeTicketError::custom(format!(
-            "Multiple tickets found matching '{}': {}",
-            ticket_ref,
-            suggestions.join(", ")
-        )));
-    }
-
-    Err(VibeTicketError::TicketNotFound {
-        id: ticket_ref.to_string(),
-    })
 }
 
 /// Validate a slug format

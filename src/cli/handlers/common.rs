@@ -3,6 +3,7 @@ use crate::core::Ticket;
 use crate::error::{Result, VibeTicketError};
 use crate::storage::FileStorage;
 use uuid::Uuid;
+use crate::core::TicketId;
 
 /// Common context for all handler operations
 pub struct HandlerContext {
@@ -35,40 +36,38 @@ pub trait TicketOperation {
     fn save_ticket(&self, ticket: &Ticket) -> Result<()>;
     
     /// Resolve ticket reference to ID
-    fn resolve_ticket_ref(&self, ticket_ref: &str) -> Result<Uuid>;
+    fn resolve_ticket_ref(&self, ticket_ref: &str) -> Result<TicketId>;
     
     /// Get active ticket ID
-    fn get_active_ticket_id(&self) -> Result<Uuid>;
+    fn get_active_ticket_id(&self) -> Result<TicketId>;
 }
 
 impl TicketOperation for HandlerContext {
     fn load_ticket(&self, ticket_ref: Option<&str>) -> Result<Ticket> {
-        use crate::core::TicketId;
-        
         let ticket_id = if let Some(ref_str) = ticket_ref {
             self.resolve_ticket_ref(ref_str)?
         } else {
             self.get_active_ticket_id()?
         };
         
-        self.storage.load_ticket(&TicketId::from_uuid(ticket_id))
+        self.storage.load_ticket(&ticket_id)
     }
     
     fn save_ticket(&self, ticket: &Ticket) -> Result<()> {
         self.storage.save_ticket(ticket)
     }
     
-    fn resolve_ticket_ref(&self, ticket_ref: &str) -> Result<Uuid> {
+    fn resolve_ticket_ref(&self, ticket_ref: &str) -> Result<TicketId> {
         // Try to parse as UUID first
         if let Ok(id) = Uuid::parse_str(ticket_ref) {
-            return Ok(id);
+            return Ok(TicketId::from_uuid(id));
         }
         
         // Try to find by slug
         let tickets = self.storage.load_all_tickets()?;
         for ticket in tickets {
             if ticket.slug == ticket_ref {
-                return Ok(*ticket.id.as_uuid());
+                return Ok(ticket.id);
             }
         }
         
@@ -77,27 +76,25 @@ impl TicketOperation for HandlerContext {
         })
     }
     
-    fn get_active_ticket_id(&self) -> Result<Uuid> {
-        let ticket_id = self.storage
+    fn get_active_ticket_id(&self) -> Result<TicketId> {
+        self.storage
             .get_active_ticket()?
-            .ok_or(VibeTicketError::NoActiveTicket)?;
-        Ok(*ticket_id.as_uuid())
+            .ok_or(VibeTicketError::NoActiveTicket)
     }
 }
 
 /// Helper function to resolve ticket reference using storage
-#[allow(dead_code)]
-pub fn resolve_ticket_ref(storage: &FileStorage, ticket_ref: &str) -> Result<Uuid> {
+pub fn resolve_ticket_ref(storage: &FileStorage, ticket_ref: &str) -> Result<TicketId> {
     // Try to parse as UUID first
     if let Ok(id) = Uuid::parse_str(ticket_ref) {
-        return Ok(id);
+        return Ok(TicketId::from_uuid(id));
     }
     
     // Try to find by slug
     let tickets = storage.load_all_tickets()?;
     for ticket in tickets {
         if ticket.slug == ticket_ref {
-            return Ok(*ticket.id.as_uuid());
+            return Ok(ticket.id);
         }
     }
     

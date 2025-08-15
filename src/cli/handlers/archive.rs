@@ -2,7 +2,8 @@
 //!
 //! This module implements the logic for archiving and unarchiving tickets.
 
-use crate::cli::{OutputFormatter, find_project_root, handlers::resolve_ticket_ref};
+use crate::cli::{OutputFormatter, find_project_root};
+use crate::cli::handlers::common::resolve_ticket_ref;
 use crate::error::{Result, VibeTicketError};
 use crate::storage::{ActiveTicketRepository, FileStorage, TicketRepository};
 

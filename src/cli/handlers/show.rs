@@ -3,7 +3,8 @@
 //! This module implements the logic for displaying detailed information
 //! about a specific ticket, including tasks and history.
 
-use crate::cli::{OutputFormatter, find_project_root, handlers::resolve_ticket_ref};
+use crate::cli::{OutputFormatter, find_project_root};
+use crate::cli::handlers::common::resolve_ticket_ref;
 use crate::error::Result;
 use crate::storage::{FileStorage, TicketRepository};
 use chrono::{DateTime, Local, Utc};
