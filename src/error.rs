@@ -99,6 +99,13 @@ pub enum VibeTicketError {
     /// Generic error with custom message
     #[error("{0}")]
     Custom(String),
+    /// Parse error for data formats
+    #[error("Parse error: {0}")]
+    ParseError(String),
+
+    /// Serialization error for data formats
+    #[error("Serialization error: {0}")]
+    SerializationError(String),
 }
 
 /// Result type alias for vibe-ticket operations

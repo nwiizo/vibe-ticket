@@ -111,6 +111,14 @@ impl TryFrom<&str> for Priority {
     }
 }
 
+impl std::str::FromStr for Priority {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::try_from(s).map_err(|_| format!("Invalid priority: {}", s))
+    }
+}
+
 impl From<u8> for Priority {
     fn from(value: u8) -> Self {
         match value {

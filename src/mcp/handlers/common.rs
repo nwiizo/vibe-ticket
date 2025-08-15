@@ -1,11 +1,21 @@
-#[cfg(feature = "mcp")]
-use rmcp::protocol::{CallToolResult, TextContent};
 
 use crate::error::Result;
 use crate::storage::FileStorage;
 use crate::core::Ticket;
 use serde_json::Value;
 use std::path::Path;
+
+// Placeholder types for MCP - these should be replaced with actual MCP types when available
+#[cfg(not(feature = "mcp"))]
+pub struct CallToolResult {
+    pub content: Vec<String>,
+}
+
+#[cfg(not(feature = "mcp"))]
+pub struct TextContent {
+    pub type_: String,
+    pub text: String,
+}
 
 /// Common MCP handler context
 pub struct McpContext {
@@ -21,36 +31,23 @@ impl McpContext {
     }
     
     /// Create success result
-    #[cfg(feature = "mcp")]
     pub fn success_result(message: impl Into<String>) -> CallToolResult {
         CallToolResult {
-            content: vec![TextContent {
-                type_: "text".to_string(),
-                text: message.into(),
-            }
-            .into()],
+            content: vec![message.into()],
         }
     }
     
     /// Create error result
     pub fn error_result(error: impl std::fmt::Display) -> CallToolResult {
         CallToolResult {
-            content: vec![TextContent {
-                type_: "text".to_string(),
-                text: format!("Error: {}", error),
-            }
-            .into()],
+            content: vec![format!("Error: {}", error)],
         }
     }
     
     /// Create JSON result
     pub fn json_result(value: &Value) -> CallToolResult {
         CallToolResult {
-            content: vec![TextContent {
-                type_: "text".to_string(),
-                text: serde_json::to_string_pretty(value).unwrap_or_else(|e| format!("Error serializing JSON: {}", e)),
-            }
-            .into()],
+            content: vec![serde_json::to_string_pretty(value).unwrap_or_else(|e| format!("Error serializing JSON: {}", e))],
         }
     }
 }

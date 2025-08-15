@@ -24,11 +24,11 @@ impl WorktreeOperations {
         let output = Command::new("git")
             .args(["worktree", "list", "--porcelain"])
             .output()
-            .map_err(|e| VibeTicketError::GitError(format!("Failed to list worktrees: {}", e)))?;
+            .map_err(|e| VibeTicketError::Custom(format!("Failed to list worktrees: {}", e)))?;
         
         if !output.status.success() {
             let error = String::from_utf8_lossy(&output.stderr);
-            return Err(VibeTicketError::GitError(format!("git worktree list failed: {}", error)));
+            return Err(VibeTicketError::Custom(format!("git worktree list failed: {}", error)));
         }
         
         let stdout = String::from_utf8_lossy(&output.stdout);
@@ -114,11 +114,11 @@ impl WorktreeOperations {
         let output = Command::new("git")
             .args(&args)
             .output()
-            .map_err(|e| VibeTicketError::GitError(format!("Failed to remove worktree: {}", e)))?;
+            .map_err(|e| VibeTicketError::Custom(format!("Failed to remove worktree: {}", e)))?;
         
         if !output.status.success() {
             let error = String::from_utf8_lossy(&output.stderr);
-            return Err(VibeTicketError::GitError(format!("git worktree remove failed: {}", error)));
+            return Err(VibeTicketError::Custom(format!("git worktree remove failed: {}", error)));
         }
         
         Ok(())
@@ -129,11 +129,11 @@ impl WorktreeOperations {
         let output = Command::new("git")
             .args(["worktree", "prune"])
             .output()
-            .map_err(|e| VibeTicketError::GitError(format!("Failed to prune worktrees: {}", e)))?;
+            .map_err(|e| VibeTicketError::Custom(format!("Failed to prune worktrees: {}", e)))?;
         
         if !output.status.success() {
             let error = String::from_utf8_lossy(&output.stderr);
-            return Err(VibeTicketError::GitError(format!("git worktree prune failed: {}", error)));
+            return Err(VibeTicketError::Custom(format!("git worktree prune failed: {}", error)));
         }
         
         Ok(())
@@ -144,7 +144,7 @@ impl WorktreeOperations {
         let output = Command::new("git")
             .args(["-C", path.to_str().unwrap_or("."), "status", "--porcelain"])
             .output()
-            .map_err(|e| VibeTicketError::GitError(format!("Failed to check git status: {}", e)))?;
+            .map_err(|e| VibeTicketError::Custom(format!("Failed to check git status: {}", e)))?;
         
         if !output.status.success() {
             return Ok(false); // Assume no changes if status fails
@@ -158,11 +158,11 @@ impl WorktreeOperations {
         let output = Command::new("git")
             .args(["-C", path.to_str().unwrap_or("."), "branch", "--show-current"])
             .output()
-            .map_err(|e| VibeTicketError::GitError(format!("Failed to get current branch: {}", e)))?;
+            .map_err(|e| VibeTicketError::Custom(format!("Failed to get current branch: {}", e)))?;
         
         if !output.status.success() {
             let error = String::from_utf8_lossy(&output.stderr);
-            return Err(VibeTicketError::GitError(format!("Failed to get branch: {}", error)));
+            return Err(VibeTicketError::Custom(format!("Failed to get branch: {}", error)));
         }
         
         Ok(String::from_utf8_lossy(&output.stdout).trim().to_string())

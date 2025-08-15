@@ -226,7 +226,7 @@ pub fn validate_tickets(tickets: &[Ticket]) -> Result<()> {
     for ticket in tickets {
         if !seen_ids.insert(ticket.id) {
             return Err(VibeTicketError::DuplicateTicket {
-                id: ticket.id.to_string()
+                slug: ticket.slug.clone()
             });
         }
     }
@@ -236,7 +236,7 @@ pub fn validate_tickets(tickets: &[Ticket]) -> Result<()> {
     for ticket in tickets {
         if !seen_slugs.insert(&ticket.slug) {
             return Err(VibeTicketError::DuplicateTicket {
-                id: ticket.slug.clone()
+                slug: ticket.slug.clone()
             });
         }
     }
