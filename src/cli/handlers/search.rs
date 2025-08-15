@@ -27,6 +27,11 @@ use regex::Regex;
 /// * `use_regex` - Treat query as a regex pattern
 /// * `project_dir` - Optional project directory path
 /// * `output` - Output formatter for displaying results
+///
+/// # Panics
+///
+/// Panics if regex compilation fails when use_regex is true
+#[allow(clippy::too_many_lines)]
 pub fn handle_search_command(
     query: &str,
     title_only: bool,
