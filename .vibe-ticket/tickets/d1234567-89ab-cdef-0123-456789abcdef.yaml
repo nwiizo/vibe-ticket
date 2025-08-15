@@ -3,15 +3,26 @@ slug: yaml-test-1
 title: YAML Import Test 1
 description: Testing YAML import functionality
 priority: critical
-status: review
+status: done
 tags:
 - yaml
 - import-test
 created_at: 2025-07-28T15:20:00Z
 started_at: 2025-07-28T15:25:00Z
-closed_at: null
+closed_at: 2025-08-15T00:50:21.634256Z
 assignee: yaml-tester
-tasks: []
+tasks:
+- id: ca883346-676c-47e3-bfd5-c7d695c6f9ec
+  title: YAMLインポート機能のレビュー
+  completed: true
+  created_at: 2025-08-15T00:49:54.650460Z
+  completed_at: 2025-08-15T00:50:11.877946Z
+- id: a482b8ca-4a35-45f0-ac5f-be2145ffba65
+  title: テスト結果の確認と承認
+  completed: true
+  created_at: 2025-08-15T00:50:00.183963Z
+  completed_at: 2025-08-15T00:50:16.766322Z
 metadata:
-  format: yaml
+  closing_message: YAMLインポート/エクスポート機能のレビュー完了。6個のYAMLテストが全て成功
   version: '1.0'
+  format: yaml
