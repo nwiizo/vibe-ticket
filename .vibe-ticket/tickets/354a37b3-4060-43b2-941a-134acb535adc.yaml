@@ -1,0 +1,23 @@
+id: 354a37b3-4060-43b2-941a-134acb535adc
+slug: fix-remaining-clippy-warnings
+title: Fix 64 remaining clippy warnings that reappeared
+description: |-
+  Complete the clippy warning fixes that were incomplete in the previous PR. This includes:
+  - Functions with too many lines (edit.rs, search.rs, templates.rs, tickets.rs)
+  - Redundant closures and needless borrows
+  - Inefficient argument passing
+  - Missing panic documentation
+  - Large futures warnings
+  - Other minor issues
+priority: critical
+status: todo
+tags:
+- bug-fix
+- code-quality
+- clippy
+created_at: 2025-08-15T15:49:29.316254Z
+started_at: null
+closed_at: null
+assignee: null
+tasks: []
+metadata: {}

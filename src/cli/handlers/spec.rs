@@ -729,10 +729,10 @@ mod tests {
 
         let formatter = create_test_formatter();
         let result = handle_spec_init(
-            "Test Spec".to_string(),
-            Some("Test description".to_string()),
+            "Test Spec",
+            Some("Test description"),
             None,
-            Some("test,spec".to_string()),
+            Some("test,spec"),
             None,
             &formatter,
         );
@@ -757,7 +757,7 @@ mod tests {
         std::env::set_current_dir(temp_dir.path()).unwrap();
 
         let formatter = create_test_formatter();
-        let result = handle_spec_init("Test Spec".to_string(), None, None, None, None, &formatter);
+        let result = handle_spec_init("Test Spec", None, None, None, None, &formatter);
 
         assert!(result.is_err());
         assert!(matches!(
@@ -796,8 +796,8 @@ mod tests {
 
         // Initialize spec
         let result = handle_spec_init(
-            "Lifecycle Test".to_string(),
-            Some("Testing spec lifecycle".to_string()),
+            "Lifecycle Test",
+            Some("Testing spec lifecycle"),
             None,
             None,
             None,
@@ -825,7 +825,7 @@ mod tests {
         let formatter = create_test_formatter();
 
         // Try delete without force (should just show warning)
-        let result = handle_spec_delete("test-spec".to_string(), false, None, &formatter);
+        let result = handle_spec_delete("test-spec", false, None, &formatter);
         assert!(result.is_ok()); // Doesn't actually delete without force
     }
 
@@ -841,7 +841,7 @@ mod tests {
 
         // Create a spec first
         handle_spec_init(
-            "Approve Test".to_string(),
+            "Approve Test",
             None,
             None,
             None,
@@ -852,8 +852,8 @@ mod tests {
 
         // Try to approve with invalid phase
         let result = handle_spec_approve(
-            "test-spec".to_string(),
-            "invalid-phase".to_string(),
+            "test-spec",
+            "invalid-phase",
             None,
             None,
             &formatter,
