@@ -329,7 +329,14 @@ fn run(cli: Cli, formatter: &OutputFormatter) -> Result<()> {
                 tags,
             } => {
                 use vibe_ticket::cli::handlers::handle_spec_init;
-                handle_spec_init(&title, description.as_deref(), ticket.as_deref(), tags.as_deref(), cli.project.as_deref(), formatter)
+                handle_spec_init(
+                    &title,
+                    description.as_deref(),
+                    ticket.as_deref(),
+                    tags.as_deref(),
+                    cli.project.as_deref(),
+                    formatter,
+                )
             },
             SpecCommands::Requirements {
                 spec,

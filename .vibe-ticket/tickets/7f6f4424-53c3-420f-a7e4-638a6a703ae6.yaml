@@ -1,0 +1,13 @@
+id: 7f6f4424-53c3-420f-a7e4-638a6a703ae6
+slug: test-mcp-worktree
+title: Test worktree creation via MCP
+description: Testing if worktree is created when starting a ticket through MCP
+priority: medium
+status: doing
+tags: []
+created_at: 2025-08-15T15:56:22.005875Z
+started_at: 2025-08-15T15:56:26.649994Z
+closed_at: null
+assignee: null
+tasks: []
+metadata: {}

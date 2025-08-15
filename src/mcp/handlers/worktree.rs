@@ -140,8 +140,7 @@ pub fn handle_remove(service: &VibeTicketService, arguments: Value) -> Result<Va
         serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
     // Resolve ticket to get the worktree path
-    let ticket_id =
-        crate::mcp::handlers::tickets::resolve_ticket_ref(service, &args.ticket)?;
+    let ticket_id = crate::mcp::handlers::tickets::resolve_ticket_ref(service, &args.ticket)?;
     let ticket = service
         .storage
         .load(&ticket_id)

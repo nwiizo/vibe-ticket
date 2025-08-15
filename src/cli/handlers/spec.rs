@@ -46,7 +46,7 @@ pub fn handle_spec_init(
     let spec = Specification::new(
         title.to_string(),
         description.unwrap_or_default().to_string(),
-        ticket.map(|s| s.to_string()),
+        ticket.map(std::string::ToString::to_string),
         tag_list,
     );
 
@@ -840,24 +840,10 @@ mod tests {
         let formatter = create_test_formatter();
 
         // Create a spec first
-        handle_spec_init(
-            "Approve Test",
-            None,
-            None,
-            None,
-            None,
-            &formatter,
-        )
-        .unwrap();
+        handle_spec_init("Approve Test", None, None, None, None, &formatter).unwrap();
 
         // Try to approve with invalid phase
-        let result = handle_spec_approve(
-            "test-spec",
-            "invalid-phase",
-            None,
-            None,
-            &formatter,
-        );
+        let result = handle_spec_approve("test-spec", "invalid-phase", None, None, &formatter);
 
         assert!(result.is_err());
     }

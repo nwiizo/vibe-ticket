@@ -56,7 +56,12 @@ impl TicketCache {
     /// Gets a single ticket from cache
     #[must_use]
     pub fn get_ticket(&self, id: &TicketId) -> Option<Ticket> {
-        let entry = self.cache.read().ok()?.get(&CacheKey::Ticket(id.clone()))?.clone();
+        let entry = self
+            .cache
+            .read()
+            .ok()?
+            .get(&CacheKey::Ticket(id.clone()))?
+            .clone();
 
         if self.is_expired(&entry.timestamp) {
             return None;

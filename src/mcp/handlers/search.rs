@@ -188,8 +188,7 @@ pub fn handle_export(service: &VibeTicketService, arguments: Value) -> Result<Va
 
     let tickets = if let Some(ticket_ref) = args.ticket {
         // Export specific ticket
-        let ticket_id =
-            crate::mcp::handlers::tickets::resolve_ticket_ref(service, &ticket_ref)?;
+        let ticket_id = crate::mcp::handlers::tickets::resolve_ticket_ref(service, &ticket_ref)?;
         let ticket = service
             .storage
             .load(&ticket_id)

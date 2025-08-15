@@ -38,7 +38,7 @@ pub fn handle_check_command(
 ) -> Result<()> {
     // Gather all data
     let check_data = gather_check_data(detailed, stats, project_dir)?;
-    
+
     // Output results
     if output.is_json() {
         output_json(&check_data, output)?;
@@ -64,7 +64,7 @@ fn gather_check_data(detailed: bool, stats: bool, project_dir: Option<&str>) -> 
     let project_root = find_project_root(project_dir)?;
     let vibe_ticket_dir = project_root.join(".vibe-ticket");
     let storage = FileStorage::new(&vibe_ticket_dir);
-    
+
     let project_state = storage.load_state()?;
     let active_ticket_id = storage.get_active()?;
     let active_ticket = if let Some(id) = &active_ticket_id {
@@ -72,20 +72,20 @@ fn gather_check_data(detailed: bool, stats: bool, project_dir: Option<&str>) -> 
     } else {
         None
     };
-    
+
     let current_branch = get_current_git_branch(&project_root);
     let statistics = if stats || detailed {
         Some(calculate_statistics(&storage)?)
     } else {
         None
     };
-    
+
     let recent_tickets = if detailed {
         get_recent_tickets(&storage, 5)?
     } else {
         vec![]
     };
-    
+
     Ok(CheckData {
         project_root,
         project_state,
@@ -132,26 +132,29 @@ fn output_text(data: &CheckData, detailed: bool, output: &OutputFormatter) {
         output.info(&format!("Description: {desc}"));
     }
     output.info(&format!("Path: {}", data.project_root.display()));
-    output.info(&format!("Created: {}", format_datetime(data.project_state.created_at)));
-    
+    output.info(&format!(
+        "Created: {}",
+        format_datetime(data.project_state.created_at)
+    ));
+
     if let Some(branch) = &data.current_branch {
         output.info(&format!("Git branch: {branch}"));
     }
-    
+
     output.info("");
-    
+
     // Active ticket
     if let Some(ticket) = &data.active_ticket {
         display_active_ticket(ticket, output);
     } else {
         output.info("No active ticket");
     }
-    
+
     // Statistics
     if let Some(stats) = &data.statistics {
         display_statistics(stats, detailed, output);
     }
-    
+
     // Recent tickets
     if detailed && !data.recent_tickets.is_empty() {
         display_recent_tickets(&data.recent_tickets, output);
@@ -166,14 +169,14 @@ fn display_active_ticket(ticket: &Ticket, output: &OutputFormatter) {
     output.info(&format!("  Title: {}", ticket.title));
     output.info(&format!("  Status: {}", ticket.status));
     output.info(&format!("  Priority: {}", ticket.priority));
-    
+
     if let Some(started_at) = ticket.started_at {
         let duration = Utc::now() - started_at;
         let hours = duration.num_hours();
         let minutes = duration.num_minutes() % 60;
         output.info(&format!("  Time spent: {hours}h {minutes}m"));
     }
-    
+
     if !ticket.tasks.is_empty() {
         let completed = ticket.tasks.iter().filter(|t| t.completed).count();
         output.info(&format!("  Tasks: {}/{}", completed, ticket.tasks.len()));
@@ -190,7 +193,7 @@ fn display_statistics(stats: &Statistics, detailed: bool, output: &OutputFormatt
     output.info(&format!("  In review: {}", stats.review));
     output.info(&format!("  Blocked: {}", stats.blocked));
     output.info(&format!("  Done: {}", stats.done));
-    
+
     if detailed {
         output.info("");
         output.info("Priority breakdown:");

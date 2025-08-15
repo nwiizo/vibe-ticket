@@ -594,11 +594,99 @@ pub fn handle_start(service: &VibeTicketService, arguments: Value) -> Result<Val
 
     // Handle worktree creation if not disabled
     if !args.no_worktree.unwrap_or(false) {
-        // Note: Actual worktree creation would require Git integration
-        response["worktree_note"] = json!("Worktree creation should be handled by CLI");
+        // Load config to check worktree settings
+        let config = crate::config::Config::load_or_default()
+            .map_err(|e| format!("Failed to load config: {e}"))?;
+        
+        if config.git.enabled && config.git.worktree_enabled && config.git.worktree_default {
+            // Create branch name
+            let branch_name = format!("{}{}", config.git.branch_prefix, ticket.slug);
+            
+            // Try to create worktree
+            match create_git_worktree_mcp(&branch_name, &ticket.slug, &config) {
+                Ok(worktree_path) => {
+                    response["worktree_created"] = json!(true);
+                    response["worktree_path"] = json!(worktree_path);
+                    response["branch_name"] = json!(branch_name);
+                },
+                Err(e) => {
+                    response["worktree_note"] = json!(format!("Worktree creation failed: {}", e));
+                }
+            }
+        } else {
+            response["worktree_note"] = json!("Worktree creation disabled in config");
+        }
     }
 
     Ok(response)
+}
+
+/// Create a Git worktree for the ticket (MCP version)
+fn create_git_worktree_mcp(
+    branch_name: &str,
+    ticket_slug: &str,
+    config: &crate::config::Config,
+) -> Result<String, String> {
+    use std::process::Command;
+
+    // Get project root
+    let project_root = std::env::current_dir()
+        .map_err(|e| format!("Failed to get current directory: {e}"))?;
+
+    // Check if we're in a git repository
+    let status = Command::new("git")
+        .args(["status"])
+        .output()
+        .map_err(|e| format!("Failed to run git status: {e}"))?;
+
+    if !status.status.success() {
+        return Err("Not in a git repository".to_string());
+    }
+
+    // Check if branch already exists
+    let branch_exists = Command::new("git")
+        .args(["show-ref", "--verify", "--quiet", &format!("refs/heads/{branch_name}")])
+        .output()
+        .map_err(|e| format!("Failed to check if branch exists: {e}"))?
+        .status
+        .success();
+
+    // Create worktree directory path
+    let worktree_prefix = config
+        .git
+        .worktree_prefix
+        .replace("{project}", &config.project.name);
+    let worktree_dir = format!("{worktree_prefix}{ticket_slug}");
+    let worktree_path = project_root
+        .parent()
+        .unwrap_or(&project_root)
+        .join(&worktree_dir);
+
+    // Check if worktree already exists
+    if worktree_path.exists() {
+        return Err(format!("Worktree directory already exists: {}", worktree_path.display()));
+    }
+
+    // Create worktree with new or existing branch
+    let mut cmd = Command::new("git");
+    cmd.arg("worktree").arg("add");
+    
+    if !branch_exists {
+        cmd.arg("-b");
+    }
+    
+    cmd.arg(&worktree_path).arg(branch_name);
+
+    let output = cmd
+        .output()
+        .map_err(|e| format!("Failed to create worktree: {e}"))?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        return Err(format!("Failed to create worktree: {stderr}"));
+    }
+
+    Ok(worktree_path.to_string_lossy().to_string())
 }
 
 /// Handle checking current status

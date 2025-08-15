@@ -158,10 +158,7 @@ pub fn handle_add(service: &VibeTicketService, arguments: Value) -> Result<Value
 }
 
 /// Handle completing a task
-pub fn handle_complete(
-    service: &VibeTicketService,
-    arguments: Value,
-) -> Result<Value, String> {
+pub fn handle_complete(service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
     #[derive(Deserialize)]
     struct Args {
         task_id: String,

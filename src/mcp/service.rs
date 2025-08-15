@@ -97,33 +97,42 @@ impl ServerHandler for VibeTicketService {
                     crate::mcp::handlers::tickets::handle_list(&service, arguments)
                 },
                 "vibe-ticket_show" => {
-                    crate::mcp::handlers::tickets::handle_show(&service, arguments)                },
+                    crate::mcp::handlers::tickets::handle_show(&service, arguments)
+                },
                 "vibe-ticket_edit" => {
-                    crate::mcp::handlers::tickets::handle_edit(&service, arguments)                },
+                    crate::mcp::handlers::tickets::handle_edit(&service, arguments)
+                },
                 "vibe-ticket_close" => {
-                    crate::mcp::handlers::tickets::handle_close(&service, arguments)                },
+                    crate::mcp::handlers::tickets::handle_close(&service, arguments)
+                },
                 "vibe-ticket_start" => {
-                    crate::mcp::handlers::tickets::handle_start(&service, arguments)                },
+                    crate::mcp::handlers::tickets::handle_start(&service, arguments)
+                },
                 "vibe-ticket_check" => {
                     crate::mcp::handlers::tickets::handle_check(&service, arguments)
                 },
 
                 // Task operations
                 "vibe-ticket_task_add" => {
-                    crate::mcp::handlers::tasks::handle_add(&service, arguments)                },
+                    crate::mcp::handlers::tasks::handle_add(&service, arguments)
+                },
                 "vibe-ticket_task_complete" => {
-                    crate::mcp::handlers::tasks::handle_complete(&service, arguments)                },
+                    crate::mcp::handlers::tasks::handle_complete(&service, arguments)
+                },
                 "vibe-ticket_task_list" => {
-                    crate::mcp::handlers::tasks::handle_list(&service, arguments)                },
+                    crate::mcp::handlers::tasks::handle_list(&service, arguments)
+                },
                 "vibe-ticket_task_remove" => {
-                    crate::mcp::handlers::tasks::handle_remove(&service, arguments)                },
+                    crate::mcp::handlers::tasks::handle_remove(&service, arguments)
+                },
 
                 // Worktree operations
                 "vibe-ticket_worktree_list" => {
                     crate::mcp::handlers::worktree::handle_list(&service, arguments)
                 },
                 "vibe-ticket_worktree_remove" => {
-                    crate::mcp::handlers::worktree::handle_remove(&service, arguments)                },
+                    crate::mcp::handlers::worktree::handle_remove(&service, arguments)
+                },
                 "vibe-ticket_worktree_prune" => {
                     crate::mcp::handlers::worktree::handle_prune(&service, arguments)
                 },
@@ -133,7 +142,8 @@ impl ServerHandler for VibeTicketService {
                     crate::mcp::handlers::search::handle_search(&service, arguments)
                 },
                 "vibe-ticket_export" => {
-                    crate::mcp::handlers::search::handle_export(&service, arguments)                },
+                    crate::mcp::handlers::search::handle_export(&service, arguments)
+                },
                 "vibe-ticket_import" => {
                     crate::mcp::handlers::search::handle_import(&service, arguments)
                 },
@@ -148,11 +158,14 @@ impl ServerHandler for VibeTicketService {
 
                 // Spec operations
                 "vibe-ticket_spec_add" => {
-                    crate::mcp::handlers::spec::handle_add(&service, arguments)                },
+                    crate::mcp::handlers::spec::handle_add(&service, arguments)
+                },
                 "vibe-ticket_spec_update" => {
-                    crate::mcp::handlers::spec::handle_update(&service, arguments)                },
+                    crate::mcp::handlers::spec::handle_update(&service, arguments)
+                },
                 "vibe-ticket_spec_check" => {
-                    crate::mcp::handlers::spec::handle_check(&service, arguments)                },
+                    crate::mcp::handlers::spec::handle_check(&service, arguments)
+                },
 
                 _ => Err(format!("Unknown tool: {name}")),
             };

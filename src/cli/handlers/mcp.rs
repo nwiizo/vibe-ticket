@@ -30,10 +30,10 @@ pub fn handle_mcp_serve(
     // Get storage path
     let storage_path = project_path.map_or_else(
         || PathBuf::from(".vibe-ticket"),
-        |path| PathBuf::from(path).join(".vibe-ticket")
+        |path| PathBuf::from(path).join(".vibe-ticket"),
     );
 
-    mcp_config.storage_path = storage_path.clone();
+    mcp_config.storage_path.clone_from(&storage_path);
 
     // Create storage
     let storage = FileStorage::new(storage_path);

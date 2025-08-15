@@ -317,7 +317,11 @@ impl ProgressBar {
 
     /// Draws the progress bar
     fn draw(&self) {
-        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss, clippy::cast_precision_loss)]
+        #[allow(
+            clippy::cast_possible_truncation,
+            clippy::cast_sign_loss,
+            clippy::cast_precision_loss
+        )]
         let percentage = (self.current as f32 / self.total as f32 * 100.0) as u32;
         let filled = (percentage as usize * 30) / 100;
         let empty = 30 - filled;

@@ -58,13 +58,16 @@ pub fn handle_init(
     }
 
     // Determine project name
-    let project_name = name.map(ToString::to_string).unwrap_or_else(|| {
-        current_dir
-            .file_name()
-            .and_then(|n| n.to_str())
-            .unwrap_or("vibe-ticket-project")
-            .to_string()
-    });
+    let project_name = name.map_or_else(
+        || {
+            current_dir
+                .file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or("vibe-ticket-project")
+                .to_string()
+        },
+        ToString::to_string,
+    );
 
     // Start progress
     let progress = formatter.progress_bar("Initializing project");

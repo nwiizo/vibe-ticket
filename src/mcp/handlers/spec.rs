@@ -94,8 +94,7 @@ pub fn handle_add(service: &VibeTicketService, arguments: Value) -> Result<Value
     let args: Args =
         serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
-    let ticket_id =
-        crate::mcp::handlers::tickets::resolve_ticket_ref(service, &args.ticket)?;
+    let ticket_id = crate::mcp::handlers::tickets::resolve_ticket_ref(service, &args.ticket)?;
     let mut ticket = service
         .storage
         .load(&ticket_id)
@@ -145,8 +144,7 @@ pub fn handle_check(service: &VibeTicketService, arguments: Value) -> Result<Val
     let args: Args =
         serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
-    let ticket_id =
-        crate::mcp::handlers::tickets::resolve_ticket_ref(service, &args.ticket)?;
+    let ticket_id = crate::mcp::handlers::tickets::resolve_ticket_ref(service, &args.ticket)?;
     let ticket = service
         .storage
         .load(&ticket_id)
