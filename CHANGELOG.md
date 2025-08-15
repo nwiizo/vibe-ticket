@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.3] - 2025-08-15
+
+### Changed
+- Major refactoring to remove unused code and improve maintainability
+- Removed 587 lines of unused code while maintaining all functionality
+- Unified type handling to use TicketId consistently throughout the codebase
+- Cleaned up spec_common.rs by removing unused fields and methods
+
+### Removed
+- `import_export_common.rs` module (completely unused)
+- `worktree_common.rs` module (duplicate functionality)
+- Unused TasksHandler struct and implementation
+- Unused parse_tags and output_spec_list methods from SpecContext
+- Unused project_dir field from SpecContext
+- Unused PathBuf import from spec_common
+
+### Fixed
+- Type mismatches between Uuid and TicketId in handler functions
+- Trait method signature inconsistencies in common.rs
+- Unused variable warnings in main.rs
+- Removed unused chrono::Utc imports from task handler
+- Fixed test code to use proper task completion methods
+
 ## [0.3.2] - 2025-08-15
 
 ### Changed
