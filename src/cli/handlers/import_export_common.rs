@@ -224,7 +224,7 @@ pub fn validate_tickets(tickets: &[Ticket]) -> Result<()> {
     // Check for duplicate IDs
     let mut seen_ids = std::collections::HashSet::new();
     for ticket in tickets {
-        if !seen_ids.insert(ticket.id) {
+        if !seen_ids.insert(ticket.id.clone()) {
             return Err(VibeTicketError::DuplicateTicket {
                 slug: ticket.slug.clone()
             });

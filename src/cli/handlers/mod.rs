@@ -37,6 +37,7 @@ mod spec;
 mod spec_common;
 mod start;
 mod task;
+mod task_common;
 mod worktree;
 mod worktree_common;
 

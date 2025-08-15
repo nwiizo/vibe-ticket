@@ -256,7 +256,7 @@ fn run(cli: Cli, formatter: &OutputFormatter) -> Result<()> {
                 force,
             } => {
                 use vibe_ticket::cli::handlers::handle_task_remove;
-                handle_task_remove(task, ticket, force, cli.project, formatter)
+                handle_task_remove(task, ticket, cli.project, formatter)
             },
         },
 

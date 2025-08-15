@@ -3,11 +3,8 @@
 //! This module implements the logic for managing tasks within tickets,
 //! including adding, completing, listing, and removing tasks.
 
-use crate::cli::{OutputFormatter, find_project_root, handlers::resolve_ticket_ref};
-use crate::core::{Task, TaskId};
-use crate::error::{Result, VibeTicketError};
-use crate::storage::{ActiveTicketRepository, FileStorage, TicketRepository};
-use chrono::Utc;
+use crate::cli::OutputFormatter;
+use crate::error::Result;
 
 /// Handler for the `task add` subcommand
 ///
@@ -25,42 +22,20 @@ pub fn handle_task_add(
     project_dir: Option<String>,
     output: &OutputFormatter,
 ) -> Result<()> {
-    use super::common::{HandlerContext, TicketOperation};
+    use crate::cli::handlers::task_common::{TaskHandler, TaskOperationResult};
+    use crate::core::Task;
     
-    // Create handler context
-    let ctx = HandlerContext::new(project_dir.as_deref())?;
+    let handler = TaskHandler::new(project_dir.as_deref(), output)?;
     
-    // Load the ticket
-    let mut ticket = ctx.load_ticket(ticket_ref.as_deref())?;
-    
-    // Create new task
-    let task = Task::new(title);
-    ticket.tasks.push(task.clone());
-    
-    // Save the updated ticket
-    ctx.save_ticket(&ticket)?;
-    
-    // Output results
-    if output.is_json() {
-        output.print_json(&serde_json::json!({
-            "status": "success",
-            "ticket_id": ticket.id.to_string(),
-            "ticket_slug": ticket.slug,
-            "task": {
-                "id": task.id.to_string(),
-                "title": task.title,
-                "completed": task.completed,
-            },
-            "total_tasks": ticket.tasks.len(),
-        }))?;
-    } else {
-        output.success(&format!("Added task to ticket '{}'", ticket.slug));
-        output.info(&format!("Task ID: {}", task.id));
-        output.info(&format!("Title: {}", task.title));
-        output.info(&format!("Total tasks: {}", ticket.tasks.len()));
-    }
-    
-    Ok(())
+    handler.execute_task_operation(
+        ticket_ref.as_deref(),
+        None,
+        |ticket, _| {
+            let task = Task::new(title);
+            ticket.tasks.push(task.clone());
+            Ok(TaskOperationResult::added(&ticket.slug, task))
+        },
+    )
 }
 
 /// Handler for the `task complete` subcommand
@@ -79,63 +54,19 @@ pub fn handle_task_complete(
     project_dir: Option<String>,
     output: &OutputFormatter,
 ) -> Result<()> {
-    use super::common::{HandlerContext, TicketOperation};
+    use crate::cli::handlers::task_common::{TaskHandler, TaskOperationResult};
     
-    // Create handler context
-    let ctx = HandlerContext::new(project_dir.as_deref())?;
+    let handler = TaskHandler::new(project_dir.as_deref(), output)?;
     
-    // Load the ticket
-    let mut ticket = ctx.load_ticket(ticket_ref.as_deref())?;
-    
-    // Parse task ID (could be index or UUID)
-    let task_index = if let Ok(index) = task_id.parse::<usize>() {
-        if index == 0 || index > ticket.tasks.len() {
-            return Err(VibeTicketError::InvalidInput(
-                format!("Task index {} is out of range (1-{})", index, ticket.tasks.len())
-            ));
-        }
-        index - 1
-    } else {
-        // Try to find by UUID
-        ticket.tasks.iter().position(|t| t.id.to_string() == task_id)
-            .ok_or_else(|| VibeTicketError::TaskNotFound { id: task_id.clone() })?
-    };
-    
-    // Mark task as completed
-    ticket.tasks[task_index].complete();
-    
-    // Save the updated ticket
-    ctx.save_ticket(&ticket)?;
-    
-    // Output results
-    if output.is_json() {
-        output.print_json(&serde_json::json!({
-            "status": "success",
-            "ticket_id": ticket.id.to_string(),
-            "ticket_slug": ticket.slug,
-            "task": {
-                "id": ticket.tasks[task_index].id.to_string(),
-                "title": ticket.tasks[task_index].title.clone(),
-                "completed": true,
-            },
-            "progress": {
-                "completed": ticket.completed_tasks_count(),
-                "total": ticket.total_tasks_count(),
-                "percentage": ticket.completion_percentage(),
-            }
-        }))?;
-    } else {
-        output.success(&format!("Completed task in ticket '{}'", ticket.slug));
-        output.info(&format!("Task: {}", ticket.tasks[task_index].title));
-        output.info(&format!(
-            "Progress: {}/{} ({}%)",
-            ticket.completed_tasks_count(),
-            ticket.total_tasks_count(),
-            ticket.completion_percentage()
-        ));
-    }
-    
-    Ok(())
+    handler.execute_task_operation(
+        ticket_ref.as_deref(),
+        Some(task_id),
+        |ticket, task_index| {
+            let index = task_index.unwrap();
+            ticket.tasks[index].complete();
+            Ok(TaskOperationResult::completed(&ticket.slug, &ticket.tasks[index]))
+        },
+    )
 }
 
 /// Handler for the `task uncomplete` subcommand
@@ -154,63 +85,19 @@ pub fn handle_task_uncomplete(
     project_dir: Option<String>,
     output: &OutputFormatter,
 ) -> Result<()> {
-    use super::common::{HandlerContext, TicketOperation};
+    use crate::cli::handlers::task_common::{TaskHandler, TaskOperationResult};
     
-    // Create handler context
-    let ctx = HandlerContext::new(project_dir.as_deref())?;
+    let handler = TaskHandler::new(project_dir.as_deref(), output)?;
     
-    // Load the ticket
-    let mut ticket = ctx.load_ticket(ticket_ref.as_deref())?;
-    
-    // Parse task ID (could be index or UUID)
-    let task_index = if let Ok(index) = task_id.parse::<usize>() {
-        if index == 0 || index > ticket.tasks.len() {
-            return Err(VibeTicketError::InvalidInput(
-                format!("Task index {} is out of range (1-{})", index, ticket.tasks.len())
-            ));
-        }
-        index - 1
-    } else {
-        // Try to find by UUID
-        ticket.tasks.iter().position(|t| t.id.to_string() == task_id)
-            .ok_or_else(|| VibeTicketError::TaskNotFound { id: task_id.clone() })?
-    };
-    
-    // Mark task as not completed
-    ticket.tasks[task_index].uncomplete();
-    
-    // Save the updated ticket
-    ctx.save_ticket(&ticket)?;
-    
-    // Output results
-    if output.is_json() {
-        output.print_json(&serde_json::json!({
-            "status": "success",
-            "ticket_id": ticket.id.to_string(),
-            "ticket_slug": ticket.slug,
-            "task": {
-                "id": ticket.tasks[task_index].id.to_string(),
-                "title": ticket.tasks[task_index].title.clone(),
-                "completed": false,
-            },
-            "progress": {
-                "completed": ticket.completed_tasks_count(),
-                "total": ticket.total_tasks_count(),
-                "percentage": ticket.completion_percentage(),
-            }
-        }))?;
-    } else {
-        output.success(&format!("Marked task as incomplete in ticket '{}'", ticket.slug));
-        output.info(&format!("Task: {}", ticket.tasks[task_index].title));
-        output.info(&format!(
-            "Progress: {}/{} ({}%)",
-            ticket.completed_tasks_count(),
-            ticket.total_tasks_count(),
-            ticket.completion_percentage()
-        ));
-    }
-    
-    Ok(())
+    handler.execute_task_operation(
+        ticket_ref.as_deref(),
+        Some(task_id),
+        |ticket, task_index| {
+            let index = task_index.unwrap();
+            ticket.tasks[index].uncomplete();
+            Ok(TaskOperationResult::uncompleted(&ticket.slug, &ticket.tasks[index]))
+        },
+    )
 }
 
 /// Handler for the `task list` subcommand
@@ -220,8 +107,8 @@ pub fn handle_task_uncomplete(
 /// # Arguments
 ///
 /// * `ticket_ref` - Optional ticket ID or slug (defaults to active ticket)
-/// * `completed_only` - Show only completed tasks
-/// * `incomplete_only` - Show only incomplete tasks
+/// * `completed_only` - Only show completed tasks
+/// * `incomplete_only` - Only show incomplete tasks
 /// * `project_dir` - Optional project directory path
 /// * `output` - Output formatter for displaying results
 pub fn handle_task_list(
@@ -231,80 +118,10 @@ pub fn handle_task_list(
     project_dir: Option<String>,
     output: &OutputFormatter,
 ) -> Result<()> {
-    use super::common::{HandlerContext, TicketOperation};
+    use crate::cli::handlers::task_common::TaskHandler;
     
-    // Create handler context
-    let ctx = HandlerContext::new(project_dir.as_deref())?;
-    
-    // Load the ticket
-    let ticket = ctx.load_ticket(ticket_ref.as_deref())?;
-    
-    // Filter tasks
-    let tasks: Vec<_> = ticket.tasks.iter().enumerate()
-        .filter(|(_, task)| {
-            if completed_only {
-                task.completed
-            } else if incomplete_only {
-                !task.completed
-            } else {
-                true
-            }
-        })
-        .collect();
-    
-    // Output results
-    if output.is_json() {
-        let tasks_json: Vec<_> = tasks.iter()
-            .map(|(idx, task)| serde_json::json!({
-                "index": idx + 1,
-                "id": task.id.to_string(),
-                "title": task.title.clone(),
-                "completed": task.completed,
-                "created_at": task.created_at,
-                "completed_at": task.completed_at,
-            }))
-            .collect();
-        
-        output.print_json(&serde_json::json!({
-            "ticket_id": ticket.id.to_string(),
-            "ticket_slug": ticket.slug,
-            "tasks": tasks_json,
-            "total": tasks.len(),
-            "completed": ticket.completed_tasks_count(),
-            "percentage": ticket.completion_percentage(),
-        }))?;
-    } else {
-        if tasks.is_empty() {
-            let filter_msg = if completed_only {
-                " (completed)"
-            } else if incomplete_only {
-                " (incomplete)"
-            } else {
-                ""
-            };
-            output.info(&format!("No tasks{} in ticket '{}'", filter_msg, ticket.slug));
-        } else {
-            output.info(&format!("Tasks in ticket '{}':", ticket.slug));
-            output.info(&format!(
-                "Progress: {}/{} ({}%)\n",
-                ticket.completed_tasks_count(),
-                ticket.total_tasks_count(),
-                ticket.completion_percentage()
-            ));
-            
-            for (idx, task) in tasks {
-                let status = if task.completed { "✓" } else { "○" };
-                println!("{} {}. {} - {}", status, idx + 1, task.title, task.id);
-                if task.completed {
-                    if let Some(completed_at) = task.completed_at {
-                        println!("     Completed: {}", completed_at.format("%Y-%m-%d %H:%M"));
-                    }
-                }
-            }
-        }
-    }
-    
-    Ok(())
+    let handler = TaskHandler::new(project_dir.as_deref(), output)?;
+    handler.list_tasks(ticket_ref.as_deref(), completed_only, incomplete_only)
 }
 
 /// Handler for the `task remove` subcommand
@@ -313,94 +130,41 @@ pub fn handle_task_list(
 ///
 /// # Arguments
 ///
-/// * `task_id` - ID of the task to remove
+/// * `task_id` - ID of the task to remove (can be index or UUID)
 /// * `ticket_ref` - Optional ticket ID or slug (defaults to active ticket)
-/// * `force` - Skip confirmation
 /// * `project_dir` - Optional project directory path
 /// * `output` - Output formatter for displaying results
 pub fn handle_task_remove(
     task_id: String,
     ticket_ref: Option<String>,
-    force: bool,
     project_dir: Option<String>,
     output: &OutputFormatter,
 ) -> Result<()> {
-    // Ensure project is initialized
-    let project_root = find_project_root(project_dir.as_deref())?;
-    let vibe_ticket_dir = project_root.join(".vibe-ticket");
-
-    // Initialize storage
-    let storage = FileStorage::new(&vibe_ticket_dir);
-
-    // Get the active ticket if no ticket specified
-    let ticket_id = if let Some(ref_str) = ticket_ref {
-        resolve_ticket_ref(&storage, &ref_str)?
-    } else {
-        // Get active ticket
-        storage
-            .get_active()?
-            .ok_or(VibeTicketError::NoActiveTicket)?
-    };
-
-    // Load the ticket
-    let mut ticket = storage.load(&ticket_id)?;
-
-    // Parse task ID
-    let task_id = TaskId::parse_str(&task_id)
-        .map_err(|_| VibeTicketError::custom(format!("Invalid task ID: {task_id}")))?;
-
-    // Find the task
-    let task_index = ticket
-        .tasks
-        .iter()
-        .position(|t| t.id == task_id)
-        .ok_or_else(|| VibeTicketError::custom(format!("Task '{task_id}' not found in ticket")))?;
-
-    let task = &ticket.tasks[task_index];
-
-    // Confirm removal if not forced
-    if !force {
-        output.warning(&format!(
-            "Are you sure you want to remove task: '{}'?",
-            task.title
-        ));
-        output.info("Use --force to skip this confirmation");
-        return Ok(());
-    }
-
-    // Remove the task
-    let removed_task = ticket.tasks.remove(task_index);
-
-    // Save the updated ticket
-    storage.save(&ticket)?;
-
-    // Output results
-    if output.is_json() {
-        output.print_json(&serde_json::json!({
-            "status": "success",
-            "ticket_id": ticket.id.to_string(),
-            "ticket_slug": ticket.slug,
-            "removed_task": {
-                "id": removed_task.id.to_string(),
-                "title": removed_task.title,
-                "was_completed": removed_task.completed,
-            },
-            "remaining_tasks": ticket.tasks.len(),
-        }))?;
-    } else {
-        output.success(&format!("Removed task from ticket '{}'", ticket.slug));
-        output.info(&format!("Removed: {}", removed_task.title));
-        output.info(&format!("Remaining tasks: {}", ticket.tasks.len()));
-    }
-
-    Ok(())
+    use crate::cli::handlers::task_common::{TaskHandler, TaskOperationResult};
+    
+    let handler = TaskHandler::new(project_dir.as_deref(), output)?;
+    
+    handler.execute_task_operation(
+        ticket_ref.as_deref(),
+        Some(task_id),
+        |ticket, task_index| {
+            let index = task_index.unwrap();
+            let task_title = ticket.tasks[index].title.clone();
+            ticket.tasks.remove(index);
+            Ok(TaskOperationResult::removed(&ticket.slug, &task_title))
+        },
+    )
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::cli::handlers::resolve_ticket_ref;
     use crate::cli::output::OutputFormatter;
-    use crate::core::Ticket;
+    use crate::core::{Task, Ticket};
+    use crate::error::VibeTicketError;
+    use crate::storage::{FileStorage, TicketRepository, ActiveTicketRepository};
+    use chrono::Utc;
     use tempfile::TempDir;
 
     fn setup_test_env() -> (TempDir, FileStorage, OutputFormatter) {
@@ -627,7 +391,6 @@ mod tests {
         let result = handle_task_remove(
             task_id_str,
             None,
-            true, // force
             Some(temp_dir.path().to_str().unwrap().to_string()),
             &formatter,
         );
@@ -656,7 +419,6 @@ mod tests {
         let result = handle_task_remove(
             task_id_str,
             None,
-            false, // no force
             Some(temp_dir.path().to_str().unwrap().to_string()),
             &formatter,
         );

@@ -5,6 +5,9 @@ use crate::core::Ticket;
 use serde_json::Value;
 use std::path::Path;
 
+#[cfg(feature = "mcp")]
+use rmcp::model::CallToolResult;
+
 // Placeholder types for MCP - these should be replaced with actual MCP types when available
 #[cfg(not(feature = "mcp"))]
 pub struct CallToolResult {
@@ -32,22 +35,55 @@ impl McpContext {
     
     /// Create success result
     pub fn success_result(message: impl Into<String>) -> CallToolResult {
-        CallToolResult {
-            content: vec![message.into()],
+        #[cfg(feature = "mcp")]
+        {
+            CallToolResult {
+                content: vec![rmcp::model::Content::text(message.into())],
+                is_error: Some(false),
+            }
+        }
+        #[cfg(not(feature = "mcp"))]
+        {
+            CallToolResult {
+                content: vec![message.into()],
+            }
         }
     }
     
     /// Create error result
     pub fn error_result(error: impl std::fmt::Display) -> CallToolResult {
-        CallToolResult {
-            content: vec![format!("Error: {}", error)],
+        #[cfg(feature = "mcp")]
+        {
+            CallToolResult {
+                content: vec![rmcp::model::Content::text(format!("Error: {}", error))],
+                is_error: Some(true),
+            }
+        }
+        #[cfg(not(feature = "mcp"))]
+        {
+            CallToolResult {
+                content: vec![format!("Error: {}", error)],
+            }
         }
     }
     
     /// Create JSON result
     pub fn json_result(value: &Value) -> CallToolResult {
-        CallToolResult {
-            content: vec![serde_json::to_string_pretty(value).unwrap_or_else(|e| format!("Error serializing JSON: {}", e))],
+        let json_str = serde_json::to_string_pretty(value)
+            .unwrap_or_else(|e| format!("Error serializing JSON: {}", e));
+        
+        #[cfg(feature = "mcp")]
+        {
+            CallToolResult {
+                content: vec![rmcp::model::Content::text(json_str)],
+                is_error: Some(false),
+            }
+        }
+        #[cfg(not(feature = "mcp"))]
+        {
+            CallToolResult {
+                content: vec![json_str],
+            }
         }
     }
 }
