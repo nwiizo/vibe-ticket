@@ -487,7 +487,7 @@ pub fn handle_spec_list(
 
 /// Handle spec show command
 pub fn handle_spec_show(
-    spec: &str,
+    spec: String,
     all: bool,
     markdown: bool,
     project: Option<&str>,
@@ -551,7 +551,7 @@ pub fn handle_spec_show(
 
 /// Handle spec delete command
 pub fn handle_spec_delete(
-    spec: &str,
+    spec: String,
     force: bool,
     project: Option<&str>,
     formatter: &OutputFormatter,
@@ -589,9 +589,9 @@ pub fn handle_spec_delete(
 
 /// Handle spec approve command
 pub fn handle_spec_approve(
-    spec: &str,
-    phase: &str,
-    message: Option<&str>,
+    spec: String,
+    phase: String,
+    message: Option<String>,
     project: Option<&str>,
     formatter: &OutputFormatter,
 ) -> Result<()> {
@@ -652,7 +652,7 @@ pub fn handle_spec_approve(
 
 /// Handle spec activate command
 pub fn handle_spec_activate(
-    spec: &str,
+    spec: String,
     project: Option<&str>,
     formatter: &OutputFormatter,
 ) -> Result<()> {
