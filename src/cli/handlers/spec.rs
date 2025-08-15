@@ -825,7 +825,7 @@ mod tests {
         let formatter = create_test_formatter();
 
         // Try delete without force (should just show warning)
-        let result = handle_spec_delete("test-spec", false, None, &formatter);
+        let result = handle_spec_delete("test-spec".to_string(), false, None, &formatter);
         assert!(result.is_ok()); // Doesn't actually delete without force
     }
 
@@ -843,7 +843,7 @@ mod tests {
         handle_spec_init("Approve Test", None, None, None, None, &formatter).unwrap();
 
         // Try to approve with invalid phase
-        let result = handle_spec_approve("test-spec", "invalid-phase", None, None, &formatter);
+        let result = handle_spec_approve("test-spec".to_string(), "invalid-phase".to_string(), None, None, &formatter);
 
         assert!(result.is_err());
     }
