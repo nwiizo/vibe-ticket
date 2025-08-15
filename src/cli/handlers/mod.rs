@@ -33,6 +33,7 @@ mod new;
 mod search;
 mod show;
 mod spec;
+mod spec_common;
 mod start;
 mod task;
 mod worktree;

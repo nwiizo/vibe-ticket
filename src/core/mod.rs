@@ -28,12 +28,14 @@
 //! - All I/O operations should be abstracted through traits
 //! - Business rules should be enforced at this layer
 
+mod builders;
 mod id;
 mod priority;
 mod status;
 mod task;
 mod ticket;
 
+pub use builders::{TaskBuilder, TicketBuilder};
 pub use id::{TaskId, TicketId};
 pub use priority::Priority;
 pub use status::Status;

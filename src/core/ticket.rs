@@ -56,40 +56,21 @@ pub struct Ticket {
 impl Ticket {
     /// Creates a new ticket with the given slug and title
     pub fn new(slug: impl Into<String>, title: impl Into<String>) -> Self {
-        Self {
-            id: TicketId::new(),
-            slug: slug.into(),
-            title: title.into(),
-            description: String::new(),
-            priority: Priority::default(),
-            status: Status::default(),
-            tags: Vec::new(),
-            created_at: Utc::now(),
-            started_at: None,
-            closed_at: None,
-            assignee: None,
-            tasks: Vec::new(),
-            metadata: HashMap::new(),
-        }
+        use super::TicketBuilder;
+        TicketBuilder::new()
+            .slug(slug)
+            .title(title)
+            .build()
     }
 
     /// Creates a new ticket with a specific ID (useful for deserialization)
     pub fn with_id(id: TicketId, slug: impl Into<String>, title: impl Into<String>) -> Self {
-        Self {
-            id,
-            slug: slug.into(),
-            title: title.into(),
-            description: String::new(),
-            priority: Priority::default(),
-            status: Status::default(),
-            tags: Vec::new(),
-            created_at: Utc::now(),
-            started_at: None,
-            closed_at: None,
-            assignee: None,
-            tasks: Vec::new(),
-            metadata: HashMap::new(),
-        }
+        use super::TicketBuilder;
+        TicketBuilder::new()
+            .id(id)
+            .slug(slug)
+            .title(title)
+            .build()
     }
 
     /// Starts work on the ticket, updating status and timestamp
