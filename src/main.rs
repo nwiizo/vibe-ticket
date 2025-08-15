@@ -385,11 +385,11 @@ fn run(cli: Cli, formatter: &OutputFormatter) -> Result<()> {
                 markdown,
             } => {
                 use vibe_ticket::cli::handlers::handle_spec_show;
-                handle_spec_show(spec, all, markdown, cli.project.as_deref(), formatter)
+                handle_spec_show(&spec, all, markdown, cli.project.as_deref(), formatter)
             },
             SpecCommands::Delete { spec, force } => {
                 use vibe_ticket::cli::handlers::handle_spec_delete;
-                handle_spec_delete(spec, force, cli.project.as_deref(), formatter)
+                handle_spec_delete(&spec, force, cli.project.as_deref(), formatter)
             },
             SpecCommands::Approve {
                 spec,
@@ -397,11 +397,11 @@ fn run(cli: Cli, formatter: &OutputFormatter) -> Result<()> {
                 message,
             } => {
                 use vibe_ticket::cli::handlers::handle_spec_approve;
-                handle_spec_approve(spec, phase, message, cli.project.as_deref(), formatter)
+                handle_spec_approve(&spec, &phase, message.as_deref(), cli.project.as_deref(), formatter)
             },
             SpecCommands::Activate { spec } => {
                 use vibe_ticket::cli::handlers::handle_spec_activate;
-                handle_spec_activate(spec, cli.project.as_deref(), formatter)
+                handle_spec_activate(&spec, cli.project.as_deref(), formatter)
             },
         },
         Commands::Worktree { command } => match command {
