@@ -119,7 +119,7 @@ impl TicketBuilder {
     /// Build the ticket
     pub fn build(self) -> Ticket {
         Ticket {
-            id: self.id.unwrap_or_else(TicketId::new),
+            id: self.id.unwrap_or_default(),
             slug: self.slug.unwrap_or_default(),
             title: self.title.unwrap_or_default(),
             description: self.description.unwrap_or_default(),
@@ -185,7 +185,7 @@ impl TaskBuilder {
     /// Build the task
     pub fn build(self) -> Task {
         Task {
-            id: self.id.unwrap_or_else(TaskId::new),
+            id: self.id.unwrap_or_default(),
             title: self.title.unwrap_or_default(),
             completed: self.completed,
             created_at: self.created_at.unwrap_or_else(Utc::now),

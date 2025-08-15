@@ -86,6 +86,7 @@ impl TicketOperation for HandlerContext {
 }
 
 /// Helper function to resolve ticket reference using storage
+#[allow(dead_code)]
 pub fn resolve_ticket_ref(storage: &FileStorage, ticket_ref: &str) -> Result<Uuid> {
     // Try to parse as UUID first
     if let Ok(id) = Uuid::parse_str(ticket_ref) {

@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.2] - 2025-08-15
+
+### Changed
+- Major code refactoring to eliminate duplication across handlers and modules
+- Reduced duplicate code blocks from 106 to 47 (56% reduction)
+- Created common modules for shared handler logic
+- Implemented builder patterns for Ticket and Task construction
+- Unified output formatting and error handling
+- Extracted reusable utilities for git worktree, data formats, and testing
+
+### Added
+- `task_common.rs` - Common task handler operations
+- `list_common.rs` - Date filtering and list processing utilities
+- `spec_common.rs` - Spec handler common operations  
+- `worktree_common.rs` - Git worktree management utilities
+- `import_export_common.rs` - Data format conversion utilities
+- `builders.rs` - Builder patterns for core types
+
+### Fixed
+- MCP handler compatibility with rmcp 0.3.2
+- Task remove handler parameter mismatch
+- Import/export ID cloning issues
+
 ## [0.2.2] - 2025-08-02
 
 ### Fixed

@@ -1,6 +1,6 @@
 use crate::cli::output::OutputFormatter;
 use crate::error::{Result, VibeTicketError, ErrorContext};
-use crate::specs::{Specification, SpecManager, SpecPhase, SpecDocumentType};
+use crate::specs::{Specification, SpecManager, SpecPhase};
 use std::env;
 use std::path::PathBuf;
 
@@ -133,7 +133,7 @@ pub trait SpecPhaseHandler {
             SpecPhase::Tasks | SpecPhase::Implementation => crate::specs::SpecDocumentType::Tasks,
             _ => crate::specs::SpecDocumentType::Requirements,
         };
-        let doc_path = ctx.spec_manager.save_document(&spec_id, doc_type, "")?;
+        ctx.spec_manager.save_document(&spec_id, doc_type, "")?;
         
         // Open in editor if requested
         if let Some(editor_cmd) = editor.or_else(|| std::env::var("EDITOR").ok()) {

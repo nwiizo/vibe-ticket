@@ -11,10 +11,8 @@ impl FormatUtils {
         let trimmed = content.trim();
         
         // Try JSON first
-        if trimmed.starts_with('{') || trimmed.starts_with('[') {
-            if serde_json::from_str::<Value>(trimmed).is_ok() {
-                return Ok(DataFormat::Json);
-            }
+        if (trimmed.starts_with('{') || trimmed.starts_with('[')) && serde_json::from_str::<Value>(trimmed).is_ok() {
+            return Ok(DataFormat::Json);
         }
         
         // Try YAML
@@ -109,7 +107,7 @@ impl FormatUtils {
         let mut writer = Writer::from_writer(vec![]);
         
         // Write header
-        writer.write_record(&["id", "slug", "title", "description", "priority", "status", "tags", "assignee"])
+        writer.write_record(["id", "slug", "title", "description", "priority", "status", "tags", "assignee"])
             .map_err(|e| VibeTicketError::SerializationError(format!("Failed to write CSV header: {}", e)))?;
         
         // Write tickets
@@ -137,7 +135,7 @@ impl FormatUtils {
     
     /// Export tickets to Markdown
     pub fn export_markdown(tickets: &[Ticket]) -> Result<String> {
-        use std::fmt::Write;
+        use std::fmt::Write as FmtWrite;
         let mut output = String::new();
         
         writeln!(&mut output, "# Tickets Export\n").unwrap();
@@ -224,7 +222,7 @@ pub fn validate_tickets(tickets: &[Ticket]) -> Result<()> {
     // Check for duplicate IDs
     let mut seen_ids = std::collections::HashSet::new();
     for ticket in tickets {
-        if !seen_ids.insert(ticket.id) {
+        if !seen_ids.insert(ticket.id.clone()) {
             return Err(VibeTicketError::DuplicateTicket {
                 slug: ticket.slug.clone()
             });

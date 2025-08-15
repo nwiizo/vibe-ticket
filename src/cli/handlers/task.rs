@@ -273,32 +273,30 @@ pub fn handle_task_list(
             "completed": ticket.completed_tasks_count(),
             "percentage": ticket.completion_percentage(),
         }))?;
-    } else {
-        if tasks.is_empty() {
-            let filter_msg = if completed_only {
-                " (completed)"
-            } else if incomplete_only {
-                " (incomplete)"
-            } else {
-                ""
-            };
-            output.info(&format!("No tasks{} in ticket '{}'", filter_msg, ticket.slug));
+    } else if tasks.is_empty() {
+        let filter_msg = if completed_only {
+            " (completed)"
+        } else if incomplete_only {
+            " (incomplete)"
         } else {
-            output.info(&format!("Tasks in ticket '{}':", ticket.slug));
-            output.info(&format!(
-                "Progress: {}/{} ({}%)\n",
-                ticket.completed_tasks_count(),
-                ticket.total_tasks_count(),
-                ticket.completion_percentage()
-            ));
-            
-            for (idx, task) in tasks {
-                let status = if task.completed { "✓" } else { "○" };
-                println!("{} {}. {} - {}", status, idx + 1, task.title, task.id);
-                if task.completed {
-                    if let Some(completed_at) = task.completed_at {
-                        println!("     Completed: {}", completed_at.format("%Y-%m-%d %H:%M"));
-                    }
+            ""
+        };
+        output.info(&format!("No tasks{} in ticket '{}'", filter_msg, ticket.slug));
+    } else {
+        output.info(&format!("Tasks in ticket '{}':", ticket.slug));
+        output.info(&format!(
+            "Progress: {}/{} ({}%)\n",
+            ticket.completed_tasks_count(),
+            ticket.total_tasks_count(),
+            ticket.completion_percentage()
+        ));
+        
+        for (idx, task) in tasks {
+            let status = if task.completed { "✓" } else { "○" };
+            println!("{} {}. {} - {}", status, idx + 1, task.title, task.id);
+            if task.completed {
+                if let Some(completed_at) = task.completed_at {
+                    println!("     Completed: {}", completed_at.format("%Y-%m-%d %H:%M"));
                 }
             }
         }

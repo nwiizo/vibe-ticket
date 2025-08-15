@@ -188,28 +188,26 @@ impl WorktreeFormatter {
                 }))
                 .collect();
             formatter.print_json(&serde_json::json!(json_worktrees))?;
+        } else if worktrees.is_empty() {
+            formatter.info("No worktrees found");
         } else {
-            if worktrees.is_empty() {
-                formatter.info("No worktrees found");
-            } else {
-                formatter.info(&format!("Found {} worktree(s):", worktrees.len()));
-                for w in worktrees {
-                    let status = if w.is_locked {
-                        " [LOCKED]"
-                    } else if w.is_detached {
-                        " [DETACHED]"
-                    } else if w.prunable {
-                        " [PRUNABLE]"
-                    } else {
-                        ""
-                    };
-                    
-                    println!("{} ({}){}", 
-                        w.path.display(), 
-                        if w.branch.is_empty() { &w.commit[..8] } else { &w.branch },
-                        status
-                    );
-                }
+            formatter.info(&format!("Found {} worktree(s):", worktrees.len()));
+            for w in worktrees {
+                let status = if w.is_locked {
+                    " [LOCKED]"
+                } else if w.is_detached {
+                    " [DETACHED]"
+                } else if w.prunable {
+                    " [PRUNABLE]"
+                } else {
+                    ""
+                };
+                
+                println!("{} ({}){}", 
+                    w.path.display(), 
+                    if w.branch.is_empty() { &w.commit[..8] } else { &w.branch },
+                    status
+                );
             }
         }
         Ok(())

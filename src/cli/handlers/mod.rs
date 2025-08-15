@@ -203,6 +203,7 @@ pub fn parse_tags(tags_str: Option<String>) -> Vec<String> {
 /// Returns an error if:
 /// - No ticket is found
 /// - Multiple tickets match a partial UUID
+#[allow(dead_code)]
 pub fn resolve_ticket_ref(
     storage: &crate::storage::FileStorage,
     ticket_ref: &str,
