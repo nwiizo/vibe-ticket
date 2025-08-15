@@ -57,20 +57,13 @@ impl Ticket {
     /// Creates a new ticket with the given slug and title
     pub fn new(slug: impl Into<String>, title: impl Into<String>) -> Self {
         use super::TicketBuilder;
-        TicketBuilder::new()
-            .slug(slug)
-            .title(title)
-            .build()
+        TicketBuilder::new().slug(slug).title(title).build()
     }
 
     /// Creates a new ticket with a specific ID (useful for deserialization)
     pub fn with_id(id: TicketId, slug: impl Into<String>, title: impl Into<String>) -> Self {
         use super::TicketBuilder;
-        TicketBuilder::new()
-            .id(id)
-            .slug(slug)
-            .title(title)
-            .build()
+        TicketBuilder::new().id(id).slug(slug).title(title).build()
     }
 
     /// Starts work on the ticket, updating status and timestamp

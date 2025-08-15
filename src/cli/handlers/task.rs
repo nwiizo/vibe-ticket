@@ -3,8 +3,8 @@
 //! This module implements the logic for managing tasks within tickets,
 //! including adding, completing, listing, and removing tasks.
 
-use crate::cli::{OutputFormatter, find_project_root};
 use crate::cli::handlers::common::resolve_ticket_ref;
+use crate::cli::{OutputFormatter, find_project_root};
 use crate::core::{Task, TaskId};
 use crate::error::{Result, VibeTicketError};
 use crate::storage::{ActiveTicketRepository, FileStorage, TicketRepository};
@@ -26,20 +26,20 @@ pub fn handle_task_add(
     output: &OutputFormatter,
 ) -> Result<()> {
     use super::common::{HandlerContext, TicketOperation};
-    
+
     // Create handler context
     let ctx = HandlerContext::new(project_dir.as_deref())?;
-    
+
     // Load the ticket
     let mut ticket = ctx.load_ticket(ticket_ref.as_deref())?;
-    
+
     // Create new task
     let task = Task::new(title);
     ticket.tasks.push(task.clone());
-    
+
     // Save the updated ticket
     ctx.save_ticket(&ticket)?;
-    
+
     // Output results
     if output.is_json() {
         output.print_json(&serde_json::json!({
@@ -59,7 +59,7 @@ pub fn handle_task_add(
         output.info(&format!("Title: {}", task.title));
         output.info(&format!("Total tasks: {}", ticket.tasks.len()));
     }
-    
+
     Ok(())
 }
 
@@ -70,40 +70,48 @@ pub fn handle_task_complete(
     output: &OutputFormatter,
 ) -> Result<()> {
     use super::common::{HandlerContext, TicketOperation};
-    
+
     // Create handler context
     let ctx = HandlerContext::new(project_dir.as_deref())?;
-    
+
     // Load the ticket
     let mut ticket = ctx.load_ticket(ticket_ref.as_deref())?;
-    
+
     // Parse task ID (could be index or UUID)
     let task_index = if let Ok(index) = task_id.parse::<usize>() {
         if index == 0 || index > ticket.tasks.len() {
-            return Err(VibeTicketError::InvalidInput(
-                format!("Task index {} is out of range (1-{})", index, ticket.tasks.len())
-            ));
+            return Err(VibeTicketError::InvalidInput(format!(
+                "Task index {} is out of range (1-{})",
+                index,
+                ticket.tasks.len()
+            )));
         }
         index - 1
     } else {
         // Try to find by UUID
-        ticket.tasks.iter().position(|t| t.id.to_string() == task_id)
-            .ok_or_else(|| VibeTicketError::TaskNotFound { id: task_id.clone() })?
+        ticket
+            .tasks
+            .iter()
+            .position(|t| t.id.to_string() == task_id)
+            .ok_or_else(|| VibeTicketError::TaskNotFound {
+                id: task_id.clone(),
+            })?
     };
-    
+
     // Check if task is already completed
     if ticket.tasks[task_index].completed {
-        return Err(VibeTicketError::InvalidInput(
-            format!("Task '{}' is already completed", ticket.tasks[task_index].title)
-        ));
+        return Err(VibeTicketError::InvalidInput(format!(
+            "Task '{}' is already completed",
+            ticket.tasks[task_index].title
+        )));
     }
-    
+
     // Mark task as completed
     ticket.tasks[task_index].complete();
-    
+
     // Save the updated ticket
     ctx.save_ticket(&ticket)?;
-    
+
     // Output results
     if output.is_json() {
         output.print_json(&serde_json::json!({
@@ -131,7 +139,7 @@ pub fn handle_task_complete(
             ticket.completion_percentage()
         ));
     }
-    
+
     Ok(())
 }
 
@@ -152,33 +160,40 @@ pub fn handle_task_uncomplete(
     output: &OutputFormatter,
 ) -> Result<()> {
     use super::common::{HandlerContext, TicketOperation};
-    
+
     // Create handler context
     let ctx = HandlerContext::new(project_dir.as_deref())?;
-    
+
     // Load the ticket
     let mut ticket = ctx.load_ticket(ticket_ref.as_deref())?;
-    
+
     // Parse task ID (could be index or UUID)
     let task_index = if let Ok(index) = task_id.parse::<usize>() {
         if index == 0 || index > ticket.tasks.len() {
-            return Err(VibeTicketError::InvalidInput(
-                format!("Task index {} is out of range (1-{})", index, ticket.tasks.len())
-            ));
+            return Err(VibeTicketError::InvalidInput(format!(
+                "Task index {} is out of range (1-{})",
+                index,
+                ticket.tasks.len()
+            )));
         }
         index - 1
     } else {
         // Try to find by UUID
-        ticket.tasks.iter().position(|t| t.id.to_string() == task_id)
-            .ok_or_else(|| VibeTicketError::TaskNotFound { id: task_id.clone() })?
+        ticket
+            .tasks
+            .iter()
+            .position(|t| t.id.to_string() == task_id)
+            .ok_or_else(|| VibeTicketError::TaskNotFound {
+                id: task_id.clone(),
+            })?
     };
-    
+
     // Mark task as not completed
     ticket.tasks[task_index].uncomplete();
-    
+
     // Save the updated ticket
     ctx.save_ticket(&ticket)?;
-    
+
     // Output results
     if output.is_json() {
         output.print_json(&serde_json::json!({
@@ -197,7 +212,10 @@ pub fn handle_task_uncomplete(
             }
         }))?;
     } else {
-        output.success(&format!("Marked task as incomplete in ticket '{}'", ticket.slug));
+        output.success(&format!(
+            "Marked task as incomplete in ticket '{}'",
+            ticket.slug
+        ));
         output.info(&format!("Task: {}", ticket.tasks[task_index].title));
         output.info(&format!(
             "Progress: {}/{} ({}%)",
@@ -206,7 +224,7 @@ pub fn handle_task_uncomplete(
             ticket.completion_percentage()
         ));
     }
-    
+
     Ok(())
 }
 
@@ -229,15 +247,18 @@ pub fn handle_task_list(
     output: &OutputFormatter,
 ) -> Result<()> {
     use super::common::{HandlerContext, TicketOperation};
-    
+
     // Create handler context
     let ctx = HandlerContext::new(project_dir.as_deref())?;
-    
+
     // Load the ticket
     let ticket = ctx.load_ticket(ticket_ref.as_deref())?;
-    
+
     // Filter tasks
-    let tasks: Vec<_> = ticket.tasks.iter().enumerate()
+    let tasks: Vec<_> = ticket
+        .tasks
+        .iter()
+        .enumerate()
         .filter(|(_, task)| {
             if completed_only {
                 task.completed
@@ -248,20 +269,23 @@ pub fn handle_task_list(
             }
         })
         .collect();
-    
+
     // Output results
     if output.is_json() {
-        let tasks_json: Vec<_> = tasks.iter()
-            .map(|(idx, task)| serde_json::json!({
-                "index": idx + 1,
-                "id": task.id.to_string(),
-                "title": task.title.clone(),
-                "completed": task.completed,
-                "created_at": task.created_at,
-                "completed_at": task.completed_at,
-            }))
+        let tasks_json: Vec<_> = tasks
+            .iter()
+            .map(|(idx, task)| {
+                serde_json::json!({
+                    "index": idx + 1,
+                    "id": task.id.to_string(),
+                    "title": task.title.clone(),
+                    "completed": task.completed,
+                    "created_at": task.created_at,
+                    "completed_at": task.completed_at,
+                })
+            })
             .collect();
-        
+
         output.print_json(&serde_json::json!({
             "ticket_id": ticket.id.to_string(),
             "ticket_slug": ticket.slug,
@@ -278,7 +302,10 @@ pub fn handle_task_list(
         } else {
             ""
         };
-        output.info(&format!("No tasks{} in ticket '{}'", filter_msg, ticket.slug));
+        output.info(&format!(
+            "No tasks{} in ticket '{}'",
+            filter_msg, ticket.slug
+        ));
     } else {
         output.info(&format!("Tasks in ticket '{}':", ticket.slug));
         output.info(&format!(
@@ -287,7 +314,7 @@ pub fn handle_task_list(
             ticket.total_tasks_count(),
             ticket.completion_percentage()
         ));
-        
+
         for (idx, task) in tasks {
             let status = if task.completed { "✓" } else { "○" };
             println!("{} {}. {} - {}", status, idx + 1, task.title, task.id);
@@ -298,7 +325,7 @@ pub fn handle_task_list(
             }
         }
     }
-    
+
     Ok(())
 }
 

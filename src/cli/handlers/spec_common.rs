@@ -1,6 +1,6 @@
 use crate::cli::output::OutputFormatter;
-use crate::error::{Result, VibeTicketError, ErrorContext};
-use crate::specs::{Specification, SpecManager, SpecPhase};
+use crate::error::{ErrorContext, Result, VibeTicketError};
+use crate::specs::{SpecManager, SpecPhase, Specification};
 use std::env;
 
 pub struct SpecContext {
@@ -13,8 +13,9 @@ impl SpecContext {
     pub fn new(project: Option<&str>, formatter: OutputFormatter) -> Result<Self> {
         // Change to project directory if specified
         if let Some(project_path) = project {
-            std::env::set_current_dir(project_path)
-                .with_context(|| format!("Failed to change to project directory: {project_path}"))?;
+            std::env::set_current_dir(project_path).with_context(|| {
+                format!("Failed to change to project directory: {project_path}")
+            })?;
         }
 
         let current_dir = env::current_dir().context("Failed to get current directory")?;
@@ -31,7 +32,7 @@ impl SpecContext {
             formatter,
         })
     }
-    
+
     /// Common success output for spec operations
     pub fn output_spec_success(&self, action: &str, spec: &Specification) -> Result<()> {
         if self.formatter.is_json() {
@@ -47,14 +48,22 @@ impl SpecContext {
                 }
             }))?;
         } else {
-            self.formatter.success(&format!("{} specification: {}", action, spec.metadata.title));
+            self.formatter.success(&format!(
+                "{} specification: {}",
+                action, spec.metadata.title
+            ));
             self.formatter.info(&format!("ID: {}", spec.metadata.id));
-            self.formatter.info(&format!("Phase: {:?}", spec.metadata.progress.current_phase));
+            self.formatter.info(&format!(
+                "Phase: {:?}",
+                spec.metadata.progress.current_phase
+            ));
             if !spec.metadata.tags.is_empty() {
-                self.formatter.info(&format!("Tags: {}", spec.metadata.tags.join(", ")));
+                self.formatter
+                    .info(&format!("Tags: {}", spec.metadata.tags.join(", ")));
             }
             if let Some(ticket) = &spec.metadata.ticket_id {
-                self.formatter.info(&format!("Linked to ticket: {}", ticket));
+                self.formatter
+                    .info(&format!("Linked to ticket: {}", ticket));
             }
         }
         Ok(())
@@ -65,7 +74,7 @@ impl SpecContext {
 pub trait SpecPhaseHandler {
     fn get_phase(&self) -> SpecPhase;
     fn get_phase_name(&self) -> &str;
-    
+
     fn handle_phase_operation(
         &self,
         spec_id: String,
@@ -74,7 +83,7 @@ pub trait SpecPhaseHandler {
         formatter: &OutputFormatter,
     ) -> Result<()> {
         let ctx = SpecContext::new(project.as_deref(), formatter.clone())?;
-        
+
         // Load existing spec or create new one
         let mut spec = match ctx.spec_manager.load_spec(&spec_id) {
             Ok(s) => s,
@@ -82,13 +91,13 @@ pub trait SpecPhaseHandler {
                 return Err(VibeTicketError::SpecNotFound {
                     id: spec_id.clone(),
                 });
-            }
+            },
         };
-        
+
         // Update phase
         spec.metadata.progress.current_phase = self.get_phase();
         ctx.spec_manager.save(&spec)?;
-        
+
         // Save phase document - needs spec_id and doc_type
         let doc_type = match self.get_phase() {
             SpecPhase::Requirements => crate::specs::SpecDocumentType::Requirements,
@@ -97,14 +106,14 @@ pub trait SpecPhaseHandler {
             _ => crate::specs::SpecDocumentType::Requirements,
         };
         ctx.spec_manager.save_document(&spec_id, doc_type, "")?;
-        
+
         // Open in editor if requested
         if let Some(editor_cmd) = editor.or_else(|| std::env::var("EDITOR").ok()) {
             let _ = editor_cmd; // Use editor_cmd if needed
             // Note: open_in_editor expects just a Path, not editor command
             // This would need to be refactored to properly use the editor
         }
-        
+
         ctx.output_spec_success(&format!("Updated {} for", self.get_phase_name()), &spec)?;
         Ok(())
     }
@@ -117,7 +126,7 @@ impl SpecPhaseHandler for RequirementsHandler {
     fn get_phase(&self) -> SpecPhase {
         SpecPhase::Requirements
     }
-    
+
     fn get_phase_name(&self) -> &str {
         "requirements"
     }
@@ -130,7 +139,7 @@ impl SpecPhaseHandler for DesignHandler {
     fn get_phase(&self) -> SpecPhase {
         SpecPhase::Design
     }
-    
+
     fn get_phase_name(&self) -> &str {
         "design"
     }

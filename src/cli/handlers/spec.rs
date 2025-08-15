@@ -105,13 +105,13 @@ pub fn handle_spec_design(
     formatter: &OutputFormatter,
 ) -> Result<()> {
     use super::spec_common::{DesignHandler, SpecPhaseHandler};
-    
+
     // If using the simplified phase handler
     if spec.is_some() && !complete && !editor {
         let handler = DesignHandler;
         return handler.handle_phase_operation(spec.unwrap(), None, project, formatter);
     }
-    
+
     // Keep existing complex logic for backward compatibility
     // Change to project directory if specified
     if let Some(project_path) = project {

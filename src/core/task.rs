@@ -29,18 +29,13 @@ impl Task {
     /// Creates a new task with the given title
     pub fn new(title: impl Into<String>) -> Self {
         use super::TaskBuilder;
-        TaskBuilder::new()
-            .title(title)
-            .build()
+        TaskBuilder::new().title(title).build()
     }
 
     /// Creates a new task with a specific ID (useful for deserialization)
     pub fn with_id(id: TaskId, title: impl Into<String>) -> Self {
         use super::TaskBuilder;
-        TaskBuilder::new()
-            .id(id)
-            .title(title)
-            .build()
+        TaskBuilder::new().id(id).title(title).build()
     }
 
     /// Marks the task as completed

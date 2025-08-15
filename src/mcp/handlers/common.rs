@@ -1,7 +1,6 @@
-
+use crate::core::Ticket;
 use crate::error::Result;
 use crate::storage::FileStorage;
-use crate::core::Ticket;
 use serde_json::Value;
 use std::path::Path;
 
@@ -31,7 +30,7 @@ impl McpContext {
         let storage = FileStorage::new(&vibe_ticket_dir);
         Self { storage }
     }
-    
+
     /// Create success result
     pub fn success_result(message: impl Into<String>) -> CallToolResult {
         #[cfg(feature = "mcp")]
@@ -48,7 +47,7 @@ impl McpContext {
             }
         }
     }
-    
+
     /// Create error result
     pub fn error_result(error: impl std::fmt::Display) -> CallToolResult {
         #[cfg(feature = "mcp")]
@@ -65,12 +64,12 @@ impl McpContext {
             }
         }
     }
-    
+
     /// Create JSON result
     pub fn json_result(value: &Value) -> CallToolResult {
         let json_str = serde_json::to_string_pretty(value)
             .unwrap_or_else(|e| format!("Error serializing JSON: {}", e));
-        
+
         #[cfg(feature = "mcp")]
         {
             CallToolResult {
@@ -91,10 +90,10 @@ impl McpContext {
 pub trait McpDataOperation {
     /// Get the operation name
     fn operation_name(&self) -> &str;
-    
+
     /// Process tickets with the operation
     fn process_tickets(&self, tickets: Vec<Ticket>) -> Result<Value>;
-    
+
     /// Execute the operation
     fn execute(&self, ctx: &McpContext, filter: Option<TicketFilter>) -> CallToolResult {
         // Load tickets
@@ -102,14 +101,14 @@ pub trait McpDataOperation {
             Ok(t) => t,
             Err(e) => return McpContext::error_result(e),
         };
-        
+
         // Apply filter if provided
         let filtered = if let Some(f) = filter {
             f.apply(tickets)
         } else {
             tickets
         };
-        
+
         // Process tickets
         match self.process_tickets(filtered) {
             Ok(result) => McpContext::json_result(&result),
@@ -129,7 +128,8 @@ pub struct TicketFilter {
 impl TicketFilter {
     /// Apply filter to tickets
     pub fn apply(self, tickets: Vec<Ticket>) -> Vec<Ticket> {
-        tickets.into_iter()
+        tickets
+            .into_iter()
             .filter(|t| {
                 // Filter by status
                 if let Some(ref s) = self.status {
@@ -137,28 +137,28 @@ impl TicketFilter {
                         return false;
                     }
                 }
-                
+
                 // Filter by priority
                 if let Some(ref p) = self.priority {
                     if t.priority.to_string().to_lowercase() != p.to_lowercase() {
                         return false;
                     }
                 }
-                
+
                 // Filter by assignee
                 if let Some(ref a) = self.assignee {
                     if t.assignee.as_ref() != Some(a) {
                         return false;
                     }
                 }
-                
+
                 // Filter by tags
                 if let Some(ref tags) = self.tags {
                     if !tags.iter().all(|tag| t.tags.contains(tag)) {
                         return false;
                     }
                 }
-                
+
                 true
             })
             .collect()

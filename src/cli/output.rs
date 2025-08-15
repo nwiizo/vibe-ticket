@@ -88,7 +88,7 @@ impl OutputFormatter {
         if self.json {
             return;
         }
-        
+
         match level {
             MessageLevel::Success => println!("{} {}", "✓".green(), message),
             MessageLevel::Error => eprintln!("{} {}", "✗".red(), message),
@@ -116,7 +116,6 @@ impl OutputFormatter {
         }
         Ok(())
     }
-
 
     /// Prints data as JSON
     pub fn print_json<T: Serialize + ?Sized>(&self, data: &T) -> Result<()> {

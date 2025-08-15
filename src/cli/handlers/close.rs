@@ -3,8 +3,8 @@
 //! This module implements the logic for closing tickets,
 //! including status updates and optional archiving.
 
-use crate::cli::{OutputFormatter, find_project_root};
 use crate::cli::handlers::common::resolve_ticket_ref;
+use crate::cli::{OutputFormatter, find_project_root};
 use crate::core::Status;
 use crate::error::{Result, VibeTicketError};
 use crate::storage::{ActiveTicketRepository, FileStorage, TicketRepository};
