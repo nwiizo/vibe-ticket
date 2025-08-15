@@ -22,6 +22,7 @@ pub struct VibeTicketService {
 
 impl VibeTicketService {
     /// Create a new service instance
+    #[must_use]
     pub fn new(storage: FileStorage, project_root: PathBuf) -> Self {
         Self {
             storage: Arc::new(storage),
@@ -30,6 +31,7 @@ impl VibeTicketService {
     }
 
     /// Get all available tools
+    #[must_use]
     pub fn get_tools() -> Vec<Tool> {
         use crate::mcp::handlers;
         let mut tools = Vec::new();
@@ -165,7 +167,7 @@ impl ServerHandler for VibeTicketService {
                     crate::mcp::handlers::spec::handle_check(&service, arguments).await
                 },
 
-                _ => Err(format!("Unknown tool: {}", name)),
+                _ => Err(format!("Unknown tool: {name}")),
             };
 
             match result {

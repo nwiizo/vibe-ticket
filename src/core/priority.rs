@@ -60,26 +60,31 @@ impl Priority {
     }
 
     /// Returns all possible priority values
+    #[must_use]
     pub fn all() -> Vec<Self> {
         vec![Self::Low, Self::Medium, Self::High, Self::Critical]
     }
 
     /// Returns the numeric value for sorting (higher = more urgent)
+    #[must_use]
     pub const fn value(&self) -> u8 {
         self.properties().value
     }
 
     /// Returns the emoji representation of the priority
+    #[must_use]
     pub const fn emoji(&self) -> &'static str {
         self.properties().emoji
     }
 
     /// Returns the color code for terminal output
+    #[must_use]
     pub const fn color(&self) -> &'static str {
         self.properties().color
     }
 
     /// Returns whether this priority requires immediate attention
+    #[must_use]
     pub const fn is_urgent(&self) -> bool {
         matches!(self, Self::High | Self::Critical)
     }
@@ -115,7 +120,7 @@ impl std::str::FromStr for Priority {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Self::try_from(s).map_err(|_| format!("Invalid priority: {}", s))
+        Self::try_from(s).map_err(|_| format!("Invalid priority: {s}"))
     }
 }
 

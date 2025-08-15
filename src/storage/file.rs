@@ -68,7 +68,7 @@ impl FileStorage {
         // Acquire lock before modifying the file
         let _lock =
             super::FileLock::acquire(&path, Some("save_ticket".to_string())).map_err(|e| {
-                VibeTicketError::custom(format!("Failed to acquire lock for saving ticket: {}", e))
+                VibeTicketError::custom(format!("Failed to acquire lock for saving ticket: {e}"))
             })?;
 
         let yaml = serde_yaml::to_string(ticket).context("Failed to serialize ticket")?;
@@ -98,7 +98,7 @@ impl FileStorage {
         // Acquire lock for reading to ensure consistency
         let _lock =
             super::FileLock::acquire(&path, Some("load_ticket".to_string())).map_err(|e| {
-                VibeTicketError::custom(format!("Failed to acquire lock for loading ticket: {}", e))
+                VibeTicketError::custom(format!("Failed to acquire lock for loading ticket: {e}"))
             })?;
 
         let yaml = fs::read_to_string(&path)
@@ -165,10 +165,7 @@ impl FileStorage {
         // Acquire lock before deleting
         let _lock =
             super::FileLock::acquire(&path, Some("delete_ticket".to_string())).map_err(|e| {
-                VibeTicketError::custom(format!(
-                    "Failed to acquire lock for deleting ticket: {}",
-                    e
-                ))
+                VibeTicketError::custom(format!("Failed to acquire lock for deleting ticket: {e}"))
             })?;
 
         fs::remove_file(&path)
@@ -188,8 +185,7 @@ impl FileStorage {
         let _lock = super::FileLock::acquire(&path, Some("set_active_ticket".to_string()))
             .map_err(|e| {
                 VibeTicketError::custom(format!(
-                    "Failed to acquire lock for setting active ticket: {}",
-                    e
+                    "Failed to acquire lock for setting active ticket: {e}"
                 ))
             })?;
 
@@ -221,8 +217,7 @@ impl FileStorage {
             let _lock = super::FileLock::acquire(&path, Some("clear_active_ticket".to_string()))
                 .map_err(|e| {
                     VibeTicketError::custom(format!(
-                        "Failed to acquire lock for clearing active ticket: {}",
-                        e
+                        "Failed to acquire lock for clearing active ticket: {e}"
                     ))
                 })?;
 

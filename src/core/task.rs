@@ -47,17 +47,19 @@ impl Task {
     }
 
     /// Marks the task as incomplete
-    pub fn uncomplete(&mut self) {
+    pub const fn uncomplete(&mut self) {
         self.completed = false;
         self.completed_at = None;
     }
 
     /// Returns the duration since the task was created
+    #[must_use]
     pub fn age(&self) -> chrono::Duration {
         Utc::now() - self.created_at
     }
 
     /// Returns the duration the task took to complete
+    #[must_use]
     pub fn completion_duration(&self) -> Option<chrono::Duration> {
         self.completed_at
             .map(|completed| completed - self.created_at)

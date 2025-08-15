@@ -1095,7 +1095,7 @@ mod tests {
         let cli = Cli::parse_from(["vibe-ticket", "new", "test", "--tags", ""]);
         match cli.command {
             Commands::New { tags, .. } => {
-                assert_eq!(tags, Some("".to_string()));
+                assert_eq!(tags, Some(String::new()));
             },
             _ => panic!("Expected New command"),
         }

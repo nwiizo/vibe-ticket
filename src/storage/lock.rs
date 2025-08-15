@@ -21,7 +21,7 @@ const RETRY_DELAY: Duration = Duration::from_millis(100);
 
 /// Information stored in a lock file
 #[derive(Debug, Serialize, Deserialize)]
-pub(crate) struct LockInfo {
+pub struct LockInfo {
     /// Unique identifier for the lock holder
     pub(crate) holder_id: String,
     /// Process ID of the lock holder
@@ -46,7 +46,7 @@ impl FileLock {
     /// * `operation` - Optional description of the operation being performed
     ///
     /// # Returns
-    /// A FileLock that will automatically release when dropped
+    /// A `FileLock` that will automatically release when dropped
     pub fn acquire(path: &Path, operation: Option<String>) -> Result<Self> {
         let lock_path = Self::lock_path(path);
         let holder_id = Uuid::new_v4().to_string();
@@ -54,8 +54,8 @@ impl FileLock {
         // Try to acquire the lock with retries
         for attempt in 0..MAX_RETRY_ATTEMPTS {
             match Self::try_acquire_once(&lock_path, &holder_id, &operation) {
-                Ok(_) => {
-                    return Ok(FileLock {
+                Ok(()) => {
+                    return Ok(Self {
                         path: lock_path,
                         holder_id,
                     });
@@ -111,7 +111,7 @@ impl FileLock {
         Ok(())
     }
 
-    /// Checks if a lock file is stale (older than LOCK_TIMEOUT)
+    /// Checks if a lock file is stale (older than `LOCK_TIMEOUT`)
     fn is_lock_stale(lock_path: &Path) -> Result<bool> {
         if !lock_path.exists() {
             return Ok(false);
@@ -170,9 +170,10 @@ pub struct LockGuard<'a> {
     _phantom: std::marker::PhantomData<&'a ()>,
 }
 
-impl<'a> LockGuard<'a> {
+impl LockGuard<'_> {
     /// Creates a new lock guard
-    pub fn new(lock: FileLock) -> Self {
+    #[must_use]
+    pub const fn new(lock: FileLock) -> Self {
         LockGuard {
             _lock: lock,
             _phantom: std::marker::PhantomData,

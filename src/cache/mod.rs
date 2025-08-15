@@ -39,6 +39,7 @@ enum CacheValue {
 
 impl TicketCache {
     /// Creates a new cache with the specified TTL
+    #[must_use]
     pub fn new(ttl: Duration) -> Self {
         Self {
             cache: Arc::new(RwLock::new(HashMap::new())),
@@ -47,11 +48,13 @@ impl TicketCache {
     }
 
     /// Creates a new cache with a default TTL of 5 minutes
+    #[must_use]
     pub fn with_default_ttl() -> Self {
         Self::new(Duration::from_secs(300))
     }
 
     /// Gets a single ticket from cache
+    #[must_use]
     pub fn get_ticket(&self, id: &TicketId) -> Option<Ticket> {
         let cache = self.cache.read().ok()?;
         let entry = cache.get(&CacheKey::Ticket(id.clone()))?;
@@ -78,6 +81,7 @@ impl TicketCache {
     }
 
     /// Gets all tickets from cache
+    #[must_use]
     pub fn get_all_tickets(&self) -> Option<Vec<Ticket>> {
         let cache = self.cache.read().ok()?;
         let entry = cache.get(&CacheKey::AllTickets)?;
@@ -148,11 +152,11 @@ mod tests {
     use std::thread;
 
     fn create_test_ticket(suffix: &str) -> Ticket {
-        let id = format!("12345678-1234-1234-1234-{:0>12}", suffix);
+        let id = format!("12345678-1234-1234-1234-{suffix:0>12}");
         Ticket {
             id: TicketId::parse_str(&id).unwrap(),
-            slug: format!("test-{}", suffix),
-            title: format!("Test Ticket {}", suffix),
+            slug: format!("test-{suffix}"),
+            title: format!("Test Ticket {suffix}"),
             description: String::new(),
             priority: Priority::Medium,
             status: Status::Todo,

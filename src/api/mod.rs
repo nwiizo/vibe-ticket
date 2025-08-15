@@ -1,6 +1,6 @@
 //! REST API layer for vibe-ticket
 //!
-//! This module provides a RESTful HTTP API for interacting with the ticket system.
+//! This module provides a `RESTful` HTTP API for interacting with the ticket system.
 //! It is feature-gated and only compiled when the "api" feature is enabled.
 //!
 //! # Features
@@ -13,7 +13,7 @@
 //!
 //! # API Design
 //!
-//! The API follows RESTful principles:
+//! The API follows `RESTful` principles:
 //! - Resource-based URLs (`/tickets`, `/projects`, `/users`)
 //! - HTTP methods for operations (GET, POST, PUT, DELETE)
 //! - JSON request/response bodies
@@ -24,7 +24,7 @@
 //!
 //! The API supports multiple authentication methods:
 //! - API tokens (Bearer authentication)
-//! - OAuth2 integration
+//! - `OAuth2` integration
 //! - Basic authentication (for development)
 //!
 //! # Example Endpoints
@@ -37,7 +37,7 @@
 //! DELETE /api/v1/tickets/:id      - Delete a ticket
 //! ```
 //!
-//! # OpenAPI Documentation
+//! # `OpenAPI` Documentation
 //!
 //! The API automatically generates OpenAPI/Swagger documentation
 //! available at `/api/docs` when the server is running.

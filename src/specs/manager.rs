@@ -16,6 +16,7 @@ pub struct SpecManager {
 
 impl SpecManager {
     /// Create a new spec manager
+    #[must_use]
     pub const fn new(specs_dir: PathBuf) -> Self {
         Self {
             ops: DocumentOperations::new(FileSystemStore, specs_dir),
@@ -286,6 +287,7 @@ impl SpecManager {
     }
 
     /// Get document path
+    #[must_use]
     pub fn get_document_path(&self, spec_id: &str, doc_type: SpecDocumentType) -> PathBuf {
         self.get_spec_dir(spec_id).join(doc_type.file_name())
     }
@@ -323,6 +325,7 @@ pub fn delete(specs_dir: &std::path::Path, spec_id: &str) -> Result<()> {
 }
 
 /// Get document path for a specification
+#[must_use]
 pub fn get_document_path(
     specs_dir: &std::path::Path,
     spec_id: &str,

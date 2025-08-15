@@ -10,6 +10,7 @@ use std::borrow::Cow;
 use std::sync::Arc;
 
 /// Register all spec-driven development tools
+#[must_use]
 pub fn register_tools() -> Vec<Tool> {
     vec![
         // Add spec tool
@@ -91,14 +92,14 @@ pub async fn handle_add(service: &VibeTicketService, arguments: Value) -> Result
     }
 
     let args: Args =
-        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {}", e))?;
+        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
     let ticket_id =
         crate::mcp::handlers::tickets::resolve_ticket_ref(service, &args.ticket).await?;
     let mut ticket = service
         .storage
         .load(&ticket_id)
-        .map_err(|e| format!("Failed to load ticket: {}", e))?;
+        .map_err(|e| format!("Failed to load ticket: {e}"))?;
 
     // Store specification in metadata
     let spec_key = format!("spec_{}", args.spec_type);
@@ -106,19 +107,19 @@ pub async fn handle_add(service: &VibeTicketService, arguments: Value) -> Result
         spec_key.clone(),
         Value::String(
             serde_json::to_string(&args.content)
-                .map_err(|e| format!("Failed to serialize spec: {}", e))?,
+                .map_err(|e| format!("Failed to serialize spec: {e}"))?,
         ),
     );
 
     ticket.metadata.insert(
-        format!("{}_updated_at", spec_key),
+        format!("{spec_key}_updated_at"),
         Value::String(chrono::Utc::now().to_rfc3339()),
     );
 
     service
         .storage
         .save(&ticket)
-        .map_err(|e| format!("Failed to save ticket: {}", e))?;
+        .map_err(|e| format!("Failed to save ticket: {e}"))?;
 
     Ok(json!({
         "status": "added",
@@ -142,24 +143,24 @@ pub async fn handle_check(service: &VibeTicketService, arguments: Value) -> Resu
     }
 
     let args: Args =
-        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {}", e))?;
+        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
     let ticket_id =
         crate::mcp::handlers::tickets::resolve_ticket_ref(service, &args.ticket).await?;
     let ticket = service
         .storage
         .load(&ticket_id)
-        .map_err(|e| format!("Failed to load ticket: {}", e))?;
+        .map_err(|e| format!("Failed to load ticket: {e}"))?;
 
     let mut specs = json!({});
 
     // Check for each spec type
     for spec_type in ["requirements", "design", "tasks"] {
-        let spec_key = format!("spec_{}", spec_type);
+        let spec_key = format!("spec_{spec_type}");
         if let Some(spec_json) = ticket.metadata.get(&spec_key) {
             specs[spec_type] = json!({
                 "exists": true,
-                "updated_at": ticket.metadata.get(&format!("{}_updated_at", spec_key)),
+                "updated_at": ticket.metadata.get(&format!("{spec_key}_updated_at")),
                 "content": spec_json.as_str().and_then(|s| serde_json::from_str::<Value>(s).ok())
             });
         } else {

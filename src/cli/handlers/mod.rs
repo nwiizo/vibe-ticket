@@ -175,6 +175,7 @@ pub fn resolve_ticket_id(ticket_ref: Option<String>) -> Result<String> {
 /// let tags = parse_tags(Some("bug, ui, urgent".to_string()));
 /// assert_eq!(tags, vec!["bug", "ui", "urgent"]);
 /// ```
+#[must_use]
 pub fn parse_tags(tags_str: Option<String>) -> Vec<String> {
     tags_str
         .unwrap_or_default()

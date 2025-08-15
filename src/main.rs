@@ -340,7 +340,7 @@ fn run(cli: Cli, formatter: &OutputFormatter) -> Result<()> {
                 // The function signature has changed after refactoring
                 // Need to adjust the call to match the new signature
                 let spec_id = spec.unwrap_or_default();
-                let editor_opt = if editor { Some("".to_string()) } else { None };
+                let editor_opt = if editor { Some(String::new()) } else { None };
                 handle_spec_requirements(spec_id, editor_opt, cli.project, formatter)
             },
             SpecCommands::Design {

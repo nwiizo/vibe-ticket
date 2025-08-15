@@ -1,9 +1,8 @@
 //! Integration tests for MCP-CLI synchronization
 
-#[cfg(all(feature = "mcp", feature = "integration"))]
+#[cfg(feature = "mcp")]
 mod mcp_tests {
     use serial_test::serial;
-    use std::sync::Arc;
     use std::time::Duration;
     use tempfile::TempDir;
     use tokio::time::sleep;
@@ -39,7 +38,7 @@ mod mcp_tests {
         // For now, skipping since integration module isn't exported
 
         // Mock receiver for testing
-        let (tx, mut receiver) = tokio::sync::broadcast::channel(100);
+        let (_tx, mut receiver) = tokio::sync::broadcast::channel(100);
 
         // Create output formatter
         let output = OutputFormatter::new(false, false);
@@ -70,8 +69,8 @@ mod mcp_tests {
                 assert_eq!(ticket.priority, Priority::High);
                 assert_eq!(ticket.tags, vec!["integration", "test"]);
             },
-            Ok(other) => panic!("Expected TicketCreated event, got {:?}", other),
-            Err(e) => panic!("Failed to receive event: {:?}", e),
+            Ok(other) => panic!("Expected TicketCreated event, got {other:?}"),
+            Err(e) => panic!("Failed to receive event: {e:?}"),
         }
     }
 
@@ -101,7 +100,7 @@ mod mcp_tests {
         // For now, skipping since integration module isn't exported
 
         // Mock receiver for testing
-        let (tx, mut receiver) = tokio::sync::broadcast::channel(100);
+        let (_tx, mut receiver) = tokio::sync::broadcast::channel(100);
 
         // Create output formatter
         let output = OutputFormatter::new(false, false);
@@ -134,8 +133,8 @@ mod mcp_tests {
             Ok(IntegrationEvent::TicketCreated { ticket }) => {
                 assert!(ticket.slug.ends_with("-test-status"));
             },
-            Ok(other) => panic!("Expected TicketCreated event first, got {:?}", other),
-            Err(e) => panic!("Failed to receive first event: {:?}", e),
+            Ok(other) => panic!("Expected TicketCreated event first, got {other:?}"),
+            Err(e) => panic!("Failed to receive first event: {e:?}"),
         }
 
         // Second event should be StatusChanged
@@ -148,8 +147,8 @@ mod mcp_tests {
                 assert_eq!(old_status, Status::Todo);
                 assert_eq!(new_status, Status::Doing);
             },
-            Ok(other) => panic!("Expected StatusChanged event second, got {:?}", other),
-            Err(e) => panic!("Failed to receive second event: {:?}", e),
+            Ok(other) => panic!("Expected StatusChanged event second, got {other:?}"),
+            Err(e) => panic!("Failed to receive second event: {e:?}"),
         }
     }
 }

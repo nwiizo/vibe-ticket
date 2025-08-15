@@ -157,6 +157,7 @@ pub struct Specification {
 
 impl Specification {
     /// Create a new specification
+    #[must_use]
     pub fn new(
         title: String,
         description: String,
@@ -178,6 +179,7 @@ impl Specification {
 
 impl SpecMetadata {
     /// Create new spec metadata
+    #[must_use]
     pub fn new(title: String, description: String) -> Self {
         Self {
             id: Uuid::new_v4().to_string(),
@@ -210,6 +212,7 @@ impl SpecMetadata {
 
 impl SpecProgress {
     /// Get the current phase
+    #[must_use]
     pub const fn current_phase(&self) -> SpecPhase {
         self.current_phase
     }
@@ -248,18 +251,18 @@ impl std::fmt::Display for SpecVersion {
 
 impl SpecVersion {
     /// Increment patch version
-    pub fn bump_patch(&mut self) {
+    pub const fn bump_patch(&mut self) {
         self.patch += 1;
     }
 
     /// Increment minor version (resets patch)
-    pub fn bump_minor(&mut self) {
+    pub const fn bump_minor(&mut self) {
         self.minor += 1;
         self.patch = 0;
     }
 
     /// Increment major version (resets minor and patch)
-    pub fn bump_major(&mut self) {
+    pub const fn bump_major(&mut self) {
         self.major += 1;
         self.minor = 0;
         self.patch = 0;
@@ -268,6 +271,7 @@ impl SpecVersion {
 
 impl SpecDocumentType {
     /// Get file name for this document type
+    #[must_use]
     pub const fn file_name(&self) -> &'static str {
         match self {
             Self::Requirements => "requirements.md",
@@ -277,6 +281,7 @@ impl SpecDocumentType {
     }
 
     /// Get display name
+    #[must_use]
     pub const fn display_name(&self) -> &'static str {
         match self {
             Self::Requirements => "Requirements Definition",

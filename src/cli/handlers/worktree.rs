@@ -74,7 +74,7 @@ pub fn handle_worktree_list(
             "count": displayed_count,
         }))?;
     } else {
-        output.info(&format!("\nTotal worktrees: {}", displayed_count));
+        output.info(&format!("\nTotal worktrees: {displayed_count}"));
     }
 
     Ok(())
@@ -110,7 +110,7 @@ pub fn handle_worktree_remove(
     if !keep_branch && branch_name.is_some() {
         let branch = branch_name.unwrap();
         remove_git_branch(&project_root, &branch)?;
-        output.info(&format!("Removed branch: {}", branch));
+        output.info(&format!("Removed branch: {branch}"));
     }
 
     Ok(())
@@ -140,13 +140,12 @@ pub fn handle_worktree_prune(
 
     let result = cmd
         .output()
-        .map_err(|e| VibeTicketError::custom(format!("Failed to run git worktree prune: {}", e)))?;
+        .map_err(|e| VibeTicketError::custom(format!("Failed to run git worktree prune: {e}")))?;
 
     if !result.status.success() {
         let error_msg = String::from_utf8_lossy(&result.stderr);
         return Err(VibeTicketError::custom(format!(
-            "Failed to prune worktrees: {}",
-            error_msg
+            "Failed to prune worktrees: {error_msg}"
         )));
     }
 
@@ -154,7 +153,7 @@ pub fn handle_worktree_prune(
     if output_text.is_empty() {
         output.info("No stale worktrees found");
     } else {
-        output.success(&format!("Pruned worktrees:\n{}", output_text));
+        output.success(&format!("Pruned worktrees:\n{output_text}"));
 
         // TODO: Implement branch removal for pruned worktrees
         if remove_branches && !dry_run {
@@ -182,13 +181,12 @@ fn list_git_worktrees(project_root: &Path) -> Result<Vec<WorktreeInfo>> {
         .arg("--porcelain")
         .current_dir(project_root)
         .output()
-        .map_err(|e| VibeTicketError::custom(format!("Failed to list worktrees: {}", e)))?;
+        .map_err(|e| VibeTicketError::custom(format!("Failed to list worktrees: {e}")))?;
 
     if !output.status.success() {
         let error_msg = String::from_utf8_lossy(&output.stderr);
         return Err(VibeTicketError::custom(format!(
-            "Failed to list worktrees: {}",
-            error_msg
+            "Failed to list worktrees: {error_msg}"
         )));
     }
 
@@ -289,17 +287,16 @@ fn display_worktree(
             ));
         } else {
             output.info(&format!(
-                "{} [{}] - {} (no ticket found)",
-                path_display, status, slug
+                "{path_display} [{status}] - {slug} (no ticket found)"
             ));
         }
     } else {
-        output.info(&format!("{} [{}]", path_display, status));
+        output.info(&format!("{path_display} [{status}]"));
     }
 
     if verbose {
         if let Some(branch) = &worktree.branch {
-            output.info(&format!("  Branch: {}", branch));
+            output.info(&format!("  Branch: {branch}"));
         }
         output.info(&format!("  Commit: {}", &worktree.commit[..8]));
     }
@@ -339,15 +336,14 @@ fn resolve_worktree_path(
         (project_root.to_path_buf(), prefix.as_str())
     };
 
-    let worktree_name = format!("{}{}", clean_prefix, worktree_ref);
+    let worktree_name = format!("{clean_prefix}{worktree_ref}");
     let worktree_path = base_dir.join(&worktree_name);
     if worktree_path.exists() {
         return Ok(worktree_path);
     }
 
     Err(VibeTicketError::custom(format!(
-        "Worktree not found: {}",
-        worktree_ref
+        "Worktree not found: {worktree_ref}"
     )))
 }
 
@@ -358,7 +354,7 @@ fn check_uncommitted_changes(worktree_path: &Path) -> Result<()> {
         .arg("--porcelain")
         .current_dir(worktree_path)
         .output()
-        .map_err(|e| VibeTicketError::custom(format!("Failed to check git status: {}", e)))?;
+        .map_err(|e| VibeTicketError::custom(format!("Failed to check git status: {e}")))?;
 
     if !output.status.success() {
         // Might not be a git repository, which is fine
@@ -383,7 +379,7 @@ fn get_worktree_branch(worktree_path: &Path) -> Result<Option<String>> {
         .arg("HEAD")
         .current_dir(worktree_path)
         .output()
-        .map_err(|e| VibeTicketError::custom(format!("Failed to get branch name: {}", e)))?;
+        .map_err(|e| VibeTicketError::custom(format!("Failed to get branch name: {e}")))?;
 
     if !output.status.success() {
         return Ok(None);
@@ -411,13 +407,12 @@ fn remove_git_worktree(project_root: &Path, worktree_path: &Path, force: bool) -
 
     let output = cmd
         .output()
-        .map_err(|e| VibeTicketError::custom(format!("Failed to remove worktree: {}", e)))?;
+        .map_err(|e| VibeTicketError::custom(format!("Failed to remove worktree: {e}")))?;
 
     if !output.status.success() {
         let error_msg = String::from_utf8_lossy(&output.stderr);
         return Err(VibeTicketError::custom(format!(
-            "Failed to remove worktree: {}",
-            error_msg
+            "Failed to remove worktree: {error_msg}"
         )));
     }
 
@@ -432,7 +427,7 @@ fn remove_git_branch(project_root: &Path, branch: &str) -> Result<()> {
         .arg(branch)
         .current_dir(project_root)
         .output()
-        .map_err(|e| VibeTicketError::custom(format!("Failed to remove branch: {}", e)))?;
+        .map_err(|e| VibeTicketError::custom(format!("Failed to remove branch: {e}")))?;
 
     if !output.status.success() {
         let error_msg = String::from_utf8_lossy(&output.stderr);
@@ -443,14 +438,11 @@ fn remove_git_branch(project_root: &Path, branch: &str) -> Result<()> {
             .arg(branch)
             .current_dir(project_root)
             .output()
-            .map_err(|e| {
-                VibeTicketError::custom(format!("Failed to force remove branch: {}", e))
-            })?;
+            .map_err(|e| VibeTicketError::custom(format!("Failed to force remove branch: {e}")))?;
 
         if !force_output.status.success() {
             return Err(VibeTicketError::custom(format!(
-                "Failed to remove branch: {}",
-                error_msg
+                "Failed to remove branch: {error_msg}"
             )));
         }
     }

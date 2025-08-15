@@ -55,12 +55,12 @@ pub type McpResult<T> = Result<T, McpError>;
 
 impl From<rmcp::service::ServerInitializeError> for McpError {
     fn from(err: rmcp::service::ServerInitializeError) -> Self {
-        McpError::ProtocolError(err.to_string())
+        Self::ProtocolError(err.to_string())
     }
 }
 
 impl From<tokio::task::JoinError> for McpError {
     fn from(err: tokio::task::JoinError) -> Self {
-        McpError::ServerError(err.to_string())
+        Self::ServerError(err.to_string())
     }
 }

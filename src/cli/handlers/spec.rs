@@ -170,11 +170,11 @@ pub fn handle_spec_design(
         };
 
         let mut engine = TemplateEngine::new();
-        engine.set_variable("spec_id".to_string(), spec_id.clone());
+        engine.set_variable("spec_id".to_string(), spec_id);
 
         let template = SpecTemplate::for_document_type(
             SpecDocumentType::Design,
-            specification.metadata.title.clone(),
+            specification.metadata.title,
             Some(requirements_summary.to_string()),
         );
 
@@ -746,7 +746,7 @@ mod tests {
         // Check that at least one spec directory was created
         let entries: Vec<_> = std::fs::read_dir(&specs_dir)
             .unwrap()
-            .filter_map(|e| e.ok())
+            .filter_map(std::result::Result::ok)
             .collect();
         assert!(!entries.is_empty());
     }

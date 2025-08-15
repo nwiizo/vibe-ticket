@@ -11,6 +11,7 @@ use std::borrow::Cow;
 use std::sync::Arc;
 
 /// Register all ticket management tools
+#[must_use]
 pub fn register_tools() -> Vec<Tool> {
     vec![
         // New ticket tool
@@ -217,7 +218,7 @@ pub async fn resolve_ticket_ref(
     let tickets = service
         .storage
         .load_all()
-        .map_err(|e| format!("Failed to list tickets: {}", e))?;
+        .map_err(|e| format!("Failed to list tickets: {e}"))?;
 
     for ticket in tickets {
         if ticket.slug == ticket_ref {
@@ -225,7 +226,7 @@ pub async fn resolve_ticket_ref(
         }
     }
 
-    Err(format!("Ticket not found: {}", ticket_ref))
+    Err(format!("Ticket not found: {ticket_ref}"))
 }
 
 /// Handle creating a new ticket
@@ -241,7 +242,7 @@ pub fn handle_new(service: &VibeTicketService, arguments: Value) -> Result<Value
     }
 
     let args: Args =
-        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {}", e))?;
+        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
     let mut ticket = Ticket::new(args.slug.clone(), args.title);
 
@@ -255,7 +256,7 @@ pub fn handle_new(service: &VibeTicketService, arguments: Value) -> Result<Value
             "medium" => Priority::Medium,
             "high" => Priority::High,
             "critical" => Priority::Critical,
-            _ => return Err(format!("Invalid priority: {}", priority_str)),
+            _ => return Err(format!("Invalid priority: {priority_str}")),
         };
     }
 
@@ -270,7 +271,7 @@ pub fn handle_new(service: &VibeTicketService, arguments: Value) -> Result<Value
     service
         .storage
         .save(&ticket)
-        .map_err(|e| format!("Failed to save ticket: {}", e))?;
+        .map_err(|e| format!("Failed to save ticket: {e}"))?;
 
     Ok(json!({
         "status": "created",
@@ -297,12 +298,12 @@ pub fn handle_list(service: &VibeTicketService, arguments: Value) -> Result<Valu
     }
 
     let args: Args =
-        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {}", e))?;
+        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
     let mut tickets = service
         .storage
         .load_all()
-        .map_err(|e| format!("Failed to list tickets: {}", e))?;
+        .map_err(|e| format!("Failed to list tickets: {e}"))?;
 
     // Apply filters
     if let Some(status_str) = args.status {
@@ -312,7 +313,7 @@ pub fn handle_list(service: &VibeTicketService, arguments: Value) -> Result<Valu
             "done" => Status::Done,
             "blocked" => Status::Blocked,
             "review" => Status::Review,
-            _ => return Err(format!("Invalid status: {}", status_str)),
+            _ => return Err(format!("Invalid status: {status_str}")),
         };
         tickets.retain(|t| t.status == status);
     }
@@ -323,7 +324,7 @@ pub fn handle_list(service: &VibeTicketService, arguments: Value) -> Result<Valu
             "medium" => Priority::Medium,
             "high" => Priority::High,
             "critical" => Priority::Critical,
-            _ => return Err(format!("Invalid priority: {}", priority_str)),
+            _ => return Err(format!("Invalid priority: {priority_str}")),
         };
         tickets.retain(|t| t.priority == priority);
     }
@@ -332,11 +333,11 @@ pub fn handle_list(service: &VibeTicketService, arguments: Value) -> Result<Valu
         tickets.retain(|t| t.assignee.as_ref() == Some(&assignee));
     }
 
-    if let Some(true) = args.open {
+    if args.open == Some(true) {
         tickets.retain(|t| t.closed_at.is_none());
     }
 
-    if let Some(true) = args.closed {
+    if args.closed == Some(true) {
         tickets.retain(|t| t.closed_at.is_some());
     }
 
@@ -375,13 +376,13 @@ pub async fn handle_show(service: &VibeTicketService, arguments: Value) -> Resul
     }
 
     let args: Args =
-        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {}", e))?;
+        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
     let ticket_id = resolve_ticket_ref(service, &args.ticket).await?;
     let ticket = service
         .storage
         .load(&ticket_id)
-        .map_err(|e| format!("Failed to load ticket: {}", e))?;
+        .map_err(|e| format!("Failed to load ticket: {e}"))?;
 
     Ok(json!({
         "id": ticket.id.to_string(),
@@ -420,13 +421,13 @@ pub async fn handle_edit(service: &VibeTicketService, arguments: Value) -> Resul
     }
 
     let args: Args =
-        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {}", e))?;
+        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
     let ticket_id = resolve_ticket_ref(service, &args.ticket).await?;
     let mut ticket = service
         .storage
         .load(&ticket_id)
-        .map_err(|e| format!("Failed to load ticket: {}", e))?;
+        .map_err(|e| format!("Failed to load ticket: {e}"))?;
 
     let mut changes = Vec::new();
 
@@ -447,7 +448,7 @@ pub async fn handle_edit(service: &VibeTicketService, arguments: Value) -> Resul
             "done" => Status::Done,
             "blocked" => Status::Blocked,
             "review" => Status::Review,
-            _ => return Err(format!("Invalid status: {}", status_str)),
+            _ => return Err(format!("Invalid status: {status_str}")),
         };
 
         // Handle status transitions
@@ -465,7 +466,7 @@ pub async fn handle_edit(service: &VibeTicketService, arguments: Value) -> Resul
             "medium" => Priority::Medium,
             "high" => Priority::High,
             "critical" => Priority::Critical,
-            _ => return Err(format!("Invalid priority: {}", priority_str)),
+            _ => return Err(format!("Invalid priority: {priority_str}")),
         };
         changes.push("priority");
     }
@@ -490,7 +491,7 @@ pub async fn handle_edit(service: &VibeTicketService, arguments: Value) -> Resul
     service
         .storage
         .save(&ticket)
-        .map_err(|e| format!("Failed to save ticket: {}", e))?;
+        .map_err(|e| format!("Failed to save ticket: {e}"))?;
 
     Ok(json!({
         "status": "updated",
@@ -509,13 +510,13 @@ pub async fn handle_close(service: &VibeTicketService, arguments: Value) -> Resu
     }
 
     let args: Args =
-        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {}", e))?;
+        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
     let ticket_id = resolve_ticket_ref(service, &args.ticket).await?;
     let mut ticket = service
         .storage
         .load(&ticket_id)
-        .map_err(|e| format!("Failed to load ticket: {}", e))?;
+        .map_err(|e| format!("Failed to load ticket: {e}"))?;
 
     if ticket.closed_at.is_some() {
         return Err("Ticket is already closed".to_string());
@@ -533,7 +534,7 @@ pub async fn handle_close(service: &VibeTicketService, arguments: Value) -> Resu
     service
         .storage
         .save(&ticket)
-        .map_err(|e| format!("Failed to save ticket: {}", e))?;
+        .map_err(|e| format!("Failed to save ticket: {e}"))?;
 
     // Clear active ticket if this was it
     if let Ok(Some(active_id)) = service.storage.get_active() {
@@ -559,13 +560,13 @@ pub async fn handle_start(service: &VibeTicketService, arguments: Value) -> Resu
     }
 
     let args: Args =
-        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {}", e))?;
+        serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
     let ticket_id = resolve_ticket_ref(service, &args.ticket).await?;
     let mut ticket = service
         .storage
         .load(&ticket_id)
-        .map_err(|e| format!("Failed to load ticket: {}", e))?;
+        .map_err(|e| format!("Failed to load ticket: {e}"))?;
 
     // Update ticket status if needed
     if ticket.status == Status::Todo {
@@ -576,14 +577,14 @@ pub async fn handle_start(service: &VibeTicketService, arguments: Value) -> Resu
         service
             .storage
             .save(&ticket)
-            .map_err(|e| format!("Failed to save ticket: {}", e))?;
+            .map_err(|e| format!("Failed to save ticket: {e}"))?;
     }
 
     // Set as active ticket
     service
         .storage
         .set_active(&ticket_id)
-        .map_err(|e| format!("Failed to set active ticket: {}", e))?;
+        .map_err(|e| format!("Failed to set active ticket: {e}"))?;
 
     let mut response = json!({
         "status": "started",

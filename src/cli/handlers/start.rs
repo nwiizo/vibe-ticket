@@ -301,13 +301,13 @@ fn create_git_worktree(
 
     // Show appropriate cd command based on location
     let cd_path = if worktree_prefix.starts_with("../") {
-        format!("../{}", worktree_dir_name)
+        format!("../{worktree_dir_name}")
     } else if worktree_prefix.starts_with("./") {
-        format!("./{}", worktree_dir_name)
+        format!("./{worktree_dir_name}")
     } else {
-        worktree_dir_name.clone()
+        worktree_dir_name
     };
-    output.info(&format!("You can now cd to '{}'", cd_path));
+    output.info(&format!("You can now cd to '{cd_path}'"));
 
     Ok(())
 }

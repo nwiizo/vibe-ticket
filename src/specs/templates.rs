@@ -15,6 +15,7 @@ pub struct TemplateEngine {
 
 impl TemplateEngine {
     /// Create a new template engine
+    #[must_use]
     pub fn new() -> Self {
         let mut variables = HashMap::new();
         variables.insert(
@@ -31,6 +32,7 @@ impl TemplateEngine {
     }
 
     /// Generate document from template
+    #[must_use]
     pub fn generate(&self, template: &SpecTemplate) -> String {
         let mut content = template.content();
 
@@ -64,6 +66,7 @@ pub enum SpecTemplate {
 
 impl SpecTemplate {
     /// Create a template for a document type
+    #[must_use]
     pub fn for_document_type(
         doc_type: SpecDocumentType,
         title: String,
@@ -86,6 +89,7 @@ impl SpecTemplate {
     }
 
     /// Get template content
+    #[must_use]
     pub fn content(&self) -> String {
         match self {
             Self::Requirements { title, description } => {

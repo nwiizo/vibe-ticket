@@ -93,7 +93,7 @@ fn test_import_json_array() {
     );
 
     if let Err(e) = &result {
-        eprintln!("Import error: {:?}", e);
+        eprintln!("Import error: {e:?}");
     }
     assert!(result.is_ok());
 
@@ -156,7 +156,7 @@ fn test_import_json_object() {
     );
 
     if let Err(e) = &result {
-        eprintln!("Import error: {:?}", e);
+        eprintln!("Import error: {e:?}");
     }
     assert!(result.is_ok());
 
@@ -206,7 +206,7 @@ fn test_import_yaml() {
     );
 
     if let Err(e) = &result {
-        eprintln!("Import error: {:?}", e);
+        eprintln!("Import error: {e:?}");
     }
     assert!(result.is_ok());
 
@@ -243,7 +243,7 @@ fn test_import_csv() {
     );
 
     if let Err(e) = &result {
-        eprintln!("Import error: {:?}", e);
+        eprintln!("Import error: {e:?}");
     }
     assert!(result.is_ok());
 
@@ -300,7 +300,7 @@ fn test_dry_run_import() {
     );
 
     if let Err(e) = &result {
-        eprintln!("Import error: {:?}", e);
+        eprintln!("Import error: {e:?}");
     }
     assert!(result.is_ok());
 
@@ -382,7 +382,7 @@ fn test_skip_existing_tickets() {
     );
 
     if let Err(e) = &result {
-        eprintln!("Import error: {:?}", e);
+        eprintln!("Import error: {e:?}");
     }
     assert!(result.is_ok());
 
@@ -455,7 +455,7 @@ fn test_validation_duplicate_ids() {
     );
 
     if let Err(e) = &result {
-        eprintln!("Import error: {:?}", e);
+        eprintln!("Import error: {e:?}");
     }
     assert!(result.is_ok());
 }
@@ -465,7 +465,7 @@ fn test_invalid_json_format() {
     let (temp_dir, formatter) = setup_test_project();
 
     // Create invalid JSON file
-    let json_content = r#"{ invalid json content"#;
+    let json_content = r"{ invalid json content";
 
     let json_file = temp_dir.path().join("invalid.json");
     fs::write(&json_file, json_content).unwrap();
@@ -501,7 +501,7 @@ fn test_auto_format_detection() {
         &formatter,
     );
     if let Err(e) = &result {
-        eprintln!("Import error: {:?}", e);
+        eprintln!("Import error: {e:?}");
     }
     assert!(result.is_ok());
 
@@ -534,7 +534,7 @@ tickets:
         &formatter,
     );
     if let Err(e) = &result {
-        eprintln!("Import error: {:?}", e);
+        eprintln!("Import error: {e:?}");
     }
     assert!(result.is_ok());
 }
@@ -599,7 +599,7 @@ fn test_import_with_complex_metadata() {
     );
 
     if let Err(e) = &result {
-        eprintln!("Import error: {:?}", e);
+        eprintln!("Import error: {e:?}");
     }
     assert!(result.is_ok());
 

@@ -118,6 +118,7 @@ impl VibeTicketError {
     }
 
     /// Returns true if this error is recoverable
+    #[must_use]
     pub const fn is_recoverable(&self) -> bool {
         matches!(
             self,
@@ -129,6 +130,7 @@ impl VibeTicketError {
     }
 
     /// Returns true if this error is a configuration issue
+    #[must_use]
     pub const fn is_config_error(&self) -> bool {
         matches!(
             self,
@@ -137,6 +139,7 @@ impl VibeTicketError {
     }
 
     /// Returns a user-friendly error message
+    #[must_use]
     pub fn user_message(&self) -> String {
         match self {
             Self::Io(e) if e.kind() == io::ErrorKind::NotFound => {
@@ -152,12 +155,12 @@ impl VibeTicketError {
 
     /// Creates a serialization error with consistent formatting
     pub fn serialization_error(format: &str, error: impl std::fmt::Display) -> Self {
-        Self::custom(format!("Failed to serialize to {}: {}", format, error))
+        Self::custom(format!("Failed to serialize to {format}: {error}"))
     }
 
     /// Creates a deserialization error with consistent formatting
     pub fn deserialization_error(format: &str, error: impl std::fmt::Display) -> Self {
-        Self::custom(format!("Failed to deserialize from {}: {}", format, error))
+        Self::custom(format!("Failed to deserialize from {format}: {error}"))
     }
 
     /// Creates an I/O error with consistent formatting
@@ -176,13 +179,11 @@ impl VibeTicketError {
 
     /// Creates a parsing error with consistent formatting
     pub fn parse_error(type_name: &str, value: &str, error: impl std::fmt::Display) -> Self {
-        Self::custom(format!(
-            "Failed to parse '{}' as {}: {}",
-            value, type_name, error
-        ))
+        Self::custom(format!("Failed to parse '{value}' as {type_name}: {error}"))
     }
 
     /// Returns suggested actions for the error
+    #[must_use]
     pub fn suggestions(&self) -> Vec<String> {
         match self {
             Self::ProjectNotInitialized => vec![

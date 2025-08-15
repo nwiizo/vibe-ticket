@@ -10,6 +10,7 @@ pub struct McpEventHandler {}
 
 impl McpEventHandler {
     /// Create a new MCP event handler
+    #[must_use]
     pub fn new(_service: Arc<VibeTicketService>) -> Self {
         Self {}
     }
