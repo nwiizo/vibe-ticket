@@ -51,6 +51,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Task remove handler parameter mismatch
 - Import/export ID cloning issues
 
+## [0.3.1] - 2025-08-14
+
+### Fixed
+- **Critical**: Fixed missing `print_message` method implementation in OutputFormatter causing compilation failures
+- Completed review and verification of YAML import functionality with all tests passing
+
+### Changed
+- Refactored duplicate code patterns across handlers to improve maintainability
+- Improved test coverage for import/export functionality (JSON, YAML, CSV)
+- Enhanced documentation tests and output formatting
+
+### Testing
+- ✅ All 38 tests passing successfully (6 import, 15 JSON, 6 YAML, 3 CSV, 4 output formatter, 4 documentation)
+
+## [0.3.0] - 2025-08-13
+
+### Added
+- **Major Feature**: Complete CLI-MCP Integration with bidirectional synchronization
+- Automatic event synchronization between CLI and MCP layers
+- Event Bridge System for zero-latency communication
+- Integration module (`src/integration/mod.rs`) for centralized event broadcasting
+- MCP Event Handlers for processing CLI events in MCP context
+- Integration tests for CLI-MCP synchronization
+- Specification Management MCP tools (spec_add, spec_update, spec_check)
+
+### Changed
+- Enhanced all CLI commands to emit integration events (new, close, edit, start)
+- Updated MCP server initialization with integration support
+- Improved error handling in event processing
+- All events are processed asynchronously without impacting CLI performance
+
+### Fixed
+- Compilation issues with MCP feature flags
+- Event handler type mismatches
+- Integration service initialization race conditions
+
+### Statistics
+- Files Changed: 11 core files + 3 new files
+- Lines Added: ~400 lines of integration code
+- Performance Impact: Zero latency increase for CLI operations
+
+## [0.2.3] - 2025-08-03
+
+### Added
+- Enhanced MCP integration with full CLI-MCP synchronization
+- Event system for real-time updates between CLI and MCP
+
+### Changed
+- Improved MCP server initialization process
+- Enhanced error handling in MCP operations
+
+### Fixed
+- Type consistency issues in MCP handlers
+- Async/await usage in MCP functions
+
 ## [0.2.2] - 2025-08-02
 
 ### Fixed
@@ -132,5 +187,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Configuration management with TOML support
 - Plugin system architecture (foundation)
 
+[0.3.3]: https://github.com/nwiizo/vibe-ticket/compare/v0.3.2...v0.3.3
+[0.3.2]: https://github.com/nwiizo/vibe-ticket/compare/v0.3.1...v0.3.2
+[0.3.1]: https://github.com/nwiizo/vibe-ticket/compare/v0.3.0...v0.3.1
+[0.3.0]: https://github.com/nwiizo/vibe-ticket/compare/v0.2.3...v0.3.0
+[0.2.3]: https://github.com/nwiizo/vibe-ticket/compare/v0.2.2...v0.2.3
+[0.2.2]: https://github.com/nwiizo/vibe-ticket/compare/v0.2.1...v0.2.2
+[0.2.1]: https://github.com/nwiizo/vibe-ticket/compare/v0.1.4...v0.2.1
 [0.1.4]: https://github.com/nwiizo/vibe-ticket/compare/v0.1.2...v0.1.4
 [0.1.2]: https://github.com/nwiizo/vibe-ticket/releases/tag/v0.1.2
