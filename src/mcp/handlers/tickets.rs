@@ -597,11 +597,11 @@ pub fn handle_start(service: &VibeTicketService, arguments: Value) -> Result<Val
         // Load config to check worktree settings
         let config = crate::config::Config::load_or_default()
             .map_err(|e| format!("Failed to load config: {e}"))?;
-        
+
         if config.git.enabled && config.git.worktree_enabled && config.git.worktree_default {
             // Create branch name
             let branch_name = format!("{}{}", config.git.branch_prefix, ticket.slug);
-            
+
             // Try to create worktree
             match create_git_worktree_mcp(&branch_name, &ticket.slug, &config) {
                 Ok(worktree_path) => {
@@ -611,7 +611,7 @@ pub fn handle_start(service: &VibeTicketService, arguments: Value) -> Result<Val
                 },
                 Err(e) => {
                     response["worktree_note"] = json!(format!("Worktree creation failed: {}", e));
-                }
+                },
             }
         } else {
             response["worktree_note"] = json!("Worktree creation disabled in config");
@@ -630,8 +630,8 @@ fn create_git_worktree_mcp(
     use std::process::Command;
 
     // Get project root
-    let project_root = std::env::current_dir()
-        .map_err(|e| format!("Failed to get current directory: {e}"))?;
+    let project_root =
+        std::env::current_dir().map_err(|e| format!("Failed to get current directory: {e}"))?;
 
     // Check if we're in a git repository
     let status = Command::new("git")
@@ -645,7 +645,12 @@ fn create_git_worktree_mcp(
 
     // Check if branch already exists
     let branch_exists = Command::new("git")
-        .args(["show-ref", "--verify", "--quiet", &format!("refs/heads/{branch_name}")])
+        .args([
+            "show-ref",
+            "--verify",
+            "--quiet",
+            &format!("refs/heads/{branch_name}"),
+        ])
         .output()
         .map_err(|e| format!("Failed to check if branch exists: {e}"))?
         .status
@@ -664,17 +669,20 @@ fn create_git_worktree_mcp(
 
     // Check if worktree already exists
     if worktree_path.exists() {
-        return Err(format!("Worktree directory already exists: {}", worktree_path.display()));
+        return Err(format!(
+            "Worktree directory already exists: {}",
+            worktree_path.display()
+        ));
     }
 
     // Create worktree with new or existing branch
     let mut cmd = Command::new("git");
     cmd.arg("worktree").arg("add");
-    
+
     if !branch_exists {
         cmd.arg("-b");
     }
-    
+
     cmd.arg(&worktree_path).arg(branch_name);
 
     let output = cmd

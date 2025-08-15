@@ -843,7 +843,13 @@ mod tests {
         handle_spec_init("Approve Test", None, None, None, None, &formatter).unwrap();
 
         // Try to approve with invalid phase
-        let result = handle_spec_approve("test-spec".to_string(), "invalid-phase".to_string(), None, None, &formatter);
+        let result = handle_spec_approve(
+            "test-spec".to_string(),
+            "invalid-phase".to_string(),
+            None,
+            None,
+            &formatter,
+        );
 
         assert!(result.is_err());
     }
