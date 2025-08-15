@@ -97,6 +97,10 @@ pub fn handle_spec_requirements(
 }
 
 /// Handle spec design command
+///
+/// # Panics
+///
+/// Panics if `spec` is `Some` but contains invalid data when calling `unwrap()`
 pub fn handle_spec_design(
     spec: Option<String>,
     editor: bool,

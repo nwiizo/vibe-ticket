@@ -30,7 +30,7 @@ use regex::Regex;
 ///
 /// # Panics
 ///
-/// Panics if regex compilation fails when use_regex is true
+/// Panics if regex compilation fails when `use_regex` is true
 #[allow(clippy::too_many_lines)]
 pub fn handle_search_command(
     query: &str,
