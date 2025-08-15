@@ -25,6 +25,7 @@ mod config;
 mod edit;
 mod export;
 mod import;
+mod import_export_common;
 mod init;
 mod list;
 #[cfg(feature = "mcp")]
@@ -37,6 +38,7 @@ mod spec_common;
 mod start;
 mod task;
 mod worktree;
+mod worktree_common;
 
 // Re-export handlers
 pub use archive::handle_archive_command;

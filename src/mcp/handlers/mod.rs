@@ -1,5 +1,6 @@
 //! MCP tool handlers for vibe-ticket operations
 
+pub mod common;
 pub mod config;
 pub mod events;
 pub mod schema_helper;
