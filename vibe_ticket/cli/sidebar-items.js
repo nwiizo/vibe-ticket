@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Commands","ConfigCommands","McpCommands","SpecCommands","TaskCommands","WorktreeCommands"],"fn":["find_project_root","format_duration","get_editor","get_vibe_ticket_dir","open_url","parse_tags","slugify","validate_slug"],"mod":["handlers"],"struct":["Cli","OutputFormatter","ProgressBar"]};
