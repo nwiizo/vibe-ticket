@@ -31,7 +31,6 @@ use regex::Regex;
 /// # Panics
 ///
 /// Panics if regex compilation fails when `use_regex` is true
-#[allow(clippy::too_many_lines)]
 pub fn handle_search_command(
     query: &str,
     title_only: bool,
@@ -61,83 +60,7 @@ pub fn handle_search_command(
     };
 
     // Search tickets
-    let mut matches: Vec<(Ticket, Vec<String>)> = Vec::new();
-
-    for ticket in tickets {
-        let mut match_locations = Vec::new();
-
-        if use_regex {
-            // Regex search
-            let regex = regex.as_ref().unwrap();
-
-            if !title_only && !description_only && !tags_only {
-                // Search all fields
-                if regex.is_match(&ticket.title) {
-                    match_locations.push("title".to_string());
-                }
-                if regex.is_match(&ticket.description) {
-                    match_locations.push("description".to_string());
-                }
-                if ticket.tags.iter().any(|tag| regex.is_match(tag)) {
-                    match_locations.push("tags".to_string());
-                }
-            } else {
-                // Search specific fields
-                if title_only && regex.is_match(&ticket.title) {
-                    match_locations.push("title".to_string());
-                }
-                if description_only && regex.is_match(&ticket.description) {
-                    match_locations.push("description".to_string());
-                }
-                if tags_only && ticket.tags.iter().any(|tag| regex.is_match(tag)) {
-                    match_locations.push("tags".to_string());
-                }
-            }
-        } else {
-            // Case-insensitive substring search
-            let query_lower = query.to_lowercase();
-
-            if !title_only && !description_only && !tags_only {
-                // Search all fields
-                if ticket.title.to_lowercase().contains(&query_lower) {
-                    match_locations.push("title".to_string());
-                }
-                if ticket.description.to_lowercase().contains(&query_lower) {
-                    match_locations.push("description".to_string());
-                }
-                if ticket
-                    .tags
-                    .iter()
-                    .any(|tag| tag.to_lowercase().contains(&query_lower))
-                {
-                    match_locations.push("tags".to_string());
-                }
-            } else {
-                // Search specific fields
-                if title_only && ticket.title.to_lowercase().contains(&query_lower) {
-                    match_locations.push("title".to_string());
-                }
-                if description_only && ticket.description.to_lowercase().contains(&query_lower) {
-                    match_locations.push("description".to_string());
-                }
-                if tags_only
-                    && ticket
-                        .tags
-                        .iter()
-                        .any(|tag| tag.to_lowercase().contains(&query_lower))
-                {
-                    match_locations.push("tags".to_string());
-                }
-            }
-        }
-
-        if !match_locations.is_empty() {
-            matches.push((ticket, match_locations));
-        }
-    }
-
-    // Sort matches by creation date (newest first)
-    matches.sort_by(|a, b| b.0.created_at.cmp(&a.0.created_at));
+    let matches = search_tickets(&tickets, query, title_only, description_only, tags_only, use_regex, regex.as_ref());
 
     // Output results
     if output.is_json() {
@@ -209,6 +132,110 @@ pub fn handle_search_command(
     }
 
     Ok(())
+}
+
+/// Search tickets for matches
+fn search_tickets(
+    tickets: &[Ticket],
+    query: &str,
+    title_only: bool,
+    description_only: bool,
+    tags_only: bool,
+    use_regex: bool,
+    regex: Option<&Regex>,
+) -> Vec<(Ticket, Vec<String>)> {
+    let mut matches = Vec::new();
+    
+    for ticket in tickets {
+        let match_locations = if use_regex {
+            search_ticket_regex(ticket, title_only, description_only, tags_only, regex.unwrap())
+        } else {
+            search_ticket_text(ticket, query, title_only, description_only, tags_only)
+        };
+        
+        if !match_locations.is_empty() {
+            matches.push((ticket.clone(), match_locations));
+        }
+    }
+    
+    // Sort matches by creation date (newest first)
+    matches.sort_by(|a, b| b.0.created_at.cmp(&a.0.created_at));
+    matches
+}
+
+/// Search ticket with regex
+fn search_ticket_regex(
+    ticket: &Ticket,
+    title_only: bool,
+    description_only: bool,
+    tags_only: bool,
+    regex: &Regex,
+) -> Vec<String> {
+    let mut match_locations = Vec::new();
+    
+    if !title_only && !description_only && !tags_only {
+        // Search all fields
+        if regex.is_match(&ticket.title) {
+            match_locations.push("title".to_string());
+        }
+        if regex.is_match(&ticket.description) {
+            match_locations.push("description".to_string());
+        }
+        if ticket.tags.iter().any(|tag| regex.is_match(tag)) {
+            match_locations.push("tags".to_string());
+        }
+    } else {
+        // Search specific fields
+        if title_only && regex.is_match(&ticket.title) {
+            match_locations.push("title".to_string());
+        }
+        if description_only && regex.is_match(&ticket.description) {
+            match_locations.push("description".to_string());
+        }
+        if tags_only && ticket.tags.iter().any(|tag| regex.is_match(tag)) {
+            match_locations.push("tags".to_string());
+        }
+    }
+    
+    match_locations
+}
+
+/// Search ticket with text
+fn search_ticket_text(
+    ticket: &Ticket,
+    query: &str,
+    title_only: bool,
+    description_only: bool,
+    tags_only: bool,
+) -> Vec<String> {
+    let mut match_locations = Vec::new();
+    let query_lower = query.to_lowercase();
+    
+    if !title_only && !description_only && !tags_only {
+        // Search all fields
+        if ticket.title.to_lowercase().contains(&query_lower) {
+            match_locations.push("title".to_string());
+        }
+        if ticket.description.to_lowercase().contains(&query_lower) {
+            match_locations.push("description".to_string());
+        }
+        if ticket.tags.iter().any(|tag| tag.to_lowercase().contains(&query_lower)) {
+            match_locations.push("tags".to_string());
+        }
+    } else {
+        // Search specific fields
+        if title_only && ticket.title.to_lowercase().contains(&query_lower) {
+            match_locations.push("title".to_string());
+        }
+        if description_only && ticket.description.to_lowercase().contains(&query_lower) {
+            match_locations.push("description".to_string());
+        }
+        if tags_only && ticket.tags.iter().any(|tag| tag.to_lowercase().contains(&query_lower)) {
+            match_locations.push("tags".to_string());
+        }
+    }
+    
+    match_locations
 }
 
 /// Extract a short excerpt around the match

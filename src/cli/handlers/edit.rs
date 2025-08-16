@@ -9,6 +9,16 @@ use crate::core::{Priority, Status};
 use crate::error::{Result, VibeTicketError};
 use crate::storage::{ActiveTicketRepository, FileStorage, TicketRepository};
 
+/// Parameters for updating a ticket
+struct UpdateParams {
+    title: Option<String>,
+    description: Option<String>,
+    priority: Option<String>,
+    status: Option<String>,
+    add_tags: Option<String>,
+    remove_tags: Option<String>,
+}
+
 /// Handler for the `edit` command
 ///
 /// This function allows editing various properties of a ticket:
@@ -40,7 +50,6 @@ use crate::storage::{ActiveTicketRepository, FileStorage, TicketRepository};
 /// - The ticket is not found
 /// - Invalid priority or status values are provided
 #[allow(clippy::too_many_arguments)]
-#[allow(clippy::too_many_lines)]
 pub fn handle_edit_command(
     ticket_ref: Option<String>,
     title: Option<String>,
@@ -82,21 +91,57 @@ pub fn handle_edit_command(
         return Ok(());
     }
 
+    // Apply updates
+    let update_params = UpdateParams {
+        title,
+        description,
+        priority,
+        status,
+        add_tags,
+        remove_tags,
+    };
+    apply_ticket_updates(&mut ticket, &mut changes, update_params)?;
+
+    // Check if any changes were made
+    if changes.is_empty() {
+        output.warning("No changes specified");
+        return Ok(());
+    }
+
+    // Save the updated ticket
+    storage.save(&ticket)?;
+
+    // Notify MCP about ticket update
+    #[cfg(feature = "mcp")]
+    crate::integration::notify_ticket_updated(&ticket);
+
+    // Output results
+    format_edit_output(output, &ticket, &changes)?;
+
+    Ok(())
+}
+
+/// Apply updates to a ticket
+fn apply_ticket_updates(
+    ticket: &mut crate::core::Ticket,
+    changes: &mut Vec<String>,
+    params: UpdateParams,
+) -> Result<()> {
     // Update title if provided
-    if let Some(new_title) = title {
+    if let Some(new_title) = params.title {
         let old_title = ticket.title.clone();
         ticket.title.clone_from(&new_title);
         changes.push(format!("Title: {old_title} → {new_title}"));
     }
 
     // Update description if provided
-    if let Some(new_description) = description {
+    if let Some(new_description) = params.description {
         ticket.description = new_description;
         changes.push("Description updated".to_string());
     }
 
     // Update priority if provided
-    if let Some(priority_str) = priority {
+    if let Some(priority_str) = params.priority {
         let new_priority = Priority::try_from(priority_str.as_str()).map_err(|_| {
             VibeTicketError::InvalidPriority {
                 priority: priority_str,
@@ -108,7 +153,7 @@ pub fn handle_edit_command(
     }
 
     // Update status if provided
-    if let Some(status_str) = status {
+    if let Some(status_str) = params.status {
         let new_status = Status::try_from(status_str.as_str())
             .map_err(|_| VibeTicketError::InvalidStatus { status: status_str })?;
         let old_status = ticket.status;
@@ -127,6 +172,19 @@ pub fn handle_edit_command(
         }
     }
 
+    // Handle tags
+    handle_tag_updates(ticket, changes, params.add_tags, params.remove_tags);
+
+    Ok(())
+}
+
+/// Handle tag updates
+fn handle_tag_updates(
+    ticket: &mut crate::core::Ticket,
+    changes: &mut Vec<String>,
+    add_tags: Option<String>,
+    remove_tags: Option<String>,
+) {
     // Add tags if provided
     if let Some(tags_str) = add_tags {
         let new_tags: Vec<String> = tags_str
@@ -154,21 +212,14 @@ pub fn handle_edit_command(
         ticket.tags.retain(|tag| !tags_to_remove.contains(tag));
         changes.push("Tags removed".to_string());
     }
+}
 
-    // Check if any changes were made
-    if changes.is_empty() {
-        output.warning("No changes specified");
-        return Ok(());
-    }
-
-    // Save the updated ticket
-    storage.save(&ticket)?;
-
-    // Notify MCP about ticket update
-    #[cfg(feature = "mcp")]
-    crate::integration::notify_ticket_updated(&ticket);
-
-    // Output results
+/// Format and display edit command output
+fn format_edit_output(
+    output: &OutputFormatter,
+    ticket: &crate::core::Ticket,
+    changes: &[String],
+) -> Result<()> {
     if output.is_json() {
         output.print_json(&serde_json::json!({
             "status": "success",
@@ -185,7 +236,7 @@ pub fn handle_edit_command(
         }))?;
     } else {
         output.success(&format!("Updated ticket: {}", ticket.slug));
-        for change in &changes {
+        for change in changes {
             output.info(&format!("  • {change}"));
         }
 
@@ -199,7 +250,6 @@ pub fn handle_edit_command(
             output.info(&format!("  Tags: {}", ticket.tags.join(", ")));
         }
     }
-
     Ok(())
 }
 

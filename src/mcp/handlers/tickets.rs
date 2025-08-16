@@ -14,103 +14,119 @@ use std::sync::Arc;
 #[must_use]
 pub fn register_tools() -> Vec<Tool> {
     vec![
-        // New ticket tool
-        Tool {
-            name: Cow::Borrowed("vibe-ticket_new"),
-            description: Some(Cow::Borrowed("Create a new ticket")),
-            input_schema: Arc::new(json_to_schema(json!({
-                "type": "object",
-                "properties": {
-                    "slug": {
-                        "type": "string",
-                        "description": "Unique identifier slug for the ticket"
-                    },
-                    "title": {
-                        "type": "string",
-                        "description": "Title of the ticket"
-                    },
-                    "description": {
-                        "type": "string",
-                        "description": "Detailed description of the ticket"
-                    },
-                    "priority": {
-                        "type": "string",
-                        "enum": ["low", "medium", "high", "critical"],
-                        "description": "Priority level",
-                        "default": "medium"
-                    },
-                    "tags": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "Tags for categorization"
-                    },
-                    "assignee": {
-                        "type": "string",
-                        "description": "Assignee for the ticket"
-                    }
+        create_new_ticket_tool(),
+        create_list_tickets_tool(),
+        create_show_ticket_tool(),
+        create_edit_ticket_tool(),
+        create_close_ticket_tool(),
+        create_start_ticket_tool(),
+        create_check_status_tool(),
+    ]
+}
+
+fn create_new_ticket_tool() -> Tool {
+    Tool {
+        name: Cow::Borrowed("vibe-ticket_new"),
+        description: Some(Cow::Borrowed("Create a new ticket")),
+        input_schema: Arc::new(json_to_schema(json!({
+            "type": "object",
+            "properties": {
+                "slug": {
+                    "type": "string",
+                    "description": "Unique identifier slug for the ticket"
                 },
-                "required": ["slug", "title"]
-            }))),
-            annotations: None,
-        },
-        // List tickets tool
-        Tool {
-            name: Cow::Borrowed("vibe-ticket_list"),
-            description: Some(Cow::Borrowed("List tickets with optional filters")),
-            input_schema: Arc::new(json_to_schema(json!({
-                "type": "object",
-                "properties": {
-                    "status": {
-                        "type": "string",
-                        "enum": ["todo", "doing", "done", "blocked", "review"],
-                        "description": "Filter by status"
-                    },
-                    "priority": {
-                        "type": "string",
-                        "enum": ["low", "medium", "high", "critical"],
-                        "description": "Filter by priority"
-                    },
-                    "assignee": {
-                        "type": "string",
-                        "description": "Filter by assignee"
-                    },
-                    "open": {
-                        "type": "boolean",
-                        "description": "Show only open tickets"
-                    },
-                    "closed": {
-                        "type": "boolean",
-                        "description": "Show only closed tickets"
-                    },
-                    "tags": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "Filter by tags"
-                    }
+                "title": {
+                    "type": "string",
+                    "description": "Title of the ticket"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Detailed description of the ticket"
+                },
+                "priority": {
+                    "type": "string",
+                    "enum": ["low", "medium", "high", "critical"],
+                    "description": "Priority level",
+                    "default": "medium"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Tags for categorization"
+                },
+                "assignee": {
+                    "type": "string",
+                    "description": "Assignee for the ticket"
                 }
-            }))),
-            annotations: None,
-        },
-        // Show ticket tool
-        Tool {
-            name: Cow::Borrowed("vibe-ticket_show"),
-            description: Some(Cow::Borrowed("Show detailed information about a ticket")),
-            input_schema: Arc::new(json_to_schema(json!({
-                "type": "object",
-                "properties": {
-                    "ticket": {
-                        "type": "string",
-                        "description": "Ticket ID or slug"
-                    }
+            },
+            "required": ["slug", "title"]
+        }))),
+        annotations: None,
+    }
+}
+
+fn create_list_tickets_tool() -> Tool {
+    Tool {
+        name: Cow::Borrowed("vibe-ticket_list"),
+        description: Some(Cow::Borrowed("List tickets with optional filters")),
+        input_schema: Arc::new(json_to_schema(json!({
+            "type": "object",
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "enum": ["todo", "doing", "done", "blocked", "review"],
+                    "description": "Filter by status"
                 },
-                "required": ["ticket"]
-            }))),
-            annotations: None,
-        },
-        // Edit ticket tool
-        Tool {
-            name: Cow::Borrowed("vibe-ticket_edit"),
-            description: Some(Cow::Borrowed("Edit ticket properties")),
+                "priority": {
+                    "type": "string",
+                    "enum": ["low", "medium", "high", "critical"],
+                    "description": "Filter by priority"
+                },
+                "assignee": {
+                    "type": "string",
+                    "description": "Filter by assignee"
+                },
+                "open": {
+                    "type": "boolean",
+                    "description": "Show only open tickets"
+                },
+                "closed": {
+                    "type": "boolean",
+                    "description": "Show only closed tickets"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Filter by tags"
+                }
+            }
+        }))),
+        annotations: None,
+    }
+}
+
+fn create_show_ticket_tool() -> Tool {
+    Tool {
+        name: Cow::Borrowed("vibe-ticket_show"),
+        description: Some(Cow::Borrowed("Show detailed information about a ticket")),
+        input_schema: Arc::new(json_to_schema(json!({
+            "type": "object",
+            "properties": {
+                "ticket": {
+                    "type": "string",
+                    "description": "Ticket ID or slug"
+                }
+            },
+            "required": ["ticket"]
+        }))),
+        annotations: None,
+    }
+}
+
+fn create_edit_ticket_tool() -> Tool {
+    Tool {
+        name: Cow::Borrowed("vibe-ticket_edit"),
+        description: Some(Cow::Borrowed("Edit ticket properties")),
             input_schema: Arc::new(json_to_schema(json!({
                 "type": "object",
                 "properties": {
@@ -148,60 +164,65 @@ pub fn register_tools() -> Vec<Tool> {
                 },
                 "required": ["ticket"]
             }))),
-            annotations: None,
-        },
-        // Close ticket tool
-        Tool {
-            name: Cow::Borrowed("vibe-ticket_close"),
-            description: Some(Cow::Borrowed("Close a ticket")),
-            input_schema: Arc::new(json_to_schema(json!({
-                "type": "object",
-                "properties": {
-                    "ticket": {
-                        "type": "string",
-                        "description": "Ticket ID or slug"
-                    },
-                    "message": {
-                        "type": "string",
-                        "description": "Closing message"
-                    }
+        annotations: None,
+    }
+}
+
+fn create_close_ticket_tool() -> Tool {
+    Tool {
+        name: Cow::Borrowed("vibe-ticket_close"),
+        description: Some(Cow::Borrowed("Close a ticket")),
+        input_schema: Arc::new(json_to_schema(json!({
+            "type": "object",
+            "properties": {
+                "ticket": {
+                    "type": "string",
+                    "description": "Ticket ID or slug"
                 },
-                "required": ["ticket"]
-            }))),
-            annotations: None,
-        },
-        // Start ticket tool
-        Tool {
-            name: Cow::Borrowed("vibe-ticket_start"),
-            description: Some(Cow::Borrowed("Start working on a ticket")),
-            input_schema: Arc::new(json_to_schema(json!({
-                "type": "object",
-                "properties": {
-                    "ticket": {
-                        "type": "string",
-                        "description": "Ticket ID or slug"
-                    },
-                    "no_worktree": {
-                        "type": "boolean",
-                        "description": "Skip creating Git worktree",
-                        "default": false
-                    }
+                "message": {
+                    "type": "string",
+                    "description": "Closing message"
+                }
+            },
+            "required": ["ticket"]
+        }))),
+        annotations: None,
+    }
+}
+
+fn create_start_ticket_tool() -> Tool {
+    Tool {
+        name: Cow::Borrowed("vibe-ticket_start"),
+        description: Some(Cow::Borrowed("Start working on a ticket")),
+        input_schema: Arc::new(json_to_schema(json!({
+            "type": "object",
+            "properties": {
+                "ticket": {
+                    "type": "string",
+                    "description": "Ticket ID or slug"
                 },
-                "required": ["ticket"]
-            }))),
-            annotations: None,
-        },
-        // Check status tool
-        Tool {
-            name: Cow::Borrowed("vibe-ticket_check"),
-            description: Some(Cow::Borrowed("Check current ticket status")),
-            input_schema: Arc::new(json_to_schema(json!({
-                "type": "object",
-                "properties": {}
-            }))),
-            annotations: None,
-        },
-    ]
+                "no_worktree": {
+                    "type": "boolean",
+                    "description": "Skip creating Git worktree",
+                    "default": false
+                }
+            },
+            "required": ["ticket"]
+        }))),
+        annotations: None,
+    }
+}
+
+fn create_check_status_tool() -> Tool {
+    Tool {
+        name: Cow::Borrowed("vibe-ticket_check"),
+        description: Some(Cow::Borrowed("Check current ticket status")),
+        input_schema: Arc::new(json_to_schema(json!({
+            "type": "object",
+            "properties": {}
+        }))),
+        annotations: None,
+    }
 }
 
 /// Helper to resolve ticket reference (ID or slug)
