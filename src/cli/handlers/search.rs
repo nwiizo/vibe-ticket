@@ -27,6 +27,7 @@ use regex::Regex;
 /// * `use_regex` - Treat query as a regex pattern
 /// * `project_dir` - Optional project directory path
 /// * `output` - Output formatter for displaying results
+#[allow(clippy::fn_params_excessive_bools)]
 pub fn handle_search_command(
     query: &str,
     title_only: bool,
@@ -56,7 +57,15 @@ pub fn handle_search_command(
     };
 
     // Search tickets
-    let matches = search_tickets(&tickets, query, title_only, description_only, tags_only, use_regex, regex.as_ref());
+    let matches = search_tickets(
+        &tickets,
+        query,
+        title_only,
+        description_only,
+        tags_only,
+        use_regex,
+        regex.as_ref(),
+    );
 
     // Output results
     if output.is_json() {
@@ -135,6 +144,7 @@ pub fn handle_search_command(
 /// # Panics
 ///
 /// Panics if `use_regex` is true but `regex` is None
+#[allow(clippy::fn_params_excessive_bools)]
 fn search_tickets(
     tickets: &[Ticket],
     query: &str,
@@ -145,19 +155,25 @@ fn search_tickets(
     regex: Option<&Regex>,
 ) -> Vec<(Ticket, Vec<String>)> {
     let mut matches = Vec::new();
-    
+
     for ticket in tickets {
         let match_locations = if use_regex {
-            search_ticket_regex(ticket, title_only, description_only, tags_only, regex.unwrap())
+            search_ticket_regex(
+                ticket,
+                title_only,
+                description_only,
+                tags_only,
+                regex.unwrap(),
+            )
         } else {
             search_ticket_text(ticket, query, title_only, description_only, tags_only)
         };
-        
+
         if !match_locations.is_empty() {
             matches.push((ticket.clone(), match_locations));
         }
     }
-    
+
     // Sort matches by creation date (newest first)
     matches.sort_by(|a, b| b.0.created_at.cmp(&a.0.created_at));
     matches
@@ -172,7 +188,7 @@ fn search_ticket_regex(
     regex: &Regex,
 ) -> Vec<String> {
     let mut match_locations = Vec::new();
-    
+
     if !title_only && !description_only && !tags_only {
         // Search all fields
         if regex.is_match(&ticket.title) {
@@ -196,7 +212,7 @@ fn search_ticket_regex(
             match_locations.push("tags".to_string());
         }
     }
-    
+
     match_locations
 }
 
@@ -210,7 +226,7 @@ fn search_ticket_text(
 ) -> Vec<String> {
     let mut match_locations = Vec::new();
     let query_lower = query.to_lowercase();
-    
+
     if !title_only && !description_only && !tags_only {
         // Search all fields
         if ticket.title.to_lowercase().contains(&query_lower) {
@@ -219,7 +235,11 @@ fn search_ticket_text(
         if ticket.description.to_lowercase().contains(&query_lower) {
             match_locations.push("description".to_string());
         }
-        if ticket.tags.iter().any(|tag| tag.to_lowercase().contains(&query_lower)) {
+        if ticket
+            .tags
+            .iter()
+            .any(|tag| tag.to_lowercase().contains(&query_lower))
+        {
             match_locations.push("tags".to_string());
         }
     } else {
@@ -230,11 +250,16 @@ fn search_ticket_text(
         if description_only && ticket.description.to_lowercase().contains(&query_lower) {
             match_locations.push("description".to_string());
         }
-        if tags_only && ticket.tags.iter().any(|tag| tag.to_lowercase().contains(&query_lower)) {
+        if tags_only
+            && ticket
+                .tags
+                .iter()
+                .any(|tag| tag.to_lowercase().contains(&query_lower))
+        {
             match_locations.push("tags".to_string());
         }
     }
-    
+
     match_locations
 }
 

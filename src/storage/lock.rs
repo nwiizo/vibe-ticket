@@ -53,7 +53,7 @@ impl FileLock {
 
         // Try to acquire the lock with retries
         for attempt in 0..MAX_RETRY_ATTEMPTS {
-            match Self::try_acquire_once(&lock_path, &holder_id, &operation) {
+            match Self::try_acquire_once(&lock_path, &holder_id, operation.as_ref()) {
                 Ok(()) => {
                     return Ok(Self {
                         path: lock_path,
@@ -85,7 +85,7 @@ impl FileLock {
     fn try_acquire_once(
         lock_path: &Path,
         holder_id: &str,
-        operation: &Option<String>,
+        operation: Option<&String>,
     ) -> Result<()> {
         // Try to create the lock file exclusively
         let mut file = OpenOptions::new()
@@ -101,7 +101,7 @@ impl FileLock {
                 .duration_since(UNIX_EPOCH)
                 .unwrap()
                 .as_secs(),
-            operation: operation.clone(),
+            operation: operation.cloned(),
         };
 
         let json = serde_json::to_string_pretty(&lock_info)?;

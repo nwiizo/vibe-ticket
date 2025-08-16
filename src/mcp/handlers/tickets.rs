@@ -127,43 +127,43 @@ fn create_edit_ticket_tool() -> Tool {
     Tool {
         name: Cow::Borrowed("vibe-ticket_edit"),
         description: Some(Cow::Borrowed("Edit ticket properties")),
-            input_schema: Arc::new(json_to_schema(json!({
-                "type": "object",
-                "properties": {
-                    "ticket": {
-                        "type": "string",
-                        "description": "Ticket ID or slug"
-                    },
-                    "title": {
-                        "type": "string",
-                        "description": "New title"
-                    },
-                    "description": {
-                        "type": "string",
-                        "description": "New description"
-                    },
-                    "status": {
-                        "type": "string",
-                        "enum": ["todo", "doing", "done", "blocked", "review"],
-                        "description": "New status"
-                    },
-                    "priority": {
-                        "type": "string",
-                        "enum": ["low", "medium", "high", "critical"],
-                        "description": "New priority"
-                    },
-                    "assignee": {
-                        "type": "string",
-                        "description": "New assignee"
-                    },
-                    "tags": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "New tags (replaces existing)"
-                    }
+        input_schema: Arc::new(json_to_schema(json!({
+            "type": "object",
+            "properties": {
+                "ticket": {
+                    "type": "string",
+                    "description": "Ticket ID or slug"
                 },
-                "required": ["ticket"]
-            }))),
+                "title": {
+                    "type": "string",
+                    "description": "New title"
+                },
+                "description": {
+                    "type": "string",
+                    "description": "New description"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": ["todo", "doing", "done", "blocked", "review"],
+                    "description": "New status"
+                },
+                "priority": {
+                    "type": "string",
+                    "enum": ["low", "medium", "high", "critical"],
+                    "description": "New priority"
+                },
+                "assignee": {
+                    "type": "string",
+                    "description": "New assignee"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "New tags (replaces existing)"
+                }
+            },
+            "required": ["ticket"]
+        }))),
         annotations: None,
     }
 }

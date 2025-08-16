@@ -35,6 +35,7 @@ use chrono::Utc;
 /// - The ticket is not found
 /// - Git operations fail
 /// - The ticket is already in progress
+#[allow(clippy::needless_pass_by_value)]
 pub fn handle_start_command(
     ticket_ref: String,
     create_branch: bool,

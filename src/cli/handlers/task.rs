@@ -19,6 +19,7 @@ use crate::storage::{ActiveTicketRepository, FileStorage, TicketRepository};
 /// * `ticket_ref` - Optional ticket ID or slug (defaults to active ticket)
 /// * `project_dir` - Optional project directory path
 /// * `output` - Output formatter for displaying results
+#[allow(clippy::needless_pass_by_value)]
 pub fn handle_task_add(
     title: String,
     ticket_ref: Option<String>,
@@ -63,6 +64,7 @@ pub fn handle_task_add(
     Ok(())
 }
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn handle_task_complete(
     task_id: String,
     ticket_ref: Option<String>,
@@ -153,6 +155,7 @@ pub fn handle_task_complete(
 /// * `ticket_ref` - Optional ticket ID or slug (defaults to active ticket)
 /// * `project_dir` - Optional project directory path
 /// * `output` - Output formatter for displaying results
+#[allow(clippy::needless_pass_by_value)]
 pub fn handle_task_uncomplete(
     task_id: String,
     ticket_ref: Option<String>,
@@ -239,6 +242,7 @@ pub fn handle_task_uncomplete(
 /// * `incomplete_only` - Show only incomplete tasks
 /// * `project_dir` - Optional project directory path
 /// * `output` - Output formatter for displaying results
+#[allow(clippy::needless_pass_by_value)]
 pub fn handle_task_list(
     ticket_ref: Option<String>,
     completed_only: bool,
@@ -340,6 +344,7 @@ pub fn handle_task_list(
 /// * `force` - Skip confirmation
 /// * `project_dir` - Optional project directory path
 /// * `output` - Output formatter for displaying results
+#[allow(clippy::needless_pass_by_value)]
 pub fn handle_task_remove(
     task_id: String,
     ticket_ref: Option<String>,

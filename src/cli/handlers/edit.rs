@@ -49,7 +49,7 @@ struct UpdateParams<'a> {
 /// - No ticket is specified and there's no active ticket
 /// - The ticket is not found
 /// - Invalid priority or status values are provided
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::needless_pass_by_value)]
 pub fn handle_edit_command(
     ticket_ref: Option<String>,
     title: Option<String>,
@@ -100,7 +100,7 @@ pub fn handle_edit_command(
         add_tags: add_tags.as_deref(),
         remove_tags: remove_tags.as_deref(),
     };
-    apply_ticket_updates(&mut ticket, &mut changes, update_params)?;
+    apply_ticket_updates(&mut ticket, &mut changes, &update_params)?;
 
     // Check if any changes were made
     if changes.is_empty() {
@@ -125,7 +125,7 @@ pub fn handle_edit_command(
 fn apply_ticket_updates(
     ticket: &mut crate::core::Ticket,
     changes: &mut Vec<String>,
-    params: UpdateParams<'_>,
+    params: &UpdateParams<'_>,
 ) -> Result<()> {
     // Update title if provided
     if let Some(new_title) = params.title {
@@ -142,11 +142,10 @@ fn apply_ticket_updates(
 
     // Update priority if provided
     if let Some(priority_str) = params.priority {
-        let new_priority = Priority::try_from(priority_str).map_err(|_| {
-            VibeTicketError::InvalidPriority {
+        let new_priority =
+            Priority::try_from(priority_str).map_err(|_| VibeTicketError::InvalidPriority {
                 priority: priority_str.to_string(),
-            }
-        })?;
+            })?;
         let old_priority = ticket.priority;
         ticket.priority = new_priority;
         changes.push(format!("Priority: {old_priority} → {new_priority}"));
@@ -154,8 +153,10 @@ fn apply_ticket_updates(
 
     // Update status if provided
     if let Some(status_str) = params.status {
-        let new_status = Status::try_from(status_str)
-            .map_err(|_| VibeTicketError::InvalidStatus { status: status_str.to_string() })?;
+        let new_status =
+            Status::try_from(status_str).map_err(|_| VibeTicketError::InvalidStatus {
+                status: status_str.to_string(),
+            })?;
         let old_status = ticket.status;
         ticket.status = new_status;
         changes.push(format!("Status: {old_status} → {new_status}"));

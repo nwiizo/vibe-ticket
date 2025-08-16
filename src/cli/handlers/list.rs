@@ -5,7 +5,7 @@ use crate::storage::{FileStorage, TicketRepository};
 use chrono::{DateTime, Duration, Local, NaiveDate, Utc};
 
 /// Handler for the `list` command
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments, clippy::fn_params_excessive_bools)]
 pub fn handle_list_command(
     status: Option<String>,
     priority: Option<String>,

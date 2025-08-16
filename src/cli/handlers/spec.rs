@@ -390,6 +390,7 @@ pub fn handle_spec_status(
 }
 
 /// Handle spec list command
+#[allow(clippy::needless_pass_by_value)]
 pub fn handle_spec_list(
     status: Option<String>,
     phase: Option<String>,
@@ -488,6 +489,7 @@ pub fn handle_spec_list(
 }
 
 /// Handle spec show command
+#[allow(clippy::needless_pass_by_value)]
 pub fn handle_spec_show(
     spec: String,
     all: bool,
@@ -552,6 +554,7 @@ pub fn handle_spec_show(
 }
 
 /// Handle spec delete command
+#[allow(clippy::needless_pass_by_value)]
 pub fn handle_spec_delete(
     spec: String,
     force: bool,
@@ -590,6 +593,7 @@ pub fn handle_spec_delete(
 }
 
 /// Handle spec approve command
+#[allow(clippy::needless_pass_by_value)]
 pub fn handle_spec_approve(
     spec: String,
     phase: String,
@@ -653,6 +657,7 @@ pub fn handle_spec_approve(
 }
 
 /// Handle spec activate command
+#[allow(clippy::needless_pass_by_value)]
 pub fn handle_spec_activate(
     spec: String,
     project: Option<&str>,
