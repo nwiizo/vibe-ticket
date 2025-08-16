@@ -27,10 +27,6 @@ use regex::Regex;
 /// * `use_regex` - Treat query as a regex pattern
 /// * `project_dir` - Optional project directory path
 /// * `output` - Output formatter for displaying results
-///
-/// # Panics
-///
-/// Panics if regex compilation fails when `use_regex` is true
 pub fn handle_search_command(
     query: &str,
     title_only: bool,
@@ -135,6 +131,10 @@ pub fn handle_search_command(
 }
 
 /// Search tickets for matches
+///
+/// # Panics
+///
+/// Panics if `use_regex` is true but `regex` is None
 fn search_tickets(
     tickets: &[Ticket],
     query: &str,

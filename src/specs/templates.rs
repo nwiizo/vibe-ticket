@@ -27,8 +27,8 @@ impl TemplateEngine {
     }
 
     /// Set a template variable
-    pub fn set_variable(&mut self, key: String, value: String) {
-        self.variables.insert(key, value);
+    pub fn set_variable(&mut self, key: &str, value: &str) {
+        self.variables.insert(key.to_string(), value.to_string());
     }
 
     /// Generate document from template
@@ -419,7 +419,7 @@ mod tests {
     #[test]
     fn test_template_engine_variables() {
         let mut engine = TemplateEngine::new();
-        engine.set_variable("project".to_string(), "TestProject".to_string());
+        engine.set_variable("project", "TestProject");
 
         let template = SpecTemplate::Requirements {
             title: "Test {{project}}".to_string(),

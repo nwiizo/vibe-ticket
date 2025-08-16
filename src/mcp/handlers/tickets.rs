@@ -265,7 +265,7 @@ pub fn handle_new(service: &VibeTicketService, arguments: Value) -> Result<Value
     let args: Args =
         serde_json::from_value(arguments).map_err(|e| format!("Invalid arguments: {e}"))?;
 
-    let mut ticket = Ticket::new(args.slug.clone(), args.title);
+    let mut ticket = Ticket::new(args.slug, args.title);
 
     if let Some(desc) = args.description {
         ticket.description = desc;

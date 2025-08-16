@@ -10,13 +10,13 @@ use crate::error::{Result, VibeTicketError};
 use crate::storage::{ActiveTicketRepository, FileStorage, TicketRepository};
 
 /// Parameters for updating a ticket
-struct UpdateParams {
-    title: Option<String>,
-    description: Option<String>,
-    priority: Option<String>,
-    status: Option<String>,
-    add_tags: Option<String>,
-    remove_tags: Option<String>,
+struct UpdateParams<'a> {
+    title: Option<&'a str>,
+    description: Option<&'a str>,
+    priority: Option<&'a str>,
+    status: Option<&'a str>,
+    add_tags: Option<&'a str>,
+    remove_tags: Option<&'a str>,
 }
 
 /// Handler for the `edit` command
@@ -93,12 +93,12 @@ pub fn handle_edit_command(
 
     // Apply updates
     let update_params = UpdateParams {
-        title,
-        description,
-        priority,
-        status,
-        add_tags,
-        remove_tags,
+        title: title.as_deref(),
+        description: description.as_deref(),
+        priority: priority.as_deref(),
+        status: status.as_deref(),
+        add_tags: add_tags.as_deref(),
+        remove_tags: remove_tags.as_deref(),
     };
     apply_ticket_updates(&mut ticket, &mut changes, update_params)?;
 
@@ -125,26 +125,26 @@ pub fn handle_edit_command(
 fn apply_ticket_updates(
     ticket: &mut crate::core::Ticket,
     changes: &mut Vec<String>,
-    params: UpdateParams,
+    params: UpdateParams<'_>,
 ) -> Result<()> {
     // Update title if provided
     if let Some(new_title) = params.title {
         let old_title = ticket.title.clone();
-        ticket.title.clone_from(&new_title);
+        ticket.title = new_title.to_string();
         changes.push(format!("Title: {old_title} → {new_title}"));
     }
 
     // Update description if provided
     if let Some(new_description) = params.description {
-        ticket.description = new_description;
+        ticket.description = new_description.to_string();
         changes.push("Description updated".to_string());
     }
 
     // Update priority if provided
     if let Some(priority_str) = params.priority {
-        let new_priority = Priority::try_from(priority_str.as_str()).map_err(|_| {
+        let new_priority = Priority::try_from(priority_str).map_err(|_| {
             VibeTicketError::InvalidPriority {
-                priority: priority_str,
+                priority: priority_str.to_string(),
             }
         })?;
         let old_priority = ticket.priority;
@@ -154,8 +154,8 @@ fn apply_ticket_updates(
 
     // Update status if provided
     if let Some(status_str) = params.status {
-        let new_status = Status::try_from(status_str.as_str())
-            .map_err(|_| VibeTicketError::InvalidStatus { status: status_str })?;
+        let new_status = Status::try_from(status_str)
+            .map_err(|_| VibeTicketError::InvalidStatus { status: status_str.to_string() })?;
         let old_status = ticket.status;
         ticket.status = new_status;
         changes.push(format!("Status: {old_status} → {new_status}"));
@@ -182,8 +182,8 @@ fn apply_ticket_updates(
 fn handle_tag_updates(
     ticket: &mut crate::core::Ticket,
     changes: &mut Vec<String>,
-    add_tags: Option<String>,
-    remove_tags: Option<String>,
+    add_tags: Option<&str>,
+    remove_tags: Option<&str>,
 ) {
     // Add tags if provided
     if let Some(tags_str) = add_tags {

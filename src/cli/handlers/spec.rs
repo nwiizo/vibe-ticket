@@ -97,10 +97,6 @@ pub fn handle_spec_requirements(
 }
 
 /// Handle spec design command
-///
-/// # Panics
-///
-/// Panics if `spec` is `Some` but contains invalid data when calling `unwrap()`
 pub fn handle_spec_design(
     spec: Option<String>,
     editor: bool,
@@ -111,9 +107,11 @@ pub fn handle_spec_design(
     use super::spec_common::{DesignHandler, SpecPhaseHandler};
 
     // If using the simplified phase handler
-    if spec.is_some() && !complete && !editor {
-        let handler = DesignHandler;
-        return handler.handle_phase_operation(spec.unwrap(), None, project, formatter);
+    if let Some(spec_id) = spec.as_ref() {
+        if !complete && !editor {
+            let handler = DesignHandler;
+            return handler.handle_phase_operation(spec_id.clone(), None, project, formatter);
+        }
     }
 
     // Keep existing complex logic for backward compatibility
@@ -174,7 +172,7 @@ pub fn handle_spec_design(
         };
 
         let mut engine = TemplateEngine::new();
-        engine.set_variable("spec_id".to_string(), spec_id);
+        engine.set_variable("spec_id", &spec_id);
 
         let template = SpecTemplate::for_document_type(
             SpecDocumentType::Design,
@@ -265,7 +263,7 @@ pub fn handle_spec_tasks(
         };
 
         let mut engine = TemplateEngine::new();
-        engine.set_variable("spec_id".to_string(), spec_id);
+        engine.set_variable("spec_id", &spec_id);
 
         let template = SpecTemplate::for_document_type(
             SpecDocumentType::Tasks,
