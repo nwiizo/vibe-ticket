@@ -13,15 +13,16 @@ use std::sync::Arc;
 struct ConfigManager;
 
 impl ConfigManager {
+    #[allow(dead_code)]
     const fn new() -> Self {
         Self
     }
 
-    fn load_from_path(&self, path: &std::path::Path) -> Result<Config, String> {
+    fn load_from_path(path: &std::path::Path) -> Result<Config, String> {
         Config::load_from_path(path).map_err(|e| format!("Failed to load config: {e}"))
     }
 
-    fn save_to_path(&self, config: &Config, path: &std::path::Path) -> Result<(), String> {
+    fn save_to_path(config: &Config, path: &std::path::Path) -> Result<(), String> {
         config
             .save_to_path(path)
             .map_err(|e| format!("Failed to save config: {e}"))
@@ -83,9 +84,7 @@ pub fn handle_show(service: &VibeTicketService, arguments: Value) -> Result<Valu
         .project_root
         .join(".vibe-ticket")
         .join("config.yaml");
-    let config_manager = ConfigManager::new();
-    let config = config_manager
-        .load_from_path(&config_path)
+    let config = ConfigManager::load_from_path(&config_path)
         .map_err(|e| format!("Failed to load configuration: {e}"))?;
 
     if let Some(key) = args.key {
@@ -153,9 +152,7 @@ pub fn handle_set(service: &VibeTicketService, arguments: Value) -> Result<Value
         .project_root
         .join(".vibe-ticket")
         .join("config.yaml");
-    let config_manager = ConfigManager::new();
-    let mut config = config_manager
-        .load_from_path(&config_path)
+    let mut config = ConfigManager::load_from_path(&config_path)
         .map_err(|e| format!("Failed to load configuration: {e}"))?;
 
     // Parse and set the value
@@ -225,8 +222,7 @@ pub fn handle_set(service: &VibeTicketService, arguments: Value) -> Result<Value
     }
 
     // Save the updated configuration
-    config_manager
-        .save_to_path(&config, &config_path)
+    ConfigManager::save_to_path(&config, &config_path)
         .map_err(|e| format!("Failed to save configuration: {e}"))?;
 
     Ok(json!({

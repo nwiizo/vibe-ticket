@@ -62,6 +62,10 @@ pub fn register_tools() -> Vec<Tool> {
 }
 
 /// Handle listing worktrees
+///
+/// # Panics
+///
+/// Panics if worktree object parsing fails
 pub fn handle_list(service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
     #[derive(Deserialize)]
     struct Args {
@@ -114,11 +118,9 @@ pub fn handle_list(service: &VibeTicketService, arguments: Value) -> Result<Valu
     // Filter for ticket worktrees if not showing all
     if !args.all.unwrap_or(false) {
         worktrees.retain(|w| {
-            if let Some(path) = w.get("path").and_then(|p| p.as_str()) {
-                path.contains("vibeticket")
-            } else {
-                false
-            }
+            w.get("path")
+                .and_then(|p| p.as_str())
+                .is_some_and(|path| path.contains("vibeticket"))
         });
     }
 

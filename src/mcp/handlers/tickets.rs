@@ -523,6 +523,11 @@ pub fn handle_edit(service: &VibeTicketService, arguments: Value) -> Result<Valu
 }
 
 /// Handle closing a ticket
+/// Handle closing a ticket
+///
+/// # Panics
+///
+/// Panics if `closed_at` is None when unwrap is called
 pub fn handle_close(service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
     #[derive(Deserialize)]
     struct Args {

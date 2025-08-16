@@ -57,6 +57,7 @@ impl EventBus {
     }
 
     /// Emit an event to all registered handlers
+    #[allow(clippy::significant_drop_tightening)]
     pub async fn emit(&self, event: TicketEvent) -> Result<()> {
         let handlers = self.handlers.read().await;
 

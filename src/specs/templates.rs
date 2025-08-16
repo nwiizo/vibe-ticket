@@ -90,6 +90,7 @@ impl SpecTemplate {
 
     /// Get template content
     #[must_use]
+    #[allow(clippy::too_many_lines)]
     pub fn content(&self) -> String {
         match self {
             Self::Requirements { title, description } => {

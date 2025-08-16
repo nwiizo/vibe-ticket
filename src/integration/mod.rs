@@ -110,6 +110,10 @@ static INTEGRATION: std::sync::RwLock<Option<Arc<IntegrationService>>> =
     std::sync::RwLock::new(None);
 
 /// Initialize the integration service
+///
+/// # Panics
+///
+/// Panics if integration is already initialized
 pub fn init_integration(storage: Arc<FileStorage>) {
     let service = Arc::new(IntegrationService::new(storage));
 

@@ -3,7 +3,7 @@
 use crate::mcp::handlers::events::McpEventHandler;
 
 /// Start the event bridge to handle CLI events
-pub fn start_event_bridge(_handler: McpEventHandler) {
+pub const fn start_event_bridge(_handler: McpEventHandler) {
     // Event bridge functionality would go here
     // For now, this is a placeholder to satisfy compilation
 }

@@ -84,13 +84,10 @@ pub trait SpecPhaseHandler {
         let ctx = SpecContext::new(project, formatter.clone())?;
 
         // Load existing spec or create new one
-        let mut spec = match ctx.spec_manager.load_spec(&spec_id) {
-            Ok(s) => s,
-            Err(_) => {
-                return Err(VibeTicketError::SpecNotFound {
-                    id: spec_id.clone(),
-                });
-            },
+        let Ok(mut spec) = ctx.spec_manager.load_spec(&spec_id) else {
+            return Err(VibeTicketError::SpecNotFound {
+                id: spec_id,
+            });
         };
 
         // Update phase
@@ -99,10 +96,11 @@ pub trait SpecPhaseHandler {
 
         // Save phase document - needs spec_id and doc_type
         let doc_type = match self.get_phase() {
-            SpecPhase::Requirements => crate::specs::SpecDocumentType::Requirements,
             SpecPhase::Design => crate::specs::SpecDocumentType::Design,
             SpecPhase::Tasks | SpecPhase::Implementation => crate::specs::SpecDocumentType::Tasks,
-            _ => crate::specs::SpecDocumentType::Requirements,
+            SpecPhase::Requirements | SpecPhase::Initial | SpecPhase::Completed => {
+                crate::specs::SpecDocumentType::Requirements
+            }
         };
         ctx.spec_manager.save_document(&spec_id, doc_type, "")?;
 

@@ -12,6 +12,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 /// Handle the worktree list command
+#[allow(clippy::needless_pass_by_value)]
 pub fn handle_worktree_list(
     all: bool,
     status_filter: Option<String>,
@@ -37,7 +38,7 @@ pub fn handle_worktree_list(
 
     for worktree in worktrees {
         // Extract ticket slug from worktree path
-        let ticket_slug = extract_ticket_slug(&worktree.path, &config)?;
+        let ticket_slug = extract_ticket_slug(&worktree.path, &config);
 
         // Check if this is a vibe-ticket worktree
         if !all && ticket_slug.is_none() {
@@ -81,6 +82,10 @@ pub fn handle_worktree_list(
 }
 
 /// Handle the worktree remove command
+///
+/// # Panics
+///
+/// Panics if branch name is None when unwrap is called
 pub fn handle_worktree_remove(
     worktree_ref: &str,
     force: bool,
@@ -229,7 +234,7 @@ fn list_git_worktrees(project_root: &Path) -> Result<Vec<WorktreeInfo>> {
 }
 
 /// Extract ticket slug from worktree path
-fn extract_ticket_slug(path: &Path, config: &Config) -> Result<Option<String>> {
+fn extract_ticket_slug(path: &Path, config: &Config) -> Option<String> {
     let _path_str = path.to_string_lossy();
     let project_name = &config.project.name;
     let prefix = config
@@ -250,11 +255,11 @@ fn extract_ticket_slug(path: &Path, config: &Config) -> Result<Option<String>> {
                 .strip_prefix(prefix_cleaned)
                 .unwrap()
                 .trim_start_matches('-');
-            return Ok(Some(slug.to_string()));
+            return Some(slug.to_string());
         }
     }
 
-    Ok(None)
+    None
 }
 
 /// Determine worktree status
@@ -494,19 +499,19 @@ mod tests {
 
         // Test standard worktree path
         let path = PathBuf::from("./test-project-vibeticket-fix-bug");
-        let slug = extract_ticket_slug(&path, &config).unwrap();
+        let slug = extract_ticket_slug(&path, &config);
         assert_eq!(slug, Some("fix-bug".to_string()));
 
         // Test path without prefix
         let path = PathBuf::from("./some-other-dir");
-        let slug = extract_ticket_slug(&path, &config).unwrap();
+        let slug = extract_ticket_slug(&path, &config);
         assert_eq!(slug, None);
 
         // Test with parent directory prefix
         let mut config_parent = config.clone();
         config_parent.git.worktree_prefix = "../{project}-vibeticket-".to_string();
         let path = PathBuf::from("../test-project-vibeticket-feature");
-        let slug = extract_ticket_slug(&path, &config_parent).unwrap();
+        let slug = extract_ticket_slug(&path, &config_parent);
         assert_eq!(slug, Some("feature".to_string()));
     }
 

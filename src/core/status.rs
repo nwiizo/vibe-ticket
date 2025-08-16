@@ -33,7 +33,7 @@ struct StatusVisual {
 
 impl Status {
     /// Returns the visual properties for this status
-    const fn visual(&self) -> StatusVisual {
+    const fn visual(self) -> StatusVisual {
         match self {
             Self::Todo => StatusVisual {
                 display: "Todo",

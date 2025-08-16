@@ -115,11 +115,9 @@ pub fn get_active_ticket() -> Result<String> {
     ensure_project_initialized()?;
 
     let storage = FileStorage::new(".vibe-ticket");
-    if let Some(ticket_id) = storage.get_active_ticket()? {
-        Ok(ticket_id.to_string())
-    } else {
-        Err(VibeTicketError::NoActiveTicket)
-    }
+    storage.get_active_ticket()?
+        .map(|ticket_id| ticket_id.to_string())
+        .ok_or(VibeTicketError::NoActiveTicket)
 }
 
 /// Helper function to resolve a ticket identifier

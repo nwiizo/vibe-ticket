@@ -114,7 +114,10 @@ impl Ticket {
         if self.tasks.is_empty() {
             0.0
         } else {
-            (self.completed_tasks_count() as f32 / self.total_tasks_count() as f32) * 100.0
+            #[allow(clippy::cast_precision_loss)]
+            {
+                (self.completed_tasks_count() as f32 / self.total_tasks_count() as f32) * 100.0
+            }
         }
     }
 

@@ -45,6 +45,10 @@ impl OutputFormatter {
     }
 
     /// Create a progress bar
+    ///
+    /// # Panics
+    ///
+    /// Panics if template parsing fails
     #[must_use]
     pub fn progress_bar(&self, message: &str) -> indicatif::ProgressBar {
         if self.json {
@@ -105,7 +109,7 @@ impl OutputFormatter {
         if self.json {
             self.print_json(ticket)?;
         } else {
-            self.print_ticket_formatted(ticket);
+            Self::print_ticket_formatted(ticket);
         }
         Ok(())
     }
@@ -115,7 +119,7 @@ impl OutputFormatter {
         if self.json {
             self.print_json(tickets)?;
         } else {
-            self.print_tickets_table(tickets);
+            Self::print_tickets_table(tickets);
         }
         Ok(())
     }
@@ -128,7 +132,7 @@ impl OutputFormatter {
     }
 
     /// Prints a formatted ticket
-    fn print_ticket_formatted(&self, ticket: &Ticket) {
+    fn print_ticket_formatted(ticket: &Ticket) {
         println!("{}", "─".repeat(80).bright_black());
         println!(
             "{} {} {}",
@@ -142,12 +146,12 @@ impl OutputFormatter {
         println!(
             "{:<12} {}",
             "Status:".bright_black(),
-            self.format_status(&ticket.status)
+            Self::format_status(ticket.status)
         );
         println!(
             "{:<12} {}",
             "Priority:".bright_black(),
-            self.format_priority(&ticket.priority)
+            Self::format_priority(ticket.priority)
         );
 
         if let Some(assignee) = &ticket.assignee {
@@ -209,7 +213,7 @@ impl OutputFormatter {
     }
 
     /// Prints tickets in a table format
-    fn print_tickets_table(&self, tickets: &[Ticket]) {
+    fn print_tickets_table(tickets: &[Ticket]) {
         if tickets.is_empty() {
             println!("No tickets found.");
             return;
@@ -237,8 +241,8 @@ impl OutputFormatter {
             println!(
                 "{:<8} {:<10} {:<10} {:<40} {}",
                 ticket.id.short(),
-                self.format_status(&ticket.status),
-                self.format_priority(&ticket.priority),
+                Self::format_status(ticket.status),
+                Self::format_priority(ticket.priority),
                 truncate(&ticket.title, 40),
                 tasks
             );
@@ -249,7 +253,7 @@ impl OutputFormatter {
     }
 
     /// Formats status with color
-    fn format_status(&self, status: &Status) -> ColoredString {
+    fn format_status(status: Status) -> ColoredString {
         match status {
             Status::Todo => "Todo".blue(),
             Status::Doing => "Doing".yellow(),
@@ -260,7 +264,7 @@ impl OutputFormatter {
     }
 
     /// Formats priority with color
-    fn format_priority(&self, priority: &Priority) -> ColoredString {
+    fn format_priority(priority: Priority) -> ColoredString {
         match priority {
             Priority::Low => "Low".green(),
             Priority::Medium => "Medium".yellow(),

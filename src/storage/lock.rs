@@ -47,6 +47,7 @@ impl FileLock {
     ///
     /// # Returns
     /// A `FileLock` that will automatically release when dropped
+    #[allow(clippy::needless_pass_by_value)]
     pub fn acquire(path: &Path, operation: Option<String>) -> Result<Self> {
         let lock_path = Self::lock_path(path);
         let holder_id = Uuid::new_v4().to_string();

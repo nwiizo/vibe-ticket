@@ -187,7 +187,7 @@ pub fn handle_complete(service: &VibeTicketService, arguments: Value) -> Result<
             }
             task.completed = true;
             task.completed_at = Some(chrono::Utc::now());
-            task_title = task.title.clone();
+            task_title.clone_from(&task.title);
             task_found = true;
             break;
         }

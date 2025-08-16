@@ -30,7 +30,7 @@ struct PriorityProperties {
 
 impl Priority {
     /// Returns all properties for this priority
-    const fn properties(&self) -> PriorityProperties {
+    const fn properties(self) -> PriorityProperties {
         match self {
             Self::Low => PriorityProperties {
                 display: "Low",
@@ -128,7 +128,6 @@ impl From<u8> for Priority {
     fn from(value: u8) -> Self {
         match value {
             1 => Self::Low,
-            2 => Self::Medium,
             3 => Self::High,
             4.. => Self::Critical,
             _ => Self::Medium,

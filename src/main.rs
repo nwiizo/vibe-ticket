@@ -7,7 +7,7 @@
 use clap::Parser;
 use std::process;
 use vibe_ticket::cli::{
-    Cli, Commands, OutputFormatter, SpecCommands, TaskCommands, WorktreeCommands,
+    Cli, Commands, ConfigCommands, OutputFormatter, SpecCommands, TaskCommands, WorktreeCommands,
     handlers::handle_init,
 };
 use vibe_ticket::error::Result;
@@ -25,7 +25,7 @@ fn main() {
 
     // Execute the command and handle errors
     if let Err(e) = run(cli, &formatter) {
-        handle_error(e, &formatter);
+        handle_error(&e, &formatter);
         process::exit(1);
     }
 }
@@ -55,7 +55,15 @@ fn run(cli: Cli, formatter: &OutputFormatter) -> Result<()> {
     }
 
     // Dispatch to command handler
-    match cli.command {
+    dispatch_command(cli.command, cli.project, formatter)
+}
+
+fn dispatch_command(
+    command: Commands,
+    project: Option<String>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    match command {
         Commands::Init {
             name,
             description,
@@ -68,7 +76,6 @@ fn run(cli: Cli, formatter: &OutputFormatter) -> Result<()> {
             claude_md,
             formatter,
         ),
-
         Commands::New {
             slug,
             title,
@@ -76,20 +83,16 @@ fn run(cli: Cli, formatter: &OutputFormatter) -> Result<()> {
             priority,
             tags,
             start,
-        } => {
-            use vibe_ticket::cli::handlers::handle_new_command;
-            handle_new_command(
-                &slug,
-                title,
-                description,
-                &priority,
-                tags,
-                start,
-                cli.project.as_deref(),
-                formatter,
-            )
-        },
-
+        } => dispatch_new_command(
+            slug,
+            title,
+            description,
+            priority,
+            tags,
+            start,
+            project,
+            formatter,
+        ),
         Commands::List {
             status,
             priority,
@@ -102,91 +105,48 @@ fn run(cli: Cli, formatter: &OutputFormatter) -> Result<()> {
             since,
             until,
             include_done,
-        } => {
-            use vibe_ticket::cli::handlers::handle_list_command;
-            handle_list_command(
-                status,
-                priority,
-                assignee,
-                &sort,
-                reverse,
-                limit,
-                archived,
-                open,
-                since,
-                until,
-                include_done,
-                cli.project.as_deref(),
-                formatter,
-            )
-        },
-
+        } => dispatch_list_command(
+            status,
+            priority,
+            assignee,
+            sort,
+            reverse,
+            limit,
+            archived,
+            open,
+            since,
+            until,
+            include_done,
+            project,
+            formatter,
+        ),
         Commands::Open {
             sort,
             reverse,
             limit,
-        } => {
-            use vibe_ticket::cli::handlers::handle_list_command;
-            // Call list handler with open filter set to true
-            handle_list_command(
-                None, // status
-                None, // priority
-                None, // assignee
-                &sort,
-                reverse,
-                limit,
-                false, // archived
-                true,  // open
-                None,  // since
-                None,  // until
-                false, // include_done
-                cli.project.as_deref(),
-                formatter,
-            )
-        },
-
+        } => dispatch_open_command(sort, reverse, limit, project, formatter),
         Commands::Start {
             ticket,
             branch,
             branch_name,
             worktree,
             no_worktree,
-        } => {
-            use vibe_ticket::cli::handlers::handle_start_command;
-            // If no_worktree is true, override worktree to false
-            let use_worktree = if no_worktree { false } else { worktree };
-            handle_start_command(
-                ticket,
-                branch,
-                branch_name,
-                use_worktree,
-                cli.project,
-                formatter,
-            )
-        },
-
+        } => dispatch_start_command(
+            ticket,
+            branch,
+            branch_name,
+            worktree,
+            no_worktree,
+            project,
+            formatter,
+        ),
         Commands::Close {
             ticket,
             message,
             archive,
             pr,
-        } => {
-            use vibe_ticket::cli::handlers::handle_close_command;
-            handle_close_command(
-                ticket,
-                message,
-                archive,
-                pr,
-                cli.project.as_deref(),
-                formatter,
-            )
-        },
-
-        Commands::Check { detailed, stats } => {
-            use vibe_ticket::cli::handlers::handle_check_command;
-            handle_check_command(detailed, stats, cli.project.as_deref(), formatter)
-        },
-
+        } => dispatch_close_command(ticket, message, archive, pr, project, formatter),
+        Commands::Check { detailed, stats } => dispatch_check_command(detailed, stats, project, formatter),
         Commands::Edit {
             ticket,
             title,
@@ -196,262 +156,454 @@ fn run(cli: Cli, formatter: &OutputFormatter) -> Result<()> {
             add_tags,
             remove_tags,
             editor,
-        } => {
-            use vibe_ticket::cli::handlers::handle_edit_command;
-            handle_edit_command(
-                ticket,
-                title,
-                description,
-                priority,
-                status,
-                add_tags,
-                remove_tags,
-                editor,
-                cli.project.as_deref(),
-                formatter,
-            )
-        },
-
+        } => dispatch_edit_command(
+            ticket,
+            title,
+            description,
+            priority,
+            status,
+            add_tags,
+            remove_tags,
+            editor,
+            project,
+            formatter,
+        ),
         Commands::Show {
             ticket,
             tasks,
             history,
             markdown,
-        } => {
-            use vibe_ticket::cli::handlers::handle_show_command;
-            handle_show_command(
-                &ticket,
-                tasks,
-                history,
-                markdown,
-                cli.project.as_deref(),
-                formatter,
-            )
-        },
-
-        Commands::Task { command } => match command {
-            TaskCommands::Add { title, ticket } => {
-                use vibe_ticket::cli::handlers::handle_task_add;
-                handle_task_add(title, ticket, cli.project, formatter)
-            },
-            TaskCommands::Complete { task, ticket } => {
-                use vibe_ticket::cli::handlers::handle_task_complete;
-                handle_task_complete(task, ticket, cli.project, formatter)
-            },
-            TaskCommands::Uncomplete { task, ticket } => {
-                use vibe_ticket::cli::handlers::handle_task_uncomplete;
-                handle_task_uncomplete(task, ticket, cli.project, formatter)
-            },
-            TaskCommands::List {
-                ticket,
-                completed,
-                incomplete,
-            } => {
-                use vibe_ticket::cli::handlers::handle_task_list;
-                handle_task_list(ticket, completed, incomplete, cli.project, formatter)
-            },
-            TaskCommands::Remove {
-                task,
-                ticket,
-                force,
-            } => {
-                use vibe_ticket::cli::handlers::handle_task_remove;
-                handle_task_remove(task, ticket, force, cli.project, formatter)
-            },
-        },
-
-        Commands::Archive { ticket, unarchive } => {
-            use vibe_ticket::cli::handlers::handle_archive_command;
-            handle_archive_command(&ticket, unarchive, cli.project.as_deref(), formatter)
-        },
-
+        } => dispatch_show_command(ticket, tasks, history, markdown, project, formatter),
+        Commands::Task { command } => handle_task_command(command, project, formatter),
+        Commands::Archive { ticket, unarchive } => dispatch_archive_command(ticket, unarchive, project, formatter),
         Commands::Search {
             query,
             title,
             description,
             tags,
             regex,
-        } => {
-            use vibe_ticket::cli::handlers::handle_search_command;
-            handle_search_command(
-                &query,
-                title,
-                description,
-                tags,
-                regex,
-                cli.project.as_deref(),
-                formatter,
-            )
-        },
-
+        } => dispatch_search_command(query, title, description, tags, regex, project, formatter),
         Commands::Export {
             format,
             output,
             include_archived,
-        } => {
-            use vibe_ticket::cli::handlers::handle_export_command;
-            handle_export_command(
-                &format,
-                output,
-                include_archived,
-                cli.project.as_deref(),
-                formatter,
-            )
-        },
-
+        } => dispatch_export_command(format, output, include_archived, project, formatter),
         Commands::Import {
             file,
             format,
             skip_validation,
             dry_run,
+        } => dispatch_import_command(file, format, skip_validation, dry_run, project, formatter),
+        Commands::Config { command } => dispatch_config_command(command, project, formatter),
+        Commands::Spec { command } => dispatch_spec_command(command, project, formatter),
+        Commands::Worktree { command } => dispatch_worktree_command(command, formatter),
+        #[cfg(feature = "mcp")]
+        Commands::Mcp { command } => dispatch_mcp_command(command, project, formatter),
+    }
+}
+
+fn dispatch_new_command(
+    slug: String,
+    title: Option<String>,
+    description: Option<String>,
+    priority: String,
+    tags: Option<String>,
+    start: bool,
+    project: Option<String>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::handle_new_command;
+    let tags_vec = tags.map(|t| t.split(',').map(|s| s.trim().to_string()).collect());
+    handle_new_command(
+        &slug,
+        title,
+        description,
+        &priority,
+        tags_vec,
+        start,
+        project.as_deref(),
+        formatter,
+    )
+}
+
+fn dispatch_list_command(
+    status: Option<String>,
+    priority: Option<String>,
+    assignee: Option<String>,
+    sort: String,
+    reverse: bool,
+    limit: Option<usize>,
+    archived: bool,
+    open: bool,
+    since: Option<String>,
+    until: Option<String>,
+    include_done: bool,
+    project: Option<String>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::handle_list_command;
+    handle_list_command(
+        status,
+        priority,
+        assignee,
+        &sort,
+        reverse,
+        limit,
+        archived,
+        open,
+        since,
+        until,
+        include_done,
+        project.as_deref(),
+        formatter,
+    )
+}
+
+fn dispatch_open_command(
+    sort: String,
+    reverse: bool,
+    limit: Option<usize>,
+    project: Option<String>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::handle_list_command;
+    handle_list_command(
+        None,
+        None,
+        None,
+        &sort,
+        reverse,
+        limit,
+        false,
+        true,
+        None,
+        None,
+        false,
+        project.as_deref(),
+        formatter,
+    )
+}
+
+fn dispatch_start_command(
+    ticket: String,
+    branch: bool,
+    branch_name: Option<String>,
+    worktree: bool,
+    no_worktree: bool,
+    project: Option<String>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::handle_start_command;
+    let use_worktree = if no_worktree { false } else { worktree };
+    handle_start_command(
+        ticket,
+        branch,
+        branch_name,
+        use_worktree,
+        project,
+        formatter,
+    )
+}
+
+fn dispatch_close_command(
+    ticket: Option<String>,
+    message: Option<String>,
+    archive: bool,
+    pr: bool,
+    project: Option<String>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::handle_close_command;
+    handle_close_command(
+        ticket,
+        message,
+        archive,
+        pr,
+        project.as_deref(),
+        formatter,
+    )
+}
+
+fn dispatch_check_command(
+    detailed: bool,
+    stats: bool,
+    project: Option<String>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::handle_check_command;
+    handle_check_command(detailed, stats, project.as_deref(), formatter)
+}
+
+fn dispatch_edit_command(
+    ticket: Option<String>,
+    title: Option<String>,
+    description: Option<String>,
+    priority: Option<String>,
+    status: Option<String>,
+    add_tags: Option<String>,
+    remove_tags: Option<String>,
+    editor: bool,
+    project: Option<String>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::handle_edit_command;
+    let add_tags_vec = add_tags.map(|t| t.split(',').map(|s| s.trim().to_string()).collect());
+    let remove_tags_vec = remove_tags.map(|t| t.split(',').map(|s| s.trim().to_string()).collect());
+    handle_edit_command(
+        ticket,
+        title,
+        description,
+        priority,
+        status,
+        add_tags_vec,
+        remove_tags_vec,
+        editor,
+        project.as_deref(),
+        formatter,
+    )
+}
+
+fn dispatch_show_command(
+    ticket: String,
+    tasks: bool,
+    history: bool,
+    markdown: bool,
+    project: Option<String>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::handle_show_command;
+    handle_show_command(
+        &ticket,
+        tasks,
+        history,
+        markdown,
+        project.as_deref(),
+        formatter,
+    )
+}
+
+fn dispatch_archive_command(
+    ticket: String,
+    unarchive: bool,
+    project: Option<String>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::handle_archive_command;
+    handle_archive_command(&ticket, unarchive, project.as_deref(), formatter)
+}
+
+fn dispatch_search_command(
+    query: String,
+    title: bool,
+    description: bool,
+    tags: bool,
+    regex: bool,
+    project: Option<String>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::handle_search_command;
+    handle_search_command(
+        &query,
+        title,
+        description,
+        tags,
+        regex,
+        project.as_deref(),
+        formatter,
+    )
+}
+
+fn dispatch_export_command(
+    format: String,
+    output: Option<String>,
+    include_archived: bool,
+    project: Option<String>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::handle_export_command;
+    handle_export_command(
+        &format,
+        output,
+        include_archived,
+        project.as_deref(),
+        formatter,
+    )
+}
+
+fn dispatch_import_command(
+    file: String,
+    format: Option<String>,
+    skip_validation: bool,
+    dry_run: bool,
+    project: Option<String>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::handle_import_command;
+    handle_import_command(
+        &file,
+        format.as_deref(),
+        skip_validation,
+        dry_run,
+        project.as_deref(),
+        formatter,
+    )
+}
+
+fn dispatch_config_command(
+    command: ConfigCommands,
+    project: Option<String>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::handle_config_command;
+    handle_config_command(command, project.as_deref(), formatter)
+}
+
+fn dispatch_spec_command(
+    command: SpecCommands,
+    project: Option<String>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    match command {
+        SpecCommands::Init {
+            title,
+            description,
+            ticket,
+            tags,
         } => {
-            use vibe_ticket::cli::handlers::handle_import_command;
-            handle_import_command(
-                &file,
-                format.as_deref(),
-                skip_validation,
-                dry_run,
-                cli.project.as_deref(),
+            use vibe_ticket::cli::handlers::handle_spec_init;
+            handle_spec_init(
+                &title,
+                description.as_deref(),
+                ticket.as_deref(),
+                tags.as_deref(),
+                project.as_deref(),
                 formatter,
             )
         },
-
-        Commands::Config { command } => {
-            use vibe_ticket::cli::handlers::handle_config_command;
-            handle_config_command(command, cli.project.as_deref(), formatter)
+        SpecCommands::Requirements {
+            spec,
+            editor,
+            complete: _,
+        } => {
+            use vibe_ticket::cli::handlers::handle_spec_requirements;
+            let spec_id = spec.unwrap_or_default();
+            let editor_opt = if editor { Some(String::new()) } else { None };
+            handle_spec_requirements(spec_id, editor_opt, project.as_deref(), formatter)
         },
-
-        Commands::Spec { command } => match command {
-            SpecCommands::Init {
-                title,
-                description,
-                ticket,
-                tags,
-            } => {
-                use vibe_ticket::cli::handlers::handle_spec_init;
-                handle_spec_init(
-                    &title,
-                    description.as_deref(),
-                    ticket.as_deref(),
-                    tags.as_deref(),
-                    cli.project.as_deref(),
-                    formatter,
-                )
-            },
-            SpecCommands::Requirements {
-                spec,
-                editor,
-                complete: _,
-            } => {
-                use vibe_ticket::cli::handlers::handle_spec_requirements;
-                // The function signature has changed after refactoring
-                // Need to adjust the call to match the new signature
-                let spec_id = spec.unwrap_or_default();
-                let editor_opt = if editor { Some(String::new()) } else { None };
-                handle_spec_requirements(spec_id, editor_opt, cli.project.as_deref(), formatter)
-            },
-            SpecCommands::Design {
-                spec,
-                editor,
-                complete,
-            } => {
-                use vibe_ticket::cli::handlers::handle_spec_design;
-                handle_spec_design(spec, editor, complete, cli.project.as_deref(), formatter)
-            },
-            SpecCommands::Tasks {
+        SpecCommands::Design {
+            spec,
+            editor,
+            complete,
+        } => {
+            use vibe_ticket::cli::handlers::handle_spec_design;
+            handle_spec_design(spec, editor, complete, project.as_deref(), formatter)
+        },
+        SpecCommands::Tasks {
+            spec,
+            editor,
+            complete,
+            export_tickets,
+        } => {
+            use vibe_ticket::cli::handlers::handle_spec_tasks;
+            handle_spec_tasks(
                 spec,
                 editor,
                 complete,
                 export_tickets,
-            } => {
-                use vibe_ticket::cli::handlers::handle_spec_tasks;
-                handle_spec_tasks(
-                    spec,
-                    editor,
-                    complete,
-                    export_tickets,
-                    cli.project.as_deref(),
-                    formatter,
-                )
-            },
-            SpecCommands::Status { spec, detailed } => {
-                use vibe_ticket::cli::handlers::handle_spec_status;
-                handle_spec_status(spec, detailed, cli.project.as_deref(), formatter)
-            },
-            SpecCommands::List {
-                status,
-                phase,
-                archived,
-            } => {
-                use vibe_ticket::cli::handlers::handle_spec_list;
-                handle_spec_list(status, phase, archived, cli.project.as_deref(), formatter)
-            },
-            SpecCommands::Show {
-                spec,
-                all,
-                markdown,
-            } => {
-                use vibe_ticket::cli::handlers::handle_spec_show;
-                handle_spec_show(spec, all, markdown, cli.project.as_deref(), formatter)
-            },
-            SpecCommands::Delete { spec, force } => {
-                use vibe_ticket::cli::handlers::handle_spec_delete;
-                handle_spec_delete(spec, force, cli.project.as_deref(), formatter)
-            },
-            SpecCommands::Approve {
-                spec,
-                phase,
-                message,
-            } => {
-                use vibe_ticket::cli::handlers::handle_spec_approve;
-                handle_spec_approve(spec, phase, message, cli.project.as_deref(), formatter)
-            },
-            SpecCommands::Activate { spec } => {
-                use vibe_ticket::cli::handlers::handle_spec_activate;
-                handle_spec_activate(spec, cli.project.as_deref(), formatter)
-            },
+                project.as_deref(),
+                formatter,
+            )
         },
-        Commands::Worktree { command } => match command {
-            WorktreeCommands::List {
-                all,
-                status,
-                verbose,
-            } => {
-                use vibe_ticket::cli::handlers::handle_worktree_list;
-                handle_worktree_list(all, status, verbose, formatter)
-            },
-            WorktreeCommands::Remove {
-                worktree,
-                force,
-                keep_branch,
-            } => {
-                use vibe_ticket::cli::handlers::handle_worktree_remove;
-                handle_worktree_remove(&worktree, force, keep_branch, formatter)
-            },
-            WorktreeCommands::Prune {
-                force,
-                dry_run,
-                remove_branches,
-            } => {
-                use vibe_ticket::cli::handlers::handle_worktree_prune;
-                handle_worktree_prune(force, dry_run, remove_branches, formatter)
-            },
+        SpecCommands::Status { spec, detailed } => {
+            use vibe_ticket::cli::handlers::handle_spec_status;
+            handle_spec_status(spec, detailed, project.as_deref(), formatter)
         },
-        #[cfg(feature = "mcp")]
-        Commands::Mcp { command } => match command {
-            vibe_ticket::cli::McpCommands::Serve { host, port, daemon } => {
-                use vibe_ticket::cli::handlers::handle_mcp_serve;
-                let config = vibe_ticket::config::Config::load_or_default()?;
-                handle_mcp_serve(
-                    config,
-                    host,
-                    port,
-                    daemon,
-                    cli.project.as_deref(),
-                    formatter,
-                )
-                .map_err(|e| vibe_ticket::error::VibeTicketError::custom(e.to_string()))
-            },
+        SpecCommands::List {
+            status,
+            phase,
+            archived,
+        } => {
+            use vibe_ticket::cli::handlers::handle_spec_list;
+            handle_spec_list(status, phase, archived, project.as_deref(), formatter)
+        },
+        SpecCommands::Show {
+            spec,
+            all,
+            markdown,
+        } => {
+            use vibe_ticket::cli::handlers::handle_spec_show;
+            handle_spec_show(spec, all, markdown, project.as_deref(), formatter)
+        },
+        SpecCommands::Delete { spec, force } => {
+            use vibe_ticket::cli::handlers::handle_spec_delete;
+            handle_spec_delete(spec, force, project.as_deref(), formatter)
+        },
+        SpecCommands::Approve {
+            spec,
+            phase,
+            message,
+        } => {
+            use vibe_ticket::cli::handlers::handle_spec_approve;
+            handle_spec_approve(spec, phase, message, project.as_deref(), formatter)
+        },
+        SpecCommands::Activate { spec } => {
+            use vibe_ticket::cli::handlers::handle_spec_activate;
+            handle_spec_activate(spec, project.as_deref(), formatter)
+        },
+    }
+}
+
+fn dispatch_worktree_command(
+    command: WorktreeCommands,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    match command {
+        WorktreeCommands::List {
+            all,
+            status,
+            verbose,
+        } => {
+            use vibe_ticket::cli::handlers::handle_worktree_list;
+            handle_worktree_list(all, status, verbose, formatter)
+        },
+        WorktreeCommands::Remove {
+            worktree,
+            force,
+            keep_branch,
+        } => {
+            use vibe_ticket::cli::handlers::handle_worktree_remove;
+            handle_worktree_remove(&worktree, force, keep_branch, formatter)
+        },
+        WorktreeCommands::Prune {
+            force,
+            dry_run,
+            remove_branches,
+        } => {
+            use vibe_ticket::cli::handlers::handle_worktree_prune;
+            handle_worktree_prune(force, dry_run, remove_branches, formatter)
+        },
+    }
+}
+
+#[cfg(feature = "mcp")]
+fn dispatch_mcp_command(
+    command: vibe_ticket::cli::McpCommands,
+    project: Option<String>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    match command {
+        vibe_ticket::cli::McpCommands::Serve { host, port, daemon } => {
+            use vibe_ticket::cli::handlers::handle_mcp_serve;
+            let config = vibe_ticket::config::Config::load_or_default()?;
+            handle_mcp_serve(
+                config,
+                host,
+                port,
+                daemon,
+                project.as_deref(),
+                formatter,
+            )
+            .map_err(|e| vibe_ticket::error::VibeTicketError::custom(e.to_string()))
         },
     }
 }
@@ -467,7 +619,7 @@ fn run(cli: Cli, formatter: &OutputFormatter) -> Result<()> {
 ///
 /// * `error` - The error to handle
 /// * `formatter` - Output formatter for displaying the error
-fn handle_error(error: vibe_ticket::error::VibeTicketError, formatter: &OutputFormatter) {
+fn handle_error(error: &vibe_ticket::error::VibeTicketError, formatter: &OutputFormatter) {
     // Display the main error message
     formatter.error(&error.user_message());
 
@@ -496,6 +648,43 @@ fn handle_error(error: vibe_ticket::error::VibeTicketError, formatter: &OutputFo
     if tracing::enabled!(tracing::Level::DEBUG) {
         eprintln!("\nDebug information:");
         eprintln!("{error:?}");
+    }
+}
+
+fn handle_task_command(
+    command: TaskCommands,
+    project: Option<String>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    match command {
+        TaskCommands::Add { title, ticket } => {
+            use vibe_ticket::cli::handlers::handle_task_add;
+            handle_task_add(title, ticket, project, formatter)
+        },
+        TaskCommands::Complete { task, ticket } => {
+            use vibe_ticket::cli::handlers::handle_task_complete;
+            handle_task_complete(task, ticket, project, formatter)
+        },
+        TaskCommands::Uncomplete { task, ticket } => {
+            use vibe_ticket::cli::handlers::handle_task_uncomplete;
+            handle_task_uncomplete(task, ticket, project, formatter)
+        },
+        TaskCommands::List {
+            ticket,
+            completed,
+            incomplete,
+        } => {
+            use vibe_ticket::cli::handlers::handle_task_list;
+            handle_task_list(ticket, completed, incomplete, project, formatter)
+        },
+        TaskCommands::Remove {
+            task,
+            ticket,
+            force,
+        } => {
+            use vibe_ticket::cli::handlers::handle_task_remove;
+            handle_task_remove(task, ticket, force, project, formatter)
+        },
     }
 }
 
