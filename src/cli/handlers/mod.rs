@@ -115,7 +115,8 @@ pub fn get_active_ticket() -> Result<String> {
     ensure_project_initialized()?;
 
     let storage = FileStorage::new(".vibe-ticket");
-    storage.get_active_ticket()?
+    storage
+        .get_active_ticket()?
         .map(|ticket_id| ticket_id.to_string())
         .ok_or(VibeTicketError::NoActiveTicket)
 }

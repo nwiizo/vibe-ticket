@@ -85,9 +85,7 @@ pub trait SpecPhaseHandler {
 
         // Load existing spec or create new one
         let Ok(mut spec) = ctx.spec_manager.load_spec(&spec_id) else {
-            return Err(VibeTicketError::SpecNotFound {
-                id: spec_id,
-            });
+            return Err(VibeTicketError::SpecNotFound { id: spec_id });
         };
 
         // Update phase
@@ -100,7 +98,7 @@ pub trait SpecPhaseHandler {
             SpecPhase::Tasks | SpecPhase::Implementation => crate::specs::SpecDocumentType::Tasks,
             SpecPhase::Requirements | SpecPhase::Initial | SpecPhase::Completed => {
                 crate::specs::SpecDocumentType::Requirements
-            }
+            },
         };
         ctx.spec_manager.save_document(&spec_id, doc_type, "")?;
 
