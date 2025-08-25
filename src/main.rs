@@ -71,6 +71,7 @@ struct NewCommandArgs<'a> {
 }
 
 /// Options for list command filtering
+#[derive(Copy, Clone)]
 struct ListFilterOptions {
     reverse: bool,
     archived: bool,
@@ -107,6 +108,7 @@ struct EditCommandArgs<'a> {
 }
 
 /// Options for search command filtering
+#[derive(Copy, Clone)]
 struct SearchOptions {
     title: bool,
     description: bool,
@@ -120,121 +122,55 @@ fn dispatch_command(
     formatter: &OutputFormatter,
 ) -> Result<()> {
     match command {
-        Commands::Init {
-            name,
-            description,
-            force,
-            claude_md,
-        } => handle_init(
-            name.as_deref(),
-            description.as_deref(),
-            force,
-            claude_md,
-            formatter,
-        ),
-        Commands::New {
-            slug,
-            title,
-            description,
-            priority,
-            tags,
-            start,
-        } => dispatch_new_command(NewCommandArgs {
-            slug,
-            title,
-            description,
-            priority,
-            tags,
-            start,
-            project,
-            formatter,
-        }),
-        Commands::List {
-            status,
-            priority,
-            assignee,
-            sort,
-            reverse,
-            limit,
-            archived,
-            open,
-            since,
-            until,
-            include_done,
-        } => dispatch_list_command(ListCommandArgs {
-            status,
-            priority,
-            assignee,
-            sort,
-            limit,
-            since,
-            until,
-            filter_options: ListFilterOptions {
-                reverse,
-                archived,
-                open,
-                include_done,
-            },
-            project,
-            formatter,
-        }),
-        Commands::Open {
-            sort,
-            reverse,
-            limit,
-        } => dispatch_open_command(&sort, reverse, limit, project.as_deref(), formatter),
-        Commands::Start {
-            ticket,
-            branch,
-            branch_name,
-            worktree,
-            no_worktree,
-        } => dispatch_start_command(
-            ticket,
-            branch,
-            branch_name,
-            worktree,
-            no_worktree,
-            project.as_deref(),
-            formatter,
-        ),
-        Commands::Close {
-            ticket,
-            message,
-            archive,
-            pr,
-        } => dispatch_close_command(ticket, message, archive, pr, project.as_deref(), formatter),
-        Commands::Check { detailed, stats } => {
-            dispatch_check_command(detailed, stats, project.as_deref(), formatter)
-        },
-        Commands::Edit {
-            ticket,
-            title,
-            description,
-            priority,
-            status,
-            add_tags,
-            remove_tags,
-            editor,
-        } => dispatch_edit_command(EditCommandArgs {
-            ticket,
-            title,
-            description,
-            priority,
-            status,
-            add_tags,
-            remove_tags,
-            editor,
-            project,
-            formatter,
-        }),
+        Commands::Init { name, description, force, claude_md } => 
+            handle_init(name.as_deref(), description.as_deref(), force, claude_md, formatter),
+        Commands::New { slug, title, description, priority, tags, start } => 
+            dispatch_new_command(NewCommandArgs {
+                slug, title, description, priority, tags, start, project, formatter,
+            }),
+        Commands::List { status, priority, assignee, sort, reverse, limit, 
+                        archived, open, since, until, include_done } =>
+            dispatch_list_command(ListCommandArgs {
+                status, priority, assignee, sort, limit, since, until,
+                filter_options: ListFilterOptions { reverse, archived, open, include_done },
+                project, formatter,
+            }),
+        Commands::Open { sort, reverse, limit } => 
+            dispatch_open_command(&sort, reverse, limit, project.as_deref(), formatter),
+        _ => dispatch_main_commands(command, project.as_deref(), formatter),
+    }
+}
+
+fn dispatch_main_commands(
+    command: Commands,
+    project: Option<&str>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    match command {
+        Commands::Start { ticket, branch, branch_name, worktree, no_worktree } =>
+            dispatch_start_command(
+                ticket, branch, branch_name, worktree, no_worktree,
+                project, formatter,
+            ),
+        Commands::Close { ticket, message, archive, pr } =>
+            dispatch_close_command(ticket, message, archive, pr, project, formatter),
+        Commands::Check { detailed, stats } =>
+            dispatch_check_command(detailed, stats, project, formatter),
+        Commands::Edit { ticket, title, description, priority, status, 
+                        add_tags, remove_tags, editor } =>
+            dispatch_edit_command(EditCommandArgs {
+                ticket, title, description, priority, status,
+                add_tags, remove_tags, editor, 
+                project: project.map(str::to_string), 
+                formatter,
+            }),
         _ => dispatch_remaining_commands(command, project, formatter),
     }
 }
 
 fn dispatch_remaining_commands(
     command: Commands,
-    project: Option<String>,
+    project: Option<&str>,
     formatter: &OutputFormatter,
 ) -> Result<()> {
     match command {
@@ -243,10 +179,10 @@ fn dispatch_remaining_commands(
             tasks,
             history,
             markdown,
-        } => dispatch_show_command(&ticket, tasks, history, markdown, project.as_deref(), formatter),
-        Commands::Task { command } => handle_task_command(command, project.as_deref(), formatter),
+        } => dispatch_show_command(&ticket, tasks, history, markdown, project, formatter),
+        Commands::Task { command } => handle_task_command(command, project, formatter),
         Commands::Archive { ticket, unarchive } => {
-            dispatch_archive_command(&ticket, unarchive, project.as_deref(), formatter)
+            dispatch_archive_command(&ticket, unarchive, project, formatter)
         },
         Commands::Search {
             query,
@@ -254,23 +190,23 @@ fn dispatch_remaining_commands(
             description,
             tags,
             regex,
-        } => dispatch_search_command(&query, SearchOptions { title, description, tags, regex }, project.as_deref(), formatter),
+        } => dispatch_search_command(&query, SearchOptions { title, description, tags, regex }, project, formatter),
         Commands::Export {
             format,
             output,
             include_archived,
-        } => dispatch_export_command(&format, output, include_archived, project.as_deref(), formatter),
+        } => dispatch_export_command(&format, output, include_archived, project, formatter),
         Commands::Import {
             file,
             format,
             skip_validation,
             dry_run,
-        } => dispatch_import_command(&file, format.as_deref(), skip_validation, dry_run, project.as_deref(), formatter),
-        Commands::Config { command } => dispatch_config_command(command, project.as_deref(), formatter),
-        Commands::Spec { command } => dispatch_spec_command(command, project.as_deref(), formatter),
+        } => dispatch_import_command(&file, format.as_deref(), skip_validation, dry_run, project, formatter),
+        Commands::Config { command } => dispatch_config_command(command, project, formatter),
+        Commands::Spec { command } => dispatch_spec_command(command, project, formatter),
         Commands::Worktree { command } => dispatch_worktree_command(command, formatter),
         #[cfg(feature = "mcp")]
-        Commands::Mcp { command } => dispatch_mcp_command(command, project.as_deref(), formatter),
+        Commands::Mcp { command } => dispatch_mcp_command(command, project, formatter),
         _ => unreachable!("All commands should be handled"),
     }
 }
@@ -352,7 +288,7 @@ fn dispatch_start_command(
         branch,
         branch_name,
         use_worktree,
-        project.map(|s| s.to_string()),
+        project.map(str::to_string),
         formatter,
     )
 }
@@ -684,15 +620,15 @@ fn handle_task_command(
     match command {
         TaskCommands::Add { title, ticket } => {
             use vibe_ticket::cli::handlers::handle_task_add;
-            handle_task_add(title, ticket, project.map(|s| s.to_string()), formatter)
+            handle_task_add(title, ticket, project.map(str::to_string), formatter)
         },
         TaskCommands::Complete { task, ticket } => {
             use vibe_ticket::cli::handlers::handle_task_complete;
-            handle_task_complete(task, ticket, project.map(|s| s.to_string()), formatter)
+            handle_task_complete(task, ticket, project.map(str::to_string), formatter)
         },
         TaskCommands::Uncomplete { task, ticket } => {
             use vibe_ticket::cli::handlers::handle_task_uncomplete;
-            handle_task_uncomplete(task, ticket, project.map(|s| s.to_string()), formatter)
+            handle_task_uncomplete(task, ticket, project.map(str::to_string), formatter)
         },
         TaskCommands::List {
             ticket,
@@ -700,7 +636,7 @@ fn handle_task_command(
             incomplete,
         } => {
             use vibe_ticket::cli::handlers::handle_task_list;
-            handle_task_list(ticket, completed, incomplete, project.map(|s| s.to_string()), formatter)
+            handle_task_list(ticket, completed, incomplete, project.map(str::to_string), formatter)
         },
         TaskCommands::Remove {
             task,
@@ -708,7 +644,7 @@ fn handle_task_command(
             force,
         } => {
             use vibe_ticket::cli::handlers::handle_task_remove;
-            handle_task_remove(task, ticket, force, project.map(|s| s.to_string()), formatter)
+            handle_task_remove(task, ticket, force, project.map(str::to_string), formatter)
         },
     }
 }
