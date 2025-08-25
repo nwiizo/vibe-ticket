@@ -72,6 +72,7 @@ struct NewCommandArgs<'a> {
 
 /// Options for list command filtering
 #[derive(Copy, Clone)]
+#[allow(clippy::struct_excessive_bools)]
 struct ListFilterOptions {
     reverse: bool,
     archived: bool,
@@ -109,6 +110,7 @@ struct EditCommandArgs<'a> {
 
 /// Options for search command filtering
 #[derive(Copy, Clone)]
+#[allow(clippy::struct_excessive_bools)]
 struct SearchOptions {
     title: bool,
     description: bool,
