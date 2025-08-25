@@ -132,7 +132,12 @@ fn dispatch_command(
                         archived, open, since, until, include_done } =>
             dispatch_list_command(ListCommandArgs {
                 status, priority, assignee, sort, limit, since, until,
-                filter_options: ListFilterOptions { reverse, archived, open, include_done },
+                filter_options: ListFilterOptions {
+                    reverse,
+                    archived,
+                    open,
+                    include_done,
+                },
                 project, formatter,
             }),
         Commands::Open { sort, reverse, limit } => 
