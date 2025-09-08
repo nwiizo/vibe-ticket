@@ -1,12 +1,12 @@
 //! Template system for vibe-ticket
-//! 
+//!
 //! Provides built-in and custom templates for common ticket types
 //! to improve consistency and reduce creation time.
 
+use crate::error::Result;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
-use crate::error::Result;
 
 /// Template field types
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -182,7 +182,8 @@ impl TemplateManager {
             default_priority: Some("medium".to_string()),
             default_tags: vec!["feature".to_string(), "enhancement".to_string()],
         };
-        self.templates.insert("feature".to_string(), feature_template);
+        self.templates
+            .insert("feature".to_string(), feature_template);
 
         // Task template
         let task_template = Template {
@@ -244,13 +245,16 @@ impl TemplateManager {
         template_name: &str,
         values: HashMap<String, String>,
     ) -> Result<TicketData> {
-        let template = self.get(template_name)
-            .ok_or_else(|| crate::error::VibeTicketError::TemplateNotFound(template_name.to_string()))?;
+        let template = self.get(template_name).ok_or_else(|| {
+            crate::error::VibeTicketError::TemplateNotFound(template_name.to_string())
+        })?;
 
         // Validate required fields
         for field in &template.fields {
             if field.required && !values.contains_key(&field.name) {
-                return Err(crate::error::VibeTicketError::MissingRequiredField(field.name.clone()));
+                return Err(crate::error::VibeTicketError::MissingRequiredField(
+                    field.name.clone(),
+                ));
             }
         }
 
@@ -263,8 +267,11 @@ impl TemplateManager {
         }
 
         Ok(TicketData {
-            title: values.get("title").or(values.get("summary"))
-                .cloned().unwrap_or_else(|| template.name.clone()),
+            title: values
+                .get("title")
+                .or(values.get("summary"))
+                .cloned()
+                .unwrap_or_else(|| template.name.clone()),
             description: Some(description),
             priority: template.default_priority.clone(),
             tags: template.default_tags.clone(),
@@ -288,7 +295,7 @@ mod tests {
     #[test]
     fn test_builtin_templates() {
         let manager = TemplateManager::new();
-        
+
         assert!(manager.get("bug").is_some());
         assert!(manager.get("feature").is_some());
         assert!(manager.get("task").is_some());
@@ -300,13 +307,16 @@ mod tests {
         let manager = TemplateManager::new();
         let mut values = HashMap::new();
         values.insert("summary".to_string(), "Test bug".to_string());
-        values.insert("steps_to_reproduce".to_string(), "1. Do this\n2. Do that".to_string());
+        values.insert(
+            "steps_to_reproduce".to_string(),
+            "1. Do this\n2. Do that".to_string(),
+        );
         values.insert("expected_behavior".to_string(), "Should work".to_string());
         values.insert("actual_behavior".to_string(), "Doesn't work".to_string());
 
         let result = manager.create_from_template("bug", values);
         assert!(result.is_ok());
-        
+
         let ticket = result.unwrap();
         assert_eq!(ticket.title, "Test bug");
         assert!(ticket.description.is_some());

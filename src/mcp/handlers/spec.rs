@@ -82,7 +82,9 @@ pub fn register_tools() -> Vec<Tool> {
         // Specify tool - Create specification from natural language
         Tool {
             name: Cow::Borrowed("vibe-ticket_spec_specify"),
-            description: Some(Cow::Borrowed("Create a specification from natural language requirements (spec-driven development)")),
+            description: Some(Cow::Borrowed(
+                "Create a specification from natural language requirements (spec-driven development)",
+            )),
             input_schema: Arc::new(json_to_schema(json!({
                 "type": "object",
                 "properties": {
@@ -107,7 +109,9 @@ pub fn register_tools() -> Vec<Tool> {
         // Plan tool - Generate implementation plan
         Tool {
             name: Cow::Borrowed("vibe-ticket_spec_plan"),
-            description: Some(Cow::Borrowed("Generate implementation plan from specification")),
+            description: Some(Cow::Borrowed(
+                "Generate implementation plan from specification",
+            )),
             input_schema: Arc::new(json_to_schema(json!({
                 "type": "object",
                 "properties": {
@@ -132,7 +136,9 @@ pub fn register_tools() -> Vec<Tool> {
         // Generate tasks tool
         Tool {
             name: Cow::Borrowed("vibe-ticket_spec_generate_tasks"),
-            description: Some(Cow::Borrowed("Generate executable task list from specification and plan")),
+            description: Some(Cow::Borrowed(
+                "Generate executable task list from specification and plan",
+            )),
             input_schema: Arc::new(json_to_schema(json!({
                 "type": "object",
                 "properties": {
@@ -164,7 +170,9 @@ pub fn register_tools() -> Vec<Tool> {
         // Validate tool
         Tool {
             name: Cow::Borrowed("vibe-ticket_spec_validate"),
-            description: Some(Cow::Borrowed("Validate specification for completeness and ambiguities")),
+            description: Some(Cow::Borrowed(
+                "Validate specification for completeness and ambiguities",
+            )),
             input_schema: Arc::new(json_to_schema(json!({
                 "type": "object",
                 "properties": {
@@ -287,7 +295,7 @@ pub fn handle_check(service: &VibeTicketService, arguments: Value) -> Result<Val
 pub fn handle_specify(_service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
     use crate::specs::{SpecManager, Specification};
     use std::path::PathBuf;
-    
+
     #[derive(Deserialize)]
     struct Args {
         requirements: String,
@@ -306,9 +314,10 @@ pub fn handle_specify(_service: &VibeTicketService, arguments: Value) -> Result<
     }
 
     let spec_manager = SpecManager::new(project_dir.join("specs"));
-    
+
     // Extract title from requirements
-    let title = args.requirements
+    let title = args
+        .requirements
         .lines()
         .next()
         .unwrap_or(&args.requirements)
@@ -317,7 +326,7 @@ pub fn handle_specify(_service: &VibeTicketService, arguments: Value) -> Result<
         .collect::<String>()
         .trim_end_matches('.')
         .to_string();
-    
+
     // Create specification
     let spec = Specification::new(
         title.clone(),
@@ -325,11 +334,12 @@ pub fn handle_specify(_service: &VibeTicketService, arguments: Value) -> Result<
         args.ticket,
         vec!["spec-driven".to_string()],
     );
-    
+
     // Save specification
-    spec_manager.save(&spec)
+    spec_manager
+        .save(&spec)
         .map_err(|e| format!("Failed to save specification: {e}"))?;
-    
+
     Ok(json!({
         "status": "created",
         "spec_id": spec.metadata.id,
@@ -348,7 +358,7 @@ pub fn handle_specify(_service: &VibeTicketService, arguments: Value) -> Result<
 pub fn handle_plan(_service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
     use crate::specs::SpecManager;
     use std::path::PathBuf;
-    
+
     #[derive(Deserialize)]
     struct Args {
         spec: Option<String>,
@@ -366,25 +376,28 @@ pub fn handle_plan(_service: &VibeTicketService, arguments: Value) -> Result<Val
     }
 
     let spec_manager = SpecManager::new(project_dir.join("specs"));
-    
+
     // Get spec ID (from parameter or active spec)
     let spec_id = match args.spec {
         Some(id) => id,
-        None => spec_manager.get_active_spec()
+        None => spec_manager
+            .get_active_spec()
             .map_err(|e| format!("Failed to get active spec: {e}"))?
             .ok_or("No active specification. Use 'spec activate' to set one.")?,
     };
-    
+
     // Load specification
-    let spec = spec_manager.load(&spec_id)
+    let spec = spec_manager
+        .load(&spec_id)
         .map_err(|e| format!("Failed to load specification: {e}"))?;
-    
+
     // Generate plan document
-    let tech_stack_str = args.tech_stack
+    let tech_stack_str = args
+        .tech_stack
         .as_ref()
         .map(|ts| ts.join(", "))
         .unwrap_or_else(|| "To be determined".to_string());
-    
+
     let plan_content = format!(
         r"# Implementation Plan: {}
 
@@ -421,15 +434,17 @@ Generated on: {}
 ",
         spec.metadata.title,
         tech_stack_str,
-        args.architecture.as_deref().unwrap_or("Layered Architecture"),
+        args.architecture
+            .as_deref()
+            .unwrap_or("Layered Architecture"),
         chrono::Utc::now().format("%Y-%m-%d")
     );
-    
+
     // Save plan document
     let spec_dir = spec_manager.get_spec_dir(&spec_id);
     std::fs::write(spec_dir.join("plan.md"), &plan_content)
         .map_err(|e| format!("Failed to save plan: {e}"))?;
-    
+
     Ok(json!({
         "status": "created",
         "spec_id": spec_id,
@@ -441,10 +456,13 @@ Generated on: {}
 }
 
 /// Handle generating tasks
-pub fn handle_generate_tasks(_service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
+pub fn handle_generate_tasks(
+    _service: &VibeTicketService,
+    arguments: Value,
+) -> Result<Value, String> {
     use crate::specs::SpecManager;
     use std::path::PathBuf;
-    
+
     #[derive(Deserialize)]
     struct Args {
         spec: Option<String>,
@@ -463,23 +481,25 @@ pub fn handle_generate_tasks(_service: &VibeTicketService, arguments: Value) -> 
     }
 
     let spec_manager = SpecManager::new(project_dir.join("specs"));
-    
+
     // Get spec ID
     let spec_id = match args.spec {
         Some(id) => id,
-        None => spec_manager.get_active_spec()
+        None => spec_manager
+            .get_active_spec()
             .map_err(|e| format!("Failed to get active spec: {e}"))?
             .ok_or("No active specification. Use 'spec activate' to set one.")?,
     };
-    
+
     // Load specification
-    let spec = spec_manager.load(&spec_id)
+    let spec = spec_manager
+        .load(&spec_id)
         .map_err(|e| format!("Failed to load specification: {e}"))?;
-    
+
     let granularity = args.granularity.as_deref().unwrap_or("medium");
     let parallel = args.parallel.unwrap_or(false);
     let task_prefix = if parallel { "[P] " } else { "" };
-    
+
     // Generate tasks document
     let tasks_content = format!(
         r"# Tasks: {}
@@ -513,26 +533,34 @@ Generated on: {}
         spec.metadata.title,
         granularity,
         if parallel { "Enabled" } else { "Disabled" },
-        task_prefix, task_prefix, task_prefix,
-        task_prefix, task_prefix, task_prefix,
-        task_prefix, task_prefix, task_prefix,
-        task_prefix, task_prefix, task_prefix,
+        task_prefix,
+        task_prefix,
+        task_prefix,
+        task_prefix,
+        task_prefix,
+        task_prefix,
+        task_prefix,
+        task_prefix,
+        task_prefix,
+        task_prefix,
+        task_prefix,
+        task_prefix,
         chrono::Utc::now().format("%Y-%m-%d")
     );
-    
+
     // Save tasks document
     let spec_dir = spec_manager.get_spec_dir(&spec_id);
     std::fs::write(spec_dir.join("tasks.md"), &tasks_content)
         .map_err(|e| format!("Failed to save tasks: {e}"))?;
-    
+
     let mut message = "Task list generated successfully.".to_string();
-    
+
     // Export to tickets if requested
     if args.export_tickets.unwrap_or(false) {
         // TODO: Implement ticket export
         message.push_str(" (Ticket export not yet implemented in MCP)");
     }
-    
+
     Ok(json!({
         "status": "created",
         "spec_id": spec_id,
@@ -548,7 +576,7 @@ Generated on: {}
 pub fn handle_validate(_service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
     use crate::specs::SpecManager;
     use std::path::PathBuf;
-    
+
     #[derive(Deserialize)]
     struct Args {
         spec: Option<String>,
@@ -566,22 +594,24 @@ pub fn handle_validate(_service: &VibeTicketService, arguments: Value) -> Result
     }
 
     let spec_manager = SpecManager::new(project_dir.join("specs"));
-    
+
     // Get spec ID
     let spec_id = match args.spec {
         Some(id) => id,
-        None => spec_manager.get_active_spec()
+        None => spec_manager
+            .get_active_spec()
             .map_err(|e| format!("Failed to get active spec: {e}"))?
             .ok_or("No active specification. Use 'spec activate' to set one.")?,
     };
-    
+
     // Load specification
-    let spec = spec_manager.load(&spec_id)
+    let spec = spec_manager
+        .load(&spec_id)
         .map_err(|e| format!("Failed to load specification: {e}"))?;
-    
+
     let mut validation_results = Vec::new();
     let mut has_issues = false;
-    
+
     // Check completeness
     if !spec.metadata.progress.requirements_completed {
         validation_results.push("⚠️  Requirements phase not complete".to_string());
@@ -589,40 +619,43 @@ pub fn handle_validate(_service: &VibeTicketService, arguments: Value) -> Result
     } else {
         validation_results.push("✅ Requirements phase complete".to_string());
     }
-    
+
     if !spec.metadata.progress.design_completed {
         validation_results.push("⚠️  Design phase not complete".to_string());
         has_issues = true;
     } else {
         validation_results.push("✅ Design phase complete".to_string());
     }
-    
+
     if !spec.metadata.progress.tasks_completed {
         validation_results.push("⚠️  Tasks phase not complete".to_string());
         has_issues = true;
     } else {
         validation_results.push("✅ Tasks phase complete".to_string());
     }
-    
+
     // Check for ambiguities if requested
     if args.check_ambiguities.unwrap_or(true) {
         let spec_dir = spec_manager.get_spec_dir(&spec_id);
         let spec_file = spec_dir.join("spec.md");
-        
+
         if spec_file.exists() {
             let content = std::fs::read_to_string(&spec_file)
                 .map_err(|e| format!("Failed to read spec file: {e}"))?;
-            
+
             let clarification_count = content.matches("[NEEDS CLARIFICATION]").count();
             if clarification_count > 0 {
-                validation_results.push(format!("⚠️  Found {} items marked as [NEEDS CLARIFICATION]", clarification_count));
+                validation_results.push(format!(
+                    "⚠️  Found {} items marked as [NEEDS CLARIFICATION]",
+                    clarification_count
+                ));
                 has_issues = true;
             } else {
                 validation_results.push("✅ No ambiguities found".to_string());
             }
         }
     }
-    
+
     // Generate report if requested
     if args.generate_report.unwrap_or(false) {
         let report_content = format!(
@@ -647,29 +680,41 @@ Generated on: {}
 ",
             spec.metadata.title,
             spec.metadata.id,
-            if spec.metadata.progress.requirements_completed { "✅ Complete" } else { "⚠️ Incomplete" },
-            if spec.metadata.progress.design_completed { "✅ Complete" } else { "⚠️ Incomplete" },
-            if spec.metadata.progress.tasks_completed { "✅ Complete" } else { "⚠️ Incomplete" },
+            if spec.metadata.progress.requirements_completed {
+                "✅ Complete"
+            } else {
+                "⚠️ Incomplete"
+            },
+            if spec.metadata.progress.design_completed {
+                "✅ Complete"
+            } else {
+                "⚠️ Incomplete"
+            },
+            if spec.metadata.progress.tasks_completed {
+                "✅ Complete"
+            } else {
+                "⚠️ Incomplete"
+            },
             validation_results.join("\n"),
             if has_issues { "Has Issues" } else { "Valid" },
             chrono::Utc::now().format("%Y-%m-%d")
         );
-        
+
         let spec_dir = spec_manager.get_spec_dir(&spec_id);
         std::fs::write(spec_dir.join("validation-report.md"), report_content)
             .map_err(|e| format!("Failed to save report: {e}"))?;
     }
-    
+
     Ok(json!({
         "status": if has_issues { "has_issues" } else { "valid" },
         "spec_id": spec_id,
         "title": spec.metadata.title,
         "validation_results": validation_results,
         "has_issues": has_issues,
-        "message": if has_issues { 
-            "Specification has validation issues that should be addressed" 
-        } else { 
-            "Specification passed all validation checks" 
+        "message": if has_issues {
+            "Specification has validation issues that should be addressed"
+        } else {
+            "Specification passed all validation checks"
         }
     }))
 }

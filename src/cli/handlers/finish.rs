@@ -4,15 +4,15 @@
 //! and documentation of what was accomplished.
 
 use crate::cli::output::OutputFormatter;
+use crate::cli::utils;
 use crate::core::{Status, Ticket, TicketId};
 use crate::error::{Result, VibeTicketError};
 use crate::storage::{FileStorage, TicketRepository};
-use crate::cli::utils;
 use chrono::Utc;
-use dialoguer::{theme::ColorfulTheme, Confirm, Editor, Input, MultiSelect};
+use dialoguer::{Confirm, Editor, Input, MultiSelect, theme::ColorfulTheme};
 use std::env;
 use std::fs;
-use std::path::PathBuf;
+use std::path::Path;
 
 /// Handle the intent-focused finish command
 ///
@@ -53,7 +53,7 @@ pub fn handle_finish_command(
 
     // Parse ticket ID
     let ticket_id = TicketId::parse_str(&ticket_id_str)
-        .map_err(|_| VibeTicketError::Custom(format!("Invalid ticket ID: {}", ticket_id_str)))?;
+        .map_err(|_| VibeTicketError::Custom(format!("Invalid ticket ID: {ticket_id_str}")))?;
 
     // Load the ticket
     let mut ticket = storage.load(&ticket_id)?;
@@ -69,7 +69,7 @@ pub fn handle_finish_command(
 
     // Check and handle incomplete tasks
     let has_incomplete_tasks = ticket.tasks.iter().any(|t| !t.completed);
-    
+
     if has_incomplete_tasks {
         handle_incomplete_tasks(&mut ticket, formatter)?;
     }
@@ -84,9 +84,12 @@ pub fn handle_finish_command(
     // Update ticket
     ticket.status = Status::Done;
     ticket.closed_at = Some(Utc::now());
-    
+
     // Add closing message to metadata
-    ticket.metadata.insert("closing_message".to_string(), closing_message.clone().into());
+    ticket.metadata.insert(
+        "closing_message".to_string(),
+        closing_message.clone().into(),
+    );
 
     // Save ticket
     storage.save(&ticket)?;
@@ -107,7 +110,7 @@ pub fn handle_finish_command(
         "🎉 Completed ticket '{}' ({})",
         ticket.title, ticket.slug
     ));
-    
+
     // Show summary
     show_completion_summary(&ticket, &closing_message, formatter)?;
 
@@ -121,31 +124,29 @@ pub fn handle_finish_command(
 }
 
 /// Get the currently active ticket
-fn get_active_ticket(tickets_dir: &PathBuf) -> Result<String> {
+fn get_active_ticket(tickets_dir: &Path) -> Result<String> {
     let active_ticket_path = tickets_dir.join("active_ticket");
-    
+
     if active_ticket_path.exists() {
         let content = fs::read_to_string(&active_ticket_path)?;
         Ok(content.trim().to_string())
     } else {
         Err(VibeTicketError::Custom(
-            "No active ticket. Specify a ticket ID or use 'vibe-ticket work-on' first.".to_string()
+            "No active ticket. Specify a ticket ID or use 'vibe-ticket work-on' first.".to_string(),
         ))
     }
 }
 
 /// Handle incomplete tasks
-fn handle_incomplete_tasks(
-    ticket: &mut Ticket,
-    formatter: &OutputFormatter,
-) -> Result<()> {
+fn handle_incomplete_tasks(ticket: &mut Ticket, formatter: &OutputFormatter) -> Result<()> {
     // Collect incomplete tasks info first
-    let incomplete_tasks: Vec<(crate::core::TaskId, String)> = ticket.tasks
+    let incomplete_tasks: Vec<(crate::core::TaskId, String)> = ticket
+        .tasks
         .iter()
         .filter(|t| !t.completed)
         .map(|t| (t.id.clone(), t.title.clone()))
         .collect();
-    
+
     if incomplete_tasks.is_empty() {
         return Ok(());
     }
@@ -153,20 +154,17 @@ fn handle_incomplete_tasks(
         "⚠️  There are {} incomplete tasks:",
         incomplete_tasks.len()
     ));
-    
+
     for (_, title) in incomplete_tasks.iter().take(5) {
-        formatter.info(&format!("  • {}", title));
+        formatter.info(&format!("  • {title}"));
     }
-    
+
     if incomplete_tasks.len() > 5 {
-        formatter.info(&format!(
-            "  ... and {} more",
-            incomplete_tasks.len() - 5
-        ));
+        formatter.info(&format!("  ... and {} more", incomplete_tasks.len() - 5));
     }
 
     let theme = ColorfulTheme::default();
-    
+
     // Ask what to do
     if Confirm::with_theme(&theme)
         .with_prompt("Mark all tasks as complete?")
@@ -187,25 +185,25 @@ fn handle_incomplete_tasks(
             .iter()
             .map(|(_, title)| title.clone())
             .collect();
-        
+
         let selections = MultiSelect::with_theme(&theme)
             .with_prompt("Select tasks to mark as complete")
             .items(&task_titles)
             .interact()?;
-        
+
         if !selections.is_empty() {
             let selected_ids: Vec<_> = selections
                 .iter()
                 .map(|&i| incomplete_tasks[i].0.clone())
                 .collect();
-            
+
             for task in &mut ticket.tasks {
                 if selected_ids.contains(&task.id) {
                     task.completed = true;
                     task.completed_at = Some(Utc::now());
                 }
             }
-            
+
             formatter.success(&format!(
                 "✅ Marked {} tasks as complete.",
                 selections.len()
@@ -222,13 +220,13 @@ fn get_closing_message(ticket: &Ticket, formatter: &OutputFormatter) -> Result<S
     formatter.info("  (Press Enter to open editor, or type inline)");
 
     let theme = ColorfulTheme::default();
-    
+
     // First try inline input
     let inline = Input::<String>::with_theme(&theme)
         .with_prompt("Summary")
         .allow_empty(true)
         .interact()?;
-    
+
     if !inline.is_empty() {
         Ok(inline)
     } else {
@@ -247,7 +245,8 @@ fn get_closing_message(ticket: &Ticket, formatter: &OutputFormatter) -> Result<S
             ticket.title,
             ticket.slug,
             ticket.priority,
-            ticket.started_at
+            ticket
+                .started_at
                 .map(|d| d.format("%Y-%m-%d %H:%M").to_string())
                 .unwrap_or_else(|| "Unknown".to_string())
         );
@@ -261,7 +260,7 @@ fn get_closing_message(ticket: &Ticket, formatter: &OutputFormatter) -> Result<S
                 .join("\n")
                 .trim()
                 .to_string();
-            
+
             if cleaned.is_empty() {
                 Ok("Ticket completed.".to_string())
             } else {
@@ -276,7 +275,7 @@ fn get_closing_message(ticket: &Ticket, formatter: &OutputFormatter) -> Result<S
 /// Clean up the worktree for the ticket
 fn cleanup_worktree(
     ticket: &Ticket,
-    _project_root: &PathBuf,
+    _project_root: &Path,
     formatter: &OutputFormatter,
 ) -> Result<()> {
     use std::process::Command;
@@ -295,7 +294,7 @@ fn cleanup_worktree(
 
     // Find matching worktree
     let mut worktree_path = None;
-    
+
     for line in worktree_list.lines() {
         if line.starts_with("worktree ") {
             let path = line.strip_prefix("worktree ").unwrap_or("");
@@ -307,9 +306,9 @@ fn cleanup_worktree(
 
     if let Some(path) = worktree_path {
         let theme = ColorfulTheme::default();
-        
+
         if Confirm::with_theme(&theme)
-            .with_prompt(&format!("Remove worktree at {}?", path))
+            .with_prompt(&format!("Remove worktree at {path}?"))
             .default(true)
             .interact()?
         {
@@ -322,7 +321,7 @@ fn cleanup_worktree(
                 formatter.success("🧹 Removed worktree.");
             } else {
                 let error = String::from_utf8_lossy(&output.stderr);
-                formatter.warning(&format!("⚠️  Could not remove worktree: {}", error));
+                formatter.warning(&format!("⚠️  Could not remove worktree: {error}"));
             }
         }
     }
@@ -339,17 +338,17 @@ fn show_completion_summary(
     formatter.info("\n📊 Completion Summary:");
     formatter.info(&format!("  • Title: {}", ticket.title));
     formatter.info(&format!("  • Duration: {}", calculate_duration(ticket)));
-    
+
     let completed_tasks = ticket.tasks.iter().filter(|t| t.completed).count();
     let total_tasks = ticket.tasks.len();
-    
+
     if total_tasks > 0 {
         formatter.info(&format!(
             "  • Tasks: {}/{} completed",
             completed_tasks, total_tasks
         ));
     }
-    
+
     formatter.info(&format!("  • Message: {}", closing_message));
 
     Ok(())
@@ -359,7 +358,7 @@ fn show_completion_summary(
 fn calculate_duration(ticket: &Ticket) -> String {
     if let Some(started) = ticket.started_at {
         let duration = Utc::now() - started;
-        
+
         if duration.num_days() > 0 {
             format!("{} days", duration.num_days())
         } else if duration.num_hours() > 0 {
@@ -379,11 +378,8 @@ mod tests {
 
     #[test]
     fn test_calculate_duration() {
-        let ticket = TicketBuilder::new()
-            .slug("test")
-            .title("Test")
-            .build();
-        
+        let ticket = TicketBuilder::new().slug("test").title("Test").build();
+
         assert_eq!(calculate_duration(&ticket), "Unknown");
 
         let mut ticket_with_start = ticket.clone();

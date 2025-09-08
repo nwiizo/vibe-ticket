@@ -254,7 +254,10 @@ pub fn handle_spec_tasks(
     }
 
     // Get spec directory
-    let spec_dir = project_dir.join(".vibe-ticket").join("specs").join(&spec_id);
+    let spec_dir = project_dir
+        .join(".vibe-ticket")
+        .join("specs")
+        .join(&spec_id);
 
     // Get or create tasks document
     let doc_path = spec_dir.join("tasks.md");
@@ -266,7 +269,7 @@ pub fn handle_spec_tasks(
         } else {
             spec_dir.join("plan.md")
         };
-        
+
         let plan_content = if plan_path.exists() {
             fs::read_to_string(&plan_path)?
         } else {
@@ -328,7 +331,7 @@ pub fn handle_spec_specify(
     }
 
     let spec_manager = SpecManager::new(project_dir.join("specs"));
-    
+
     // Create specification from requirements
     let title = extract_title_from_requirements(requirements);
     let spec = Specification::new(
@@ -340,56 +343,63 @@ pub fn handle_spec_specify(
 
     // Save initial specification
     spec_manager.save(&spec)?;
-    
+
     // Determine output directory
     let output_dir = if let Some(out) = output {
         Path::new(out).to_path_buf()
     } else {
-        project_dir.join(".vibe-ticket").join("specs").join(&spec.metadata.id)
+        project_dir
+            .join(".vibe-ticket")
+            .join("specs")
+            .join(&spec.metadata.id)
     };
-    
+
     // Create output directory if it doesn't exist
     fs::create_dir_all(&output_dir)?;
-    
+
     // Generate specification document from template
     let mut engine = TemplateEngine::new();
     engine.set_variable("title", &title);
     engine.set_variable("requirements", requirements);
     engine.set_variable("spec_id", &spec.metadata.id);
     engine.set_variable("created_date", &Utc::now().format("%Y-%m-%d").to_string());
-    
+
     // Create template and generate content
     let spec_template = SpecTemplate::Requirements {
         title: title.clone(),
         description: requirements.to_string(),
     };
     let spec_content = engine.generate(&spec_template);
-    
+
     // Mark requirements with [NEEDS CLARIFICATION] where ambiguous
     let analyzed_content = analyze_and_mark_ambiguities(&spec_content);
-    
+
     // Save specification document
     let spec_file = output_dir.join("spec.md");
     fs::write(&spec_file, &analyzed_content)?;
-    
+
     formatter.success(&format!(
         "Created specification '{}' with ID: {}",
         title, spec.metadata.id
     ));
     formatter.info(&format!("Specification saved to: {}", spec_file.display()));
-    
+
     if interactive {
         formatter.info("\n💡 Interactive refinement mode:");
         formatter.info("Review the specification and provide clarifications for marked items.");
-        formatter.info("The specification contains [NEEDS CLARIFICATION] markers for ambiguous requirements.");
-        
+        formatter.info(
+            "The specification contains [NEEDS CLARIFICATION] markers for ambiguous requirements.",
+        );
+
         // Open in editor for refinement
         if let Ok(editor) = env::var("EDITOR") {
-            formatter.info(&format!("\nOpening specification in {editor} for refinement..."));
+            formatter.info(&format!(
+                "\nOpening specification in {editor} for refinement..."
+            ));
             open_in_editor(&spec_file)?;
         }
     }
-    
+
     // Check for clarification markers
     let clarification_count = analyzed_content.matches("[NEEDS CLARIFICATION]").count();
     if clarification_count > 0 {
@@ -407,7 +417,7 @@ pub fn handle_spec_specify(
         formatter.info("  1. Create implementation plan: vibe-ticket spec plan");
         formatter.info("  2. Generate tasks: vibe-ticket spec tasks");
     }
-    
+
     Ok(())
 }
 
@@ -435,28 +445,31 @@ pub fn handle_spec_plan(
     }
 
     let spec_manager = SpecManager::new(project_dir.join("specs"));
-    
+
     // Get spec ID (from parameter or active spec)
     let spec_id = match spec {
         Some(id) => id,
         None => get_active_spec(&project_dir)?,
     };
-    
+
     // Load specification
     let mut specification = spec_manager.load(&spec_id)?;
-    
+
     // Check if requirements are complete
     if !specification.metadata.progress.requirements_completed {
         formatter.warning("⚠️  Requirements phase is not complete. Consider completing it first.");
     }
-    
+
     // Determine output directory
     let output_dir = if let Some(ref out) = output {
         Path::new(out).to_path_buf()
     } else {
-        project_dir.join(".vibe-ticket").join("specs").join(&spec_id)
+        project_dir
+            .join(".vibe-ticket")
+            .join("specs")
+            .join(&spec_id)
     };
-    
+
     // Read specification document
     let spec_file = output_dir.join("spec.md");
     let spec_content = if spec_file.exists() {
@@ -464,55 +477,60 @@ pub fn handle_spec_plan(
     } else {
         specification.metadata.description.clone()
     };
-    
+
     // Parse tech stack
     let tech_list: Vec<String> = tech_stack
         .map(|t| t.split(',').map(|s| s.trim().to_string()).collect())
         .unwrap_or_default();
-    
+
     // Generate implementation plan
     let mut engine = TemplateEngine::new();
     engine.set_variable("spec_id", &spec_id);
     engine.set_variable("title", &specification.metadata.title);
     engine.set_variable("tech_stack", &tech_list.join(", "));
     engine.set_variable("architecture", architecture.as_deref().unwrap_or("layered"));
-    
+
     // Create research document
-    let research_content = generate_research_document(&spec_content, &tech_list, architecture.as_deref());
+    let research_content =
+        generate_research_document(&spec_content, &tech_list, architecture.as_deref());
     let research_file = output_dir.join("research.md");
     fs::write(&research_file, research_content)?;
-    
+
     // Create data model
     let data_model_content = generate_data_model(&spec_content, &tech_list);
     let data_model_file = output_dir.join("data-model.md");
     fs::write(&data_model_file, data_model_content)?;
-    
+
     // Create implementation plan
-    let plan_content = generate_implementation_plan(&spec_content, &tech_list, architecture.as_deref());
+    let plan_content =
+        generate_implementation_plan(&spec_content, &tech_list, architecture.as_deref());
     let plan_file = output_dir.join("plan.md");
     fs::write(&plan_file, plan_content)?;
-    
+
     // Update specification progress
     specification.metadata.progress.design_completed = true;
     specification.metadata.updated_at = Utc::now();
     spec_manager.save(&specification)?;
-    
+
     formatter.success(&format!(
         "Created implementation plan for specification '{}'",
         specification.metadata.title
     ));
     formatter.info(&format!("Plan saved to: {}", plan_file.display()));
     formatter.info(&format!("Research saved to: {}", research_file.display()));
-    formatter.info(&format!("Data model saved to: {}", data_model_file.display()));
-    
+    formatter.info(&format!(
+        "Data model saved to: {}",
+        data_model_file.display()
+    ));
+
     if editor {
         formatter.info("\nOpening plan in editor for refinement...");
         open_in_editor(&plan_file)?;
     }
-    
+
     formatter.info("\n✅ Implementation plan is ready");
     formatter.info("Next step: Generate executable tasks with 'vibe-ticket spec tasks'");
-    
+
     Ok(())
 }
 
@@ -539,20 +557,23 @@ pub fn handle_spec_validate(
     }
 
     let spec_manager = SpecManager::new(project_dir.join("specs"));
-    
+
     // Get spec ID (from parameter or active spec)
     let spec_id = match spec {
         Some(id) => id,
         None => get_active_spec(&project_dir)?,
     };
-    
+
     // Load specification
     let specification = spec_manager.load(&spec_id)?;
-    let spec_dir = project_dir.join(".vibe-ticket").join("specs").join(&spec_id);
-    
+    let spec_dir = project_dir
+        .join(".vibe-ticket")
+        .join("specs")
+        .join(&spec_id);
+
     let mut validation_results: Vec<String> = Vec::new();
     let mut has_errors = false;
-    
+
     // Check completeness
     if complete || (!complete && !ambiguities && !report) {
         // Check all required documents exist
@@ -563,34 +584,34 @@ pub fn handle_spec_validate(
         } else {
             validation_results.push("✅ Specification document exists".to_string());
         }
-        
+
         // Check progress
         if !specification.metadata.progress.requirements_completed {
             validation_results.push("⚠️  Requirements phase not marked as complete".to_string());
         } else {
             validation_results.push("✅ Requirements phase complete".to_string());
         }
-        
+
         if !specification.metadata.progress.design_completed {
             validation_results.push("⚠️  Design phase not marked as complete".to_string());
         } else {
             validation_results.push("✅ Design phase complete".to_string());
         }
-        
+
         if !specification.metadata.progress.tasks_completed {
             validation_results.push("⚠️  Tasks phase not marked as complete".to_string());
         } else {
             validation_results.push("✅ Tasks phase complete".to_string());
         }
     }
-    
+
     // Check for ambiguities
     if ambiguities || (!complete && !ambiguities && !report) {
         let spec_file = spec_dir.join("spec.md");
         if spec_file.exists() {
             let content = fs::read_to_string(&spec_file)?;
             let clarification_count = content.matches("[NEEDS CLARIFICATION]").count();
-            
+
             if clarification_count > 0 {
                 validation_results.push(format!(
                     "⚠️  Found {} items marked as [NEEDS CLARIFICATION]",
@@ -602,34 +623,36 @@ pub fn handle_spec_validate(
             }
         }
     }
-    
+
     // Generate report
     if report {
         let validation_refs: Vec<&str> = validation_results.iter().map(|s| s.as_str()).collect();
         let report_content = generate_validation_report(&specification, &validation_refs);
         let report_file = spec_dir.join("validation-report.md");
         fs::write(&report_file, &report_content)?;
-        formatter.info(&format!("Validation report saved to: {}", report_file.display()));
+        formatter.info(&format!(
+            "Validation report saved to: {}",
+            report_file.display()
+        ));
     }
-    
+
     // Display results
     formatter.info(&format!(
         "Validation Results for '{}' ({})",
-        specification.metadata.title,
-        spec_id
+        specification.metadata.title, spec_id
     ));
     formatter.info("");
-    
+
     for result in &validation_results {
         formatter.info(result);
     }
-    
+
     if has_errors {
         formatter.warning("\n⚠️  Specification has validation issues that should be addressed");
     } else {
         formatter.success("\n✅ Specification passed all validation checks");
     }
-    
+
     Ok(())
 }
 
@@ -648,20 +671,20 @@ pub fn handle_spec_template(
     }
 
     let output_dir = Path::new(output);
-    
+
     // Create output directory if it doesn't exist
     if !output_dir.exists() {
         fs::create_dir_all(output_dir)?;
     }
-    
+
     let templates_to_create = match template_type {
         "all" => vec!["spec", "plan", "task"],
         t => vec![t],
     };
-    
+
     for template in templates_to_create {
         let template_file = output_dir.join(format!("{}-template.md", template));
-        
+
         if template_file.exists() && !force {
             formatter.warning(&format!(
                 "Template {} already exists. Use --force to overwrite.",
@@ -669,7 +692,7 @@ pub fn handle_spec_template(
             ));
             continue;
         }
-        
+
         let content = match template {
             "spec" => include_str!("../../../templates/spec-template.md"),
             "plan" => include_str!("../../../templates/plan-template.md"),
@@ -677,15 +700,18 @@ pub fn handle_spec_template(
             _ => {
                 formatter.warning(&format!("Unknown template type: {}", template));
                 continue;
-            }
+            },
         };
-        
+
         fs::write(&template_file, content)?;
         formatter.success(&format!("Created template: {}", template_file.display()));
     }
-    
-    formatter.info(&format!("\n✅ Templates created in: {}", output_dir.display()));
-    
+
+    formatter.info(&format!(
+        "\n✅ Templates created in: {}",
+        output_dir.display()
+    ));
+
     Ok(())
 }
 
@@ -717,32 +743,52 @@ fn load_specification_template(template_name: &str) -> Result<String> {
 fn analyze_and_mark_ambiguities(content: &str) -> String {
     // Simple heuristic: mark vague terms and missing details
     let mut result = content.to_string();
-    
+
     let vague_terms = [
-        "various", "multiple", "several", "many", "some",
-        "appropriate", "suitable", "proper", "adequate",
-        "fast", "slow", "quick", "efficient",
-        "user-friendly", "intuitive", "easy",
+        "various",
+        "multiple",
+        "several",
+        "many",
+        "some",
+        "appropriate",
+        "suitable",
+        "proper",
+        "adequate",
+        "fast",
+        "slow",
+        "quick",
+        "efficient",
+        "user-friendly",
+        "intuitive",
+        "easy",
     ];
-    
+
     for term in &vague_terms {
         result = result.replace(
             term,
             &format!("{} [NEEDS CLARIFICATION: Be more specific]", term),
         );
     }
-    
+
     result
 }
 
 #[allow(dead_code)]
-fn generate_research_document(spec_content: &str, tech_stack: &[String], architecture: Option<&str>) -> String {
+fn generate_research_document(
+    spec_content: &str,
+    tech_stack: &[String],
+    architecture: Option<&str>,
+) -> String {
     let tech_stack_str = if tech_stack.is_empty() {
         "- No specific technology stack defined".to_string()
     } else {
-        tech_stack.iter().map(|t| format!("- {}", t)).collect::<Vec<_>>().join("\n")
+        tech_stack
+            .iter()
+            .map(|t| format!("- {}", t))
+            .collect::<Vec<_>>()
+            .join("\n")
     };
-    
+
     format!(
         r"# Research and Technical Analysis
 
@@ -787,7 +833,7 @@ Generated on: {}
 #[allow(dead_code)]
 fn generate_data_model(_spec_content: &str, tech_stack: &[String]) -> String {
     let is_rust = tech_stack.iter().any(|t| t.to_lowercase().contains("rust"));
-    
+
     format!(
         r"# Data Model
 
@@ -825,13 +871,17 @@ Generated on: {}
 }
 
 #[allow(dead_code)]
-fn generate_implementation_plan(_spec_content: &str, tech_stack: &[String], architecture: Option<&str>) -> String {
+fn generate_implementation_plan(
+    _spec_content: &str,
+    tech_stack: &[String],
+    architecture: Option<&str>,
+) -> String {
     let tech_stack_str = if tech_stack.is_empty() {
         "To be determined".to_string()
     } else {
         tech_stack.join(", ")
     };
-    
+
     format!(
         r"# Implementation Plan
 
@@ -915,9 +965,21 @@ Generated on: {}
         spec.metadata.created_at.format("%Y-%m-%d"),
         spec.metadata.updated_at.format("%Y-%m-%d"),
         results.join("\n"),
-        if spec.metadata.progress.requirements_completed { "✅ Complete" } else { "⚠️ In Progress" },
-        if spec.metadata.progress.design_completed { "✅ Complete" } else { "⚠️ In Progress" },
-        if spec.metadata.progress.tasks_completed { "✅ Complete" } else { "⚠️ In Progress" },
+        if spec.metadata.progress.requirements_completed {
+            "✅ Complete"
+        } else {
+            "⚠️ In Progress"
+        },
+        if spec.metadata.progress.design_completed {
+            "✅ Complete"
+        } else {
+            "⚠️ In Progress"
+        },
+        if spec.metadata.progress.tasks_completed {
+            "✅ Complete"
+        } else {
+            "⚠️ In Progress"
+        },
         if results.iter().any(|r| r.contains("❌") || r.contains("⚠️")) {
             "Address identified issues before proceeding to next phase"
         } else {
@@ -934,14 +996,14 @@ fn generate_tasks_document(
     parallel: bool,
 ) -> String {
     let task_prefix = if parallel { "[P] " } else { "" };
-    
+
     // Determine task detail level based on granularity
     let (task_count, _task_detail) = match granularity {
         "fine" => (20, "Detailed implementation steps"),
         "coarse" => (5, "High-level milestones"),
         _ => (10, "Standard implementation tasks"),
     };
-    
+
     format!(
         r"# Tasks: {}
 
@@ -1046,27 +1108,27 @@ fn export_tasks_to_tickets(
 ) -> Result<()> {
     use crate::core::Priority;
     use crate::storage::{FileStorage, TicketRepository};
-    
+
     let content = fs::read_to_string(tasks_path)?;
     let storage = FileStorage::new(project_dir.join(".vibe-ticket"));
-    
+
     let mut created_count = 0;
-    
+
     // Parse tasks from markdown
     for line in content.lines() {
         if line.contains("- [ ]") && line.contains("T0") {
             // Extract task ID and description
             let task_text = line.trim_start_matches("- [ ]").trim();
             let parts: Vec<&str> = task_text.splitn(2, ':').collect();
-            
+
             if parts.len() == 2 {
                 let task_id_str = parts[0].replace("[P]", "");
                 let task_id = task_id_str.trim();
                 let description = parts[1].trim();
-                
+
                 // Create ticket slug from task ID
                 let slug = format!("{}-{}", spec.metadata.id, task_id.to_lowercase());
-                
+
                 // Create new ticket using builder
                 use crate::core::TicketBuilder;
                 let ticket = TicketBuilder::new()
@@ -1080,7 +1142,7 @@ fn export_tasks_to_tickets(
                         spec.metadata.id.clone(),
                     ])
                     .build();
-                
+
                 // Save ticket
                 if storage.save(&ticket).is_ok() {
                     created_count += 1;
@@ -1088,12 +1150,12 @@ fn export_tasks_to_tickets(
             }
         }
     }
-    
+
     formatter.success(&format!(
         "Exported {} tasks as tickets from specification '{}'",
         created_count, spec.metadata.title
     ));
-    
+
     Ok(())
 }
 

@@ -53,18 +53,18 @@ impl HandlerContext {
     /// Get the currently active ticket ID
     pub fn get_active_ticket_id(&self) -> Result<TicketId> {
         let active_ticket_path = self.tickets_dir.join("active_ticket");
-        
+
         if !active_ticket_path.exists() {
             return Err(VibeTicketError::Custom(
-                "No active ticket. Use 'vibe-ticket work-on' to select a ticket.".to_string()
+                "No active ticket. Use 'vibe-ticket work-on' to select a ticket.".to_string(),
             ));
         }
 
         let content = std::fs::read_to_string(&active_ticket_path)?;
         let id_str = content.trim();
-        
+
         TicketId::parse_str(id_str)
-            .map_err(|_| VibeTicketError::Custom(format!("Invalid active ticket ID: {}", id_str)))
+            .map_err(|_| VibeTicketError::Custom(format!("Invalid active ticket ID: {id_str}")))
     }
 
     /// Set the active ticket
@@ -100,8 +100,7 @@ impl HandlerContext {
             }
 
             Err(VibeTicketError::Custom(format!(
-                "Ticket not found: {}",
-                ref_str
+                "Ticket not found: {ref_str}"
             )))
         } else {
             // Get active ticket
@@ -149,8 +148,7 @@ pub mod validation {
             "high" => Ok(Priority::High),
             "critical" => Ok(Priority::Critical),
             _ => Err(VibeTicketError::Custom(format!(
-                "Invalid priority: {}. Must be one of: low, medium, high, critical",
-                priority
+                "Invalid priority: {priority}. Must be one of: low, medium, high, critical"
             ))),
         }
     }
@@ -159,12 +157,12 @@ pub mod validation {
     pub fn validate_title(title: &str) -> Result<()> {
         if title.trim().is_empty() {
             return Err(VibeTicketError::Custom(
-                "Ticket title cannot be empty".to_string()
+                "Ticket title cannot be empty".to_string(),
             ));
         }
         if title.len() > 200 {
             return Err(VibeTicketError::Custom(
-                "Ticket title cannot exceed 200 characters".to_string()
+                "Ticket title cannot exceed 200 characters".to_string(),
             ));
         }
         Ok(())
@@ -194,11 +192,8 @@ mod tests {
         let tickets_dir = temp_dir.path().join(".vibe-ticket");
         std::fs::create_dir(&tickets_dir).unwrap();
 
-        let formatter = OutputFormatter::default();
-        let context = HandlerContext::new(
-            Some(temp_dir.path().to_str().unwrap()),
-            formatter
-        );
+        let formatter = OutputFormatter::new(false, false);
+        let context = HandlerContext::new(Some(temp_dir.path().to_str().unwrap()), formatter);
 
         assert!(context.is_ok());
     }
@@ -219,7 +214,7 @@ mod tests {
         assert!(validate_title("Valid title").is_ok());
         assert!(validate_title("").is_err());
         assert!(validate_title("   ").is_err());
-        
+
         let long_title = "a".repeat(201);
         assert!(validate_title(&long_title).is_err());
     }

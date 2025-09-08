@@ -6,7 +6,7 @@
 #![cfg(test)]
 
 use crate::core::{Priority, Status, Task, Ticket, TicketId};
-use crate::storage::FileStorage;
+use crate::storage::{FileStorage, TicketRepository};
 use chrono::Utc;
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -26,11 +26,11 @@ impl TestProject {
         let temp_dir = TempDir::new().expect("Failed to create temp dir");
         let project_root = temp_dir.path().to_path_buf();
         let tickets_dir = project_root.join(".vibe-ticket");
-        
+
         std::fs::create_dir(&tickets_dir).expect("Failed to create tickets dir");
-        
+
         let storage = FileStorage::new(tickets_dir.clone());
-        
+
         Self {
             temp_dir,
             project_root,
@@ -42,18 +42,21 @@ impl TestProject {
     /// Create a test project with sample tickets
     pub fn with_sample_tickets() -> Self {
         let mut project = Self::new();
-        
+
         // Add some sample tickets
         let tickets = vec![
             create_test_ticket("Fix login bug", Priority::High, Status::Todo),
             create_test_ticket("Add search feature", Priority::Medium, Status::Doing),
             create_test_ticket("Update documentation", Priority::Low, Status::Done),
         ];
-        
+
         for ticket in tickets {
-            project.storage.save(&ticket).expect("Failed to save ticket");
+            project
+                .storage
+                .save(&ticket)
+                .expect("Failed to save ticket");
         }
-        
+
         project
     }
 
@@ -92,8 +95,16 @@ pub fn create_test_ticket(title: &str, priority: Priority, status: Status) -> Ti
         status,
         tags: vec!["test".to_string()],
         created_at: Utc::now(),
-        started_at: if status == Status::Doing { Some(Utc::now()) } else { None },
-        closed_at: if status == Status::Done { Some(Utc::now()) } else { None },
+        started_at: if status == Status::Doing {
+            Some(Utc::now())
+        } else {
+            None
+        },
+        closed_at: if status == Status::Done {
+            Some(Utc::now())
+        } else {
+            None
+        },
         assignee: None,
         tasks: vec![],
         metadata: HashMap::new(),
@@ -103,12 +114,12 @@ pub fn create_test_ticket(title: &str, priority: Priority, status: Status) -> Ti
 /// Create a test ticket with tasks
 pub fn create_ticket_with_tasks(title: &str, task_count: usize) -> Ticket {
     let mut ticket = create_test_ticket(title, Priority::Medium, Status::Todo);
-    
+
     for i in 1..=task_count {
         let task = Task::new(format!("Task {}", i));
         ticket.tasks.push(task);
     }
-    
+
     ticket
 }
 
@@ -116,7 +127,7 @@ pub fn create_ticket_with_tasks(title: &str, task_count: usize) -> Ticket {
 pub fn create_completed_ticket(title: &str) -> Ticket {
     let mut ticket = create_test_ticket(title, Priority::Low, Status::Done);
     ticket.closed_at = Some(Utc::now());
-    
+
     // Add some completed tasks
     for i in 1..=3 {
         let mut task = Task::new(format!("Completed task {}", i));
@@ -124,7 +135,7 @@ pub fn create_completed_ticket(title: &str) -> Ticket {
         task.completed_at = Some(Utc::now());
         ticket.tasks.push(task);
     }
-    
+
     ticket
 }
 
@@ -133,12 +144,25 @@ pub fn assert_tickets_equal(left: &Ticket, right: &Ticket) {
     assert_eq!(left.id, right.id, "Ticket IDs don't match");
     assert_eq!(left.slug, right.slug, "Ticket slugs don't match");
     assert_eq!(left.title, right.title, "Ticket titles don't match");
-    assert_eq!(left.description, right.description, "Ticket descriptions don't match");
-    assert_eq!(left.priority, right.priority, "Ticket priorities don't match");
+    assert_eq!(
+        left.description, right.description,
+        "Ticket descriptions don't match"
+    );
+    assert_eq!(
+        left.priority, right.priority,
+        "Ticket priorities don't match"
+    );
     assert_eq!(left.status, right.status, "Ticket statuses don't match");
     assert_eq!(left.tags, right.tags, "Ticket tags don't match");
-    assert_eq!(left.assignee, right.assignee, "Ticket assignees don't match");
-    assert_eq!(left.tasks.len(), right.tasks.len(), "Task counts don't match");
+    assert_eq!(
+        left.assignee, right.assignee,
+        "Ticket assignees don't match"
+    );
+    assert_eq!(
+        left.tasks.len(),
+        right.tasks.len(),
+        "Task counts don't match"
+    );
 }
 
 /// Test data builder for complex scenarios
@@ -155,7 +179,8 @@ impl TestDataBuilder {
 
     /// Add a ticket with specific properties
     pub fn with_ticket(mut self, title: &str, priority: Priority, status: Status) -> Self {
-        self.tickets.push(create_test_ticket(title, priority, status));
+        self.tickets
+            .push(create_test_ticket(title, priority, status));
         self
     }
 
@@ -179,11 +204,14 @@ impl TestDataBuilder {
     /// Build and save to a test project
     pub fn build_in_project(self) -> TestProject {
         let project = TestProject::new();
-        
+
         for ticket in self.tickets {
-            project.storage.save(&ticket).expect("Failed to save ticket");
+            project
+                .storage
+                .save(&ticket)
+                .expect("Failed to save ticket");
         }
-        
+
         project
     }
 }
@@ -225,7 +253,7 @@ mod tests {
             .with_ticket("Bug fix", Priority::High, Status::Todo)
             .with_tickets_in_status(Status::Doing, 2)
             .build();
-        
+
         assert_eq!(tickets.len(), 3);
         assert_eq!(tickets[0].title, "Bug fix");
         assert_eq!(tickets[1].status, Status::Doing);

@@ -36,6 +36,7 @@ mod new;
 mod search;
 mod show;
 mod spec;
+pub mod spec_base;
 mod spec_common;
 mod start;
 mod task;

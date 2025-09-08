@@ -3,9 +3,9 @@
 //! Provides guided, interactive interfaces for common operations
 //! to improve user experience and reduce errors.
 
-use dialoguer::{theme::ColorfulTheme, Confirm, Input, Select, MultiSelect};
-use crate::templates::{TemplateManager, FieldType};
 use crate::error::Result;
+use crate::templates::{FieldType, TemplateManager};
+use dialoguer::{Confirm, Input, MultiSelect, Select, theme::ColorfulTheme};
 use std::collections::HashMap;
 
 /// Interactive ticket creation
@@ -59,8 +59,9 @@ impl InteractiveMode {
 
     /// Create ticket from template
     fn create_from_template(&self, template_name: &str) -> Result<InteractiveTicketData> {
-        let template = self.template_manager.get(template_name)
-            .ok_or_else(|| crate::error::VibeTicketError::TemplateNotFound(template_name.to_string()))?;
+        let template = self.template_manager.get(template_name).ok_or_else(|| {
+            crate::error::VibeTicketError::TemplateNotFound(template_name.to_string())
+        })?;
 
         println!("\n📝 Using {} template\n", template.name);
 
@@ -70,17 +71,17 @@ impl InteractiveMode {
         for field in &template.fields {
             let value = match &field.field_type {
                 FieldType::Text => {
-                    let mut input = Input::<String>::with_theme(&self.theme)
-                        .with_prompt(&field.label);
-                    
+                    let mut input =
+                        Input::<String>::with_theme(&self.theme).with_prompt(&field.label);
+
                     if let Some(default) = &field.default {
                         input = input.default(default.clone());
                     }
-                    
+
                     if let Some(help) = &field.help {
                         println!("ℹ️  {}", help);
                     }
-                    
+
                     if field.required {
                         input.interact()?
                     } else {
@@ -107,7 +108,8 @@ impl InteractiveMode {
                         .with_prompt(&field.label)
                         .items(options)
                         .interact()?;
-                    selections.iter()
+                    selections
+                        .iter()
                         .map(|&i| options[i].clone())
                         .collect::<Vec<_>>()
                         .join(", ")
@@ -133,13 +135,19 @@ impl InteractiveMode {
         let start_now = self.confirm_start()?;
 
         // Create ticket data from template
-        let ticket_data = self.template_manager.create_from_template(template_name, values)?;
+        let ticket_data = self
+            .template_manager
+            .create_from_template(template_name, values)?;
 
         Ok(InteractiveTicketData {
             title: ticket_data.title,
             description: ticket_data.description,
             priority: ticket_data.priority.unwrap_or(priority),
-            tags: if tags.is_empty() { ticket_data.tags } else { tags },
+            tags: if tags.is_empty() {
+                ticket_data.tags
+            } else {
+                tags
+            },
             start_now,
             template_used: Some(template_name.to_string()),
         })
@@ -200,7 +208,8 @@ impl InteractiveMode {
         Ok(if tags_input.is_empty() {
             Vec::new()
         } else {
-            tags_input.split(',')
+            tags_input
+                .split(',')
                 .map(|s| s.trim().to_string())
                 .filter(|s| !s.is_empty())
                 .collect()
@@ -291,7 +300,8 @@ impl InteractiveMode {
             1 => "finish",
             2 => "review",
             _ => "report",
-        }.to_string())
+        }
+        .to_string())
     }
 
     /// Interactive ticket selector
@@ -300,7 +310,8 @@ impl InteractiveMode {
             return Err(crate::error::VibeTicketError::NoTicketsFound);
         }
 
-        let items: Vec<String> = tickets.iter()
+        let items: Vec<String> = tickets
+            .iter()
             .map(|(id, title)| format!("{} - {}", id, title))
             .collect();
 

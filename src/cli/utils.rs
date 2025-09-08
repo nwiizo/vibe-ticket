@@ -1,6 +1,6 @@
+use chrono::Utc;
 use std::env;
 use std::path::{Path, PathBuf};
-use chrono::Utc;
 
 use crate::error::{Result, VibeTicketError};
 
@@ -44,18 +44,24 @@ pub fn get_vibe_ticket_dir(project_root: &Path) -> PathBuf {
 pub fn generate_slug(title: &str) -> String {
     // Get current date for prefix
     let date_prefix = Utc::now().format("%Y%m%d%H%M").to_string();
-    
+
     // Clean and convert title to slug
     let title_slug = title
         .to_lowercase()
         .chars()
-        .map(|c| if c.is_alphanumeric() || c == '-' { c } else { '-' })
+        .map(|c| {
+            if c.is_alphanumeric() || c == '-' {
+                c
+            } else {
+                '-'
+            }
+        })
         .collect::<String>()
         .split('-')
         .filter(|s| !s.is_empty())
         .collect::<Vec<_>>()
         .join("-");
-    
+
     // Truncate if too long
     let max_title_len = 50;
     let truncated = if title_slug.len() > max_title_len {
@@ -63,7 +69,7 @@ pub fn generate_slug(title: &str) -> String {
     } else {
         &title_slug
     };
-    
+
     format!("{}-{}", date_prefix, truncated)
 }
 

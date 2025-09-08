@@ -4,11 +4,11 @@
 //! into the flow quickly rather than remembering command syntax.
 
 use crate::cli::output::OutputFormatter;
+use crate::cli::utils;
 use crate::core::{Status, Ticket, TicketId};
 use crate::error::{Result, VibeTicketError};
 use crate::storage::{FileStorage, TicketRepository};
-use crate::cli::utils;
-use dialoguer::{theme::ColorfulTheme, Select};
+use dialoguer::{Select, theme::ColorfulTheme};
 use std::env;
 use std::fs;
 use std::path::PathBuf;
@@ -65,15 +65,12 @@ pub fn handle_work_on_command(
             ));
             formatter.info("Consider reopening it or creating a new ticket.");
             return Ok(());
-        }
+        },
         Status::Blocked => {
-            formatter.warning(&format!(
-                "⚠️  Ticket '{}' is blocked.",
-                ticket.title
-            ));
+            formatter.warning(&format!("⚠️  Ticket '{}' is blocked.", ticket.title));
             formatter.info("Resolve the blocking issue before starting work.");
-        }
-        _ => {}
+        },
+        _ => {},
     }
 
     // Update ticket status to "doing"
@@ -106,12 +103,9 @@ pub fn handle_work_on_command(
 }
 
 /// Select a ticket to work on interactively
-fn select_ticket_to_work_on(
-    storage: &FileStorage,
-    formatter: &OutputFormatter,
-) -> Result<String> {
+fn select_ticket_to_work_on(storage: &FileStorage, formatter: &OutputFormatter) -> Result<String> {
     let tickets = storage.load_all()?;
-    
+
     // Filter to workable tickets
     let mut workable_tickets: Vec<Ticket> = tickets
         .into_iter()
@@ -120,7 +114,7 @@ fn select_ticket_to_work_on(
 
     if workable_tickets.is_empty() {
         return Err(VibeTicketError::Custom(
-            "No open tickets available to work on. Create a new ticket first.".to_string()
+            "No open tickets available to work on. Create a new ticket first.".to_string(),
         ));
     }
 
@@ -155,7 +149,7 @@ fn select_ticket_to_work_on(
 
     // Show selection dialog
     formatter.info("🎯 Select a ticket to work on:\n");
-    
+
     let theme = ColorfulTheme::default();
     let selection = Select::with_theme(&theme)
         .items(&items)
@@ -169,7 +163,7 @@ fn select_ticket_to_work_on(
 fn should_create_worktree(project_root: &PathBuf) -> Result<bool> {
     // Check git config for worktree preference
     let config_path = project_root.join(".vibe-ticket").join("config.yaml");
-    
+
     if config_path.exists() {
         // TODO: Read config to check worktree preference
         // For now, default to true
@@ -193,8 +187,9 @@ fn create_worktree_for_ticket(
         chrono::Utc::now().format("%Y%m%d"),
         ticket.slug
     );
-    
-    let worktree_path = project_root.parent()
+
+    let worktree_path = project_root
+        .parent()
         .unwrap_or(project_root)
         .join(&worktree_name);
 
@@ -222,7 +217,7 @@ fn create_worktree_for_ticket(
             worktree_path.display()
         ));
         formatter.info(&format!("🌿 Branch: {}", branch_name));
-        
+
         // Suggest changing to worktree directory
         formatter.info(&format!(
             "\n💡 To work in the worktree:\n   cd {}",
@@ -249,7 +244,7 @@ fn display_work_context(ticket: &Ticket, formatter: &OutputFormatter) -> Result<
 
     formatter.info(&format!("\n📊 Status: {:?}", ticket.status));
     formatter.info(&format!("🎯 Priority: {:?}", ticket.priority));
-    
+
     if !ticket.tags.is_empty() {
         formatter.info(&format!("🏷️  Tags: {}", ticket.tags.join(", ")));
     }
@@ -257,16 +252,10 @@ fn display_work_context(ticket: &Ticket, formatter: &OutputFormatter) -> Result<
     // Show tasks if any
     if !ticket.tasks.is_empty() {
         formatter.info(&format!("\n✅ Tasks ({} total):", ticket.tasks.len()));
-        
-        let incomplete_tasks: Vec<_> = ticket.tasks
-            .iter()
-            .filter(|t| !t.completed)
-            .collect();
-        
-        let complete_tasks: Vec<_> = ticket.tasks
-            .iter()
-            .filter(|t| t.completed)
-            .collect();
+
+        let incomplete_tasks: Vec<_> = ticket.tasks.iter().filter(|t| !t.completed).collect();
+
+        let complete_tasks: Vec<_> = ticket.tasks.iter().filter(|t| t.completed).collect();
 
         if !incomplete_tasks.is_empty() {
             formatter.info(&format!("  📋 Pending ({}):", incomplete_tasks.len()));
@@ -274,10 +263,7 @@ fn display_work_context(ticket: &Ticket, formatter: &OutputFormatter) -> Result<
                 formatter.info(&format!("    • {}", task.title));
             }
             if incomplete_tasks.len() > 5 {
-                formatter.info(&format!(
-                    "    ... and {} more",
-                    incomplete_tasks.len() - 5
-                ));
+                formatter.info(&format!("    ... and {} more", incomplete_tasks.len() - 5));
             }
         }
 
@@ -298,7 +284,7 @@ mod tests {
     fn test_should_create_worktree() {
         let temp_dir = TempDir::new().unwrap();
         let project_root = temp_dir.path().to_path_buf();
-        
+
         // Should default to true when no config
         assert!(should_create_worktree(&project_root).unwrap());
     }

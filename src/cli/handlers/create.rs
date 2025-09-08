@@ -4,12 +4,12 @@
 //! focus on what the user wants to accomplish rather than the mechanics.
 
 use crate::cli::output::OutputFormatter;
+use crate::cli::utils;
 use crate::core::{Priority, Status, TicketBuilder};
 use crate::error::Result;
 use crate::interactive::{InteractiveMode, InteractiveTicketData};
 use crate::storage::{FileStorage, TicketRepository};
-use crate::cli::utils;
-use dialoguer::{theme::ColorfulTheme, Confirm, Input, Select};
+use dialoguer::{Confirm, Input, Select, theme::ColorfulTheme};
 use std::env;
 
 /// Handle the intent-focused create command
@@ -55,7 +55,7 @@ pub fn handle_create_command(
     };
 
     // Create the ticket
-    let storage = FileStorage::new(tickets_dir.clone());
+    let storage = FileStorage::new(tickets_dir);
     let ticket = build_ticket_from_data(ticket_data)?;
     storage.save(&ticket)?;
 
@@ -74,11 +74,11 @@ pub fn handle_create_command(
     {
         // Start work on the ticket
         crate::cli::handlers::start::handle_start_command(
-            ticket.slug.clone(),
-            true,  // create_branch
-            None,  // branch_name
-            true,  // create_worktree
-            project_dir.map(|s| s.to_string()),
+            ticket.slug,
+            true, // create_branch
+            None, // branch_name
+            true, // create_worktree
+            project_dir.map(str::to_string),
             formatter,
         )?;
     }
@@ -87,17 +87,10 @@ pub fn handle_create_command(
 }
 
 /// Create ticket using full interactive mode
-fn create_interactive(template: Option<String>) -> Result<InteractiveTicketData> {
+fn create_interactive(_template: Option<String>) -> Result<InteractiveTicketData> {
     let mode = InteractiveMode::new();
-    
-    // If template specified, use it directly
-    if let Some(_template_name) = template {
-        // TODO: Load specific template
-        mode.create_ticket()
-    } else {
-        // Let user choose template or custom
-        mode.create_ticket()
-    }
+    // TODO: Load specific template if provided
+    mode.create_ticket()
 }
 
 /// Create ticket quickly with minimal interaction
@@ -108,7 +101,7 @@ fn create_quick(
     tags: Option<String>,
 ) -> Result<InteractiveTicketData> {
     let theme = ColorfulTheme::default();
-    
+
     // Get title if not provided
     let title = if let Some(t) = title {
         t
@@ -141,7 +134,7 @@ fn create_quick(
 /// Create ticket with guided prompts (middle ground)
 fn create_guided() -> Result<InteractiveTicketData> {
     let theme = ColorfulTheme::default();
-    
+
     println!("🎫 Create a new ticket\n");
 
     // Title (required)
@@ -159,7 +152,7 @@ fn create_guided() -> Result<InteractiveTicketData> {
             Input::<String>::with_theme(&theme)
                 .with_prompt("Description")
                 .allow_empty(true)
-                .interact()?
+                .interact()?,
         )
     } else {
         None
@@ -180,7 +173,7 @@ fn create_guided() -> Result<InteractiveTicketData> {
         .with_prompt("Tags (comma-separated, press Enter to skip)")
         .allow_empty(true)
         .interact()?;
-    
+
     let tags = if tags_input.is_empty() {
         suggest_tags(&title, &description)
     } else {
@@ -230,7 +223,10 @@ fn guess_priority(title: &str, description: &Option<String>) -> usize {
     let text = format!(
         "{} {}",
         title.to_lowercase(),
-        description.as_ref().unwrap_or(&String::new()).to_lowercase()
+        description
+            .as_ref()
+            .unwrap_or(&String::new())
+            .to_lowercase()
     );
 
     if text.contains("critical") || text.contains("urgent") || text.contains("asap") {
@@ -249,7 +245,10 @@ fn suggest_tags(title: &str, description: &Option<String>) -> Vec<String> {
     let text = format!(
         "{} {}",
         title.to_lowercase(),
-        description.as_ref().unwrap_or(&String::new()).to_lowercase()
+        description
+            .as_ref()
+            .unwrap_or(&String::new())
+            .to_lowercase()
     );
 
     let mut tags = Vec::new();
