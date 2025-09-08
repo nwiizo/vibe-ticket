@@ -4,7 +4,7 @@
 //! into the flow quickly rather than remembering command syntax.
 
 use crate::cli::output::OutputFormatter;
-use crate::core::{Status, Ticket};
+use crate::core::{Status, Ticket, TicketId};
 use crate::error::{Result, VibeTicketError};
 use crate::storage::{FileStorage, TicketRepository};
 use crate::cli::utils;
@@ -32,7 +32,7 @@ pub fn handle_work_on_command(
     }
 
     let current_dir = env::current_dir()?;
-    let project_root = utils::find_project_root(&current_dir)?;
+    let project_root = utils::find_project_root(current_dir.to_str())?;
     let tickets_dir = project_root.join(".vibe-ticket");
 
     if !tickets_dir.exists() {
@@ -42,12 +42,16 @@ pub fn handle_work_on_command(
     let storage = FileStorage::new(tickets_dir.clone());
 
     // Get ticket to work on
-    let ticket_id = if let Some(t) = ticket {
+    let ticket_id_str = if let Some(t) = ticket {
         t
     } else {
         // Interactive selection
         select_ticket_to_work_on(&storage, formatter)?
     };
+
+    // Parse ticket ID
+    let ticket_id = TicketId::parse_str(&ticket_id_str)
+        .map_err(|_| VibeTicketError::Custom(format!("Invalid ticket ID: {}", ticket_id_str)))?;
 
     // Load the ticket
     let mut ticket = storage.load(&ticket_id)?;
@@ -106,7 +110,7 @@ fn select_ticket_to_work_on(
     storage: &FileStorage,
     formatter: &OutputFormatter,
 ) -> Result<String> {
-    let tickets = storage.list()?;
+    let tickets = storage.load_all()?;
     
     // Filter to workable tickets
     let mut workable_tickets: Vec<Ticket> = tickets
@@ -239,8 +243,8 @@ fn display_work_context(ticket: &Ticket, formatter: &OutputFormatter) -> Result<
         ticket.title, ticket.slug
     ));
 
-    if let Some(description) = &ticket.description {
-        formatter.info(&format!("\n📝 Description:\n{}", description));
+    if !ticket.description.is_empty() {
+        formatter.info(&format!("\n📝 Description:\n{}", ticket.description));
     }
 
     formatter.info(&format!("\n📊 Status: {:?}", ticket.status));

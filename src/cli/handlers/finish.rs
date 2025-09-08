@@ -4,7 +4,7 @@
 //! and documentation of what was accomplished.
 
 use crate::cli::output::OutputFormatter;
-use crate::core::{Status, Ticket};
+use crate::core::{Status, Ticket, TicketId};
 use crate::error::{Result, VibeTicketError};
 use crate::storage::{FileStorage, TicketRepository};
 use crate::cli::utils;
@@ -34,7 +34,7 @@ pub fn handle_finish_command(
     }
 
     let current_dir = env::current_dir()?;
-    let project_root = utils::find_project_root(&current_dir)?;
+    let project_root = utils::find_project_root(current_dir.to_str())?;
     let tickets_dir = project_root.join(".vibe-ticket");
 
     if !tickets_dir.exists() {
@@ -44,12 +44,16 @@ pub fn handle_finish_command(
     let storage = FileStorage::new(tickets_dir.clone());
 
     // Get ticket to finish
-    let ticket_id = if let Some(t) = ticket {
+    let ticket_id_str = if let Some(t) = ticket {
         t
     } else {
         // Try to get active ticket
         get_active_ticket(&tickets_dir)?
     };
+
+    // Parse ticket ID
+    let ticket_id = TicketId::parse_str(&ticket_id_str)
+        .map_err(|_| VibeTicketError::Custom(format!("Invalid ticket ID: {}", ticket_id_str)))?;
 
     // Load the ticket
     let mut ticket = storage.load(&ticket_id)?;
@@ -63,14 +67,11 @@ pub fn handle_finish_command(
         return Ok(());
     }
 
-    // Check incomplete tasks
-    let incomplete_tasks: Vec<_> = ticket.tasks
-        .iter()
-        .filter(|t| !t.completed)
-        .collect();
-
-    if !incomplete_tasks.is_empty() {
-        handle_incomplete_tasks(&mut ticket, &incomplete_tasks, formatter)?;
+    // Check and handle incomplete tasks
+    let has_incomplete_tasks = ticket.tasks.iter().any(|t| !t.completed);
+    
+    if has_incomplete_tasks {
+        handle_incomplete_tasks(&mut ticket, formatter)?;
     }
 
     // Get closing message
@@ -85,13 +86,7 @@ pub fn handle_finish_command(
     ticket.closed_at = Some(Utc::now());
     
     // Add closing message to metadata
-    if let Some(metadata) = ticket.metadata.as_mut() {
-        metadata.insert("closing_message".to_string(), closing_message.clone().into());
-    } else {
-        let mut metadata = std::collections::HashMap::new();
-        metadata.insert("closing_message".to_string(), closing_message.clone().into());
-        ticket.metadata = Some(metadata);
-    }
+    ticket.metadata.insert("closing_message".to_string(), closing_message.clone().into());
 
     // Save ticket
     storage.save(&ticket)?;
@@ -142,16 +137,32 @@ fn get_active_ticket(tickets_dir: &PathBuf) -> Result<String> {
 /// Handle incomplete tasks
 fn handle_incomplete_tasks(
     ticket: &mut Ticket,
-    incomplete_tasks: &[&crate::core::Task],
     formatter: &OutputFormatter,
 ) -> Result<()> {
+    // Collect incomplete tasks info first
+    let incomplete_tasks: Vec<(crate::core::TaskId, String)> = ticket.tasks
+        .iter()
+        .filter(|t| !t.completed)
+        .map(|t| (t.id.clone(), t.title.clone()))
+        .collect();
+    
+    if incomplete_tasks.is_empty() {
+        return Ok(());
+    }
     formatter.warning(&format!(
         "⚠️  There are {} incomplete tasks:",
         incomplete_tasks.len()
     ));
     
-    for task in incomplete_tasks {
-        formatter.info(&format!("  • {}", task.title));
+    for (_, title) in incomplete_tasks.iter().take(5) {
+        formatter.info(&format!("  • {}", title));
+    }
+    
+    if incomplete_tasks.len() > 5 {
+        formatter.info(&format!(
+            "  ... and {} more",
+            incomplete_tasks.len() - 5
+        ));
     }
 
     let theme = ColorfulTheme::default();
@@ -174,7 +185,7 @@ fn handle_incomplete_tasks(
         // Select which tasks to complete
         let task_titles: Vec<String> = incomplete_tasks
             .iter()
-            .map(|t| t.title.clone())
+            .map(|(_, title)| title.clone())
             .collect();
         
         let selections = MultiSelect::with_theme(&theme)
@@ -185,7 +196,7 @@ fn handle_incomplete_tasks(
         if !selections.is_empty() {
             let selected_ids: Vec<_> = selections
                 .iter()
-                .map(|&i| incomplete_tasks[i].id)
+                .map(|&i| incomplete_tasks[i].0.clone())
                 .collect();
             
             for task in &mut ticket.tasks {
@@ -265,7 +276,7 @@ fn get_closing_message(ticket: &Ticket, formatter: &OutputFormatter) -> Result<S
 /// Clean up the worktree for the ticket
 fn cleanup_worktree(
     ticket: &Ticket,
-    project_root: &PathBuf,
+    _project_root: &PathBuf,
     formatter: &OutputFormatter,
 ) -> Result<()> {
     use std::process::Command;
@@ -284,16 +295,12 @@ fn cleanup_worktree(
 
     // Find matching worktree
     let mut worktree_path = None;
-    let mut in_worktree = false;
     
     for line in worktree_list.lines() {
         if line.starts_with("worktree ") {
             let path = line.strip_prefix("worktree ").unwrap_or("");
             if path.contains(&ticket_worktree_pattern) {
                 worktree_path = Some(path.to_string());
-                in_worktree = true;
-            } else {
-                in_worktree = false;
             }
         }
     }

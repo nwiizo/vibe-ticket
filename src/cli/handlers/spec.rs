@@ -744,7 +744,7 @@ fn generate_research_document(spec_content: &str, tech_stack: &[String], archite
     };
     
     format!(
-        r#"# Research and Technical Analysis
+        r"# Research and Technical Analysis
 
 ## Specification Overview
 {}
@@ -771,7 +771,7 @@ fn generate_research_document(spec_content: &str, tech_stack: &[String], archite
 
 ---
 Generated on: {}
-"#,
+",
         spec_content.lines().take(5).collect::<Vec<_>>().join("\n"),
         tech_stack_str,
         architecture.unwrap_or("Layered Architecture"),
@@ -789,7 +789,7 @@ fn generate_data_model(_spec_content: &str, tech_stack: &[String]) -> String {
     let is_rust = tech_stack.iter().any(|t| t.to_lowercase().contains("rust"));
     
     format!(
-        r#"# Data Model
+        r"# Data Model
 
 ## Core Entities
 
@@ -813,7 +813,7 @@ fn generate_data_model(_spec_content: &str, tech_stack: &[String]) -> String {
 
 ---
 Generated on: {}
-"#,
+",
         "Extract entities from specification...",
         if is_rust {
             "Using Rust type system with strong typing"
@@ -833,7 +833,7 @@ fn generate_implementation_plan(_spec_content: &str, tech_stack: &[String], arch
     };
     
     format!(
-        r#"# Implementation Plan
+        r"# Implementation Plan
 
 ## Overview
 Implementation plan based on specification and selected technology stack.
@@ -877,7 +877,7 @@ Implementation plan based on specification and selected technology stack.
 
 ---
 Generated on: {}
-"#,
+",
         tech_stack_str,
         architecture.unwrap_or("Layered Architecture"),
         Utc::now().format("%Y-%m-%d")
@@ -887,7 +887,7 @@ Generated on: {}
 #[allow(dead_code)]
 fn generate_validation_report(spec: &Specification, results: &[&str]) -> String {
     format!(
-        r#"# Specification Validation Report
+        r"# Specification Validation Report
 
 ## Specification Details
 - **ID**: {}
@@ -909,7 +909,7 @@ fn generate_validation_report(spec: &Specification, results: &[&str]) -> String 
 
 ---
 Generated on: {}
-"#,
+",
         spec.metadata.id,
         spec.metadata.title,
         spec.metadata.created_at.format("%Y-%m-%d"),
@@ -943,7 +943,7 @@ fn generate_tasks_document(
     };
     
     format!(
-        r#"# Tasks: {}
+        r"# Tasks: {}
 
 ## Overview
 Executable tasks generated from implementation plan.
@@ -990,7 +990,7 @@ Executable tasks generated from implementation plan.
 
 ---
 Generated on: {}
-"#,
+",
         title,
         granularity,
         task_count,

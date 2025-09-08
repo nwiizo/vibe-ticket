@@ -35,7 +35,7 @@ pub fn handle_create_command(
     }
 
     let current_dir = env::current_dir()?;
-    let project_root = utils::find_project_root(&current_dir)?;
+    let project_root = utils::find_project_root(current_dir.to_str())?;
     let tickets_dir = project_root.join(".vibe-ticket");
 
     if !tickets_dir.exists() {
@@ -91,7 +91,7 @@ fn create_interactive(template: Option<String>) -> Result<InteractiveTicketData>
     let mode = InteractiveMode::new();
     
     // If template specified, use it directly
-    if let Some(template_name) = template {
+    if let Some(_template_name) = template {
         // TODO: Load specific template
         mode.create_ticket()
     } else {

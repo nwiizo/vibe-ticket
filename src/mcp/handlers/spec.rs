@@ -386,7 +386,7 @@ pub fn handle_plan(_service: &VibeTicketService, arguments: Value) -> Result<Val
         .unwrap_or_else(|| "To be determined".to_string());
     
     let plan_content = format!(
-        r#"# Implementation Plan: {}
+        r"# Implementation Plan: {}
 
 ## Technology Stack
 {}
@@ -418,7 +418,7 @@ pub fn handle_plan(_service: &VibeTicketService, arguments: Value) -> Result<Val
 
 ---
 Generated on: {}
-"#,
+",
         spec.metadata.title,
         tech_stack_str,
         args.architecture.as_deref().unwrap_or("Layered Architecture"),
@@ -482,7 +482,7 @@ pub fn handle_generate_tasks(_service: &VibeTicketService, arguments: Value) -> 
     
     // Generate tasks document
     let tasks_content = format!(
-        r#"# Tasks: {}
+        r"# Tasks: {}
 
 ## Task Granularity: {}
 - Parallel execution: {}
@@ -509,7 +509,7 @@ pub fn handle_generate_tasks(_service: &VibeTicketService, arguments: Value) -> 
 
 ---
 Generated on: {}
-"#,
+",
         spec.metadata.title,
         granularity,
         if parallel { "Enabled" } else { "Disabled" },
@@ -626,7 +626,7 @@ pub fn handle_validate(_service: &VibeTicketService, arguments: Value) -> Result
     // Generate report if requested
     if args.generate_report.unwrap_or(false) {
         let report_content = format!(
-            r#"# Specification Validation Report
+            r"# Specification Validation Report
 
 ## Specification: {}
 ## ID: {}
@@ -644,7 +644,7 @@ Status: {}
 
 ---
 Generated on: {}
-"#,
+",
             spec.metadata.title,
             spec.metadata.id,
             if spec.metadata.progress.requirements_completed { "✅ Complete" } else { "⚠️ Incomplete" },

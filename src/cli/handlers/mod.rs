@@ -18,6 +18,7 @@
 //! specific commands like `init`, `new`, `list`, etc.
 
 mod archive;
+pub mod base;
 mod check;
 mod close;
 mod common;
