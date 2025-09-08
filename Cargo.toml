@@ -52,6 +52,7 @@ directories = "5.0"
 # Terminal output
 colored = "2.2"
 indicatif = "0.17"
+dialoguer = "0.11"
 
 # Testing utilities
 once_cell = "1.21"

@@ -462,6 +462,101 @@ pub enum SpecCommands {
         tags: Option<String>,
     },
 
+    /// Create a specification from user requirements (spec-driven development)
+    Specify {
+        /// Requirements description in natural language
+        requirements: String,
+
+        /// Associated ticket ID or slug
+        #[arg(short, long)]
+        ticket: Option<String>,
+
+        /// Use interactive mode for refinement
+        #[arg(short, long)]
+        interactive: bool,
+
+        /// Template to use (default: standard)
+        #[arg(long, default_value = "standard")]
+        template: String,
+
+        /// Output directory for specification
+        #[arg(short, long)]
+        output: Option<String>,
+    },
+
+    /// Create implementation plan from specification
+    Plan {
+        /// Specification ID or path (defaults to active spec)
+        #[arg(short, long)]
+        spec: Option<String>,
+
+        /// Technology stack (comma-separated, e.g., "rust,tokio,sqlx")
+        #[arg(long)]
+        tech_stack: Option<String>,
+
+        /// Architecture pattern (e.g., "mvc", "hexagonal", "layered")
+        #[arg(long)]
+        architecture: Option<String>,
+
+        /// Open in editor for refinement
+        #[arg(short, long)]
+        editor: bool,
+
+        /// Output directory for plan
+        #[arg(short, long)]
+        output: Option<String>,
+    },
+
+    /// Generate executable tasks from plan
+    Tasks {
+        /// Specification ID or path (defaults to active spec)
+        #[arg(short, long)]
+        spec: Option<String>,
+
+        /// Plan file path (defaults to spec's plan)
+        #[arg(long)]
+        plan: Option<String>,
+
+        /// Open in editor
+        #[arg(short, long)]
+        editor: bool,
+
+        /// Mark as complete
+        #[arg(long)]
+        complete: bool,
+
+        /// Export tasks to tickets
+        #[arg(long)]
+        export_tickets: bool,
+
+        /// Generate parallel execution markers
+        #[arg(long)]
+        parallel: bool,
+
+        /// Task granularity (fine, medium, coarse)
+        #[arg(long, default_value = "medium")]
+        granularity: String,
+    },
+
+    /// Validate specification against requirements
+    Validate {
+        /// Specification ID or path
+        #[arg(short, long)]
+        spec: Option<String>,
+
+        /// Check for completeness
+        #[arg(long)]
+        complete: bool,
+
+        /// Check for ambiguities
+        #[arg(long)]
+        ambiguities: bool,
+
+        /// Generate validation report
+        #[arg(long)]
+        report: bool,
+    },
+
     /// Create or update requirements document
     Requirements {
         /// Specification ID (defaults to active spec)
@@ -492,25 +587,6 @@ pub enum SpecCommands {
         complete: bool,
     },
 
-    /// Create or update implementation tasks
-    Tasks {
-        /// Specification ID (defaults to active spec)
-        #[arg(short, long)]
-        spec: Option<String>,
-
-        /// Open in editor
-        #[arg(short, long)]
-        editor: bool,
-
-        /// Mark as complete
-        #[arg(long)]
-        complete: bool,
-
-        /// Export tasks to tickets
-        #[arg(long)]
-        export_tickets: bool,
-    },
-
     /// Show specification status
     Status {
         /// Specification ID (defaults to active spec)
@@ -520,6 +596,10 @@ pub enum SpecCommands {
         /// Show detailed progress
         #[arg(short, long)]
         detailed: bool,
+
+        /// Show validation status
+        #[arg(long)]
+        validation: bool,
     },
 
     /// List all specifications
@@ -578,6 +658,21 @@ pub enum SpecCommands {
     Activate {
         /// Specification ID
         spec: String,
+    },
+
+    /// Generate templates for spec-driven development
+    Template {
+        /// Template type (spec, plan, task, all)
+        #[arg(default_value = "all")]
+        template_type: String,
+
+        /// Output directory
+        #[arg(short, long, default_value = "templates")]
+        output: String,
+
+        /// Force overwrite existing templates
+        #[arg(short, long)]
+        force: bool,
     },
 }
 

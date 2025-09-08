@@ -55,8 +55,9 @@ pub use search::handle_search_command;
 pub use show::handle_show_command;
 pub use spec::{
     handle_spec_activate, handle_spec_approve, handle_spec_delete, handle_spec_design,
-    handle_spec_init, handle_spec_list, handle_spec_requirements, handle_spec_show,
-    handle_spec_status, handle_spec_tasks,
+    handle_spec_init, handle_spec_list, handle_spec_plan, handle_spec_requirements,
+    handle_spec_show, handle_spec_specify, handle_spec_status, handle_spec_tasks,
+    handle_spec_template, handle_spec_validate,
 };
 pub use start::handle_start_command;
 pub use task::{

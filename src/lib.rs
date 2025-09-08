@@ -39,9 +39,11 @@ pub mod core;
 pub mod error;
 pub mod events;
 pub mod integration;
+pub mod interactive;
 pub mod plugins;
 pub mod specs;
 pub mod storage;
+pub mod templates;
 
 #[cfg(feature = "api")]
 pub mod api;

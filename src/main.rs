@@ -458,6 +458,80 @@ fn dispatch_spec_command(
                 formatter,
             )
         },
+        SpecCommands::Specify {
+            requirements,
+            ticket,
+            interactive,
+            template,
+            output,
+        } => {
+            use vibe_ticket::cli::handlers::handle_spec_specify;
+            handle_spec_specify(
+                &requirements,
+                ticket.as_deref(),
+                interactive,
+                &template,
+                output.as_deref(),
+                project,
+                formatter,
+            )
+        },
+        SpecCommands::Plan {
+            spec,
+            tech_stack,
+            architecture,
+            editor,
+            output,
+        } => {
+            use vibe_ticket::cli::handlers::handle_spec_plan;
+            handle_spec_plan(
+                spec,
+                tech_stack,
+                architecture,
+                editor,
+                output,
+                project,
+                formatter,
+            )
+        },
+        SpecCommands::Tasks {
+            spec,
+            plan,
+            editor,
+            complete,
+            export_tickets,
+            parallel,
+            granularity,
+        } => {
+            use vibe_ticket::cli::handlers::handle_spec_tasks;
+            handle_spec_tasks(
+                spec,
+                plan,
+                editor,
+                complete,
+                export_tickets,
+                parallel,
+                granularity,
+                project,
+                formatter,
+            )
+        },
+        SpecCommands::Validate {
+            spec,
+            complete,
+            ambiguities,
+            report,
+        } => {
+            use vibe_ticket::cli::handlers::handle_spec_validate;
+            handle_spec_validate(
+                spec,
+                complete,
+                ambiguities,
+                report,
+                project,
+                formatter,
+            )
+        },
         SpecCommands::Requirements {
             spec,
             editor,
@@ -476,25 +550,10 @@ fn dispatch_spec_command(
             use vibe_ticket::cli::handlers::handle_spec_design;
             handle_spec_design(spec, editor, complete, project, formatter)
         },
-        SpecCommands::Tasks {
-            spec,
-            editor,
-            complete,
-            export_tickets,
-        } => {
-            use vibe_ticket::cli::handlers::handle_spec_tasks;
-            handle_spec_tasks(
-                spec,
-                editor,
-                complete,
-                export_tickets,
-                project,
-                formatter,
-            )
-        },
-        SpecCommands::Status { spec, detailed } => {
+        SpecCommands::Status { spec, detailed, validation } => {
             use vibe_ticket::cli::handlers::handle_spec_status;
-            handle_spec_status(spec, detailed, project, formatter)
+            // Note: validation flag is handled within the status handler if needed
+            handle_spec_status(spec, detailed || validation, project, formatter)
         },
         SpecCommands::List {
             status,
@@ -527,6 +586,14 @@ fn dispatch_spec_command(
         SpecCommands::Activate { spec } => {
             use vibe_ticket::cli::handlers::handle_spec_activate;
             handle_spec_activate(spec, project, formatter)
+        },
+        SpecCommands::Template {
+            template_type,
+            output,
+            force,
+        } => {
+            use vibe_ticket::cli::handlers::handle_spec_template;
+            handle_spec_template(&template_type, &output, force, project, formatter)
         },
     }
 }

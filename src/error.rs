@@ -48,6 +48,18 @@ pub enum VibeTicketError {
     #[error("Project not initialized. Run 'vibe-ticket init' first")]
     ProjectNotInitialized,
 
+    /// Template not found
+    #[error("Template not found: {0}")]
+    TemplateNotFound(String),
+
+    /// Missing required field in template
+    #[error("Missing required field: {0}")]
+    MissingRequiredField(String),
+
+    /// No tickets found
+    #[error("No tickets found")]
+    NoTicketsFound,
+
     /// Project already initialized
     #[error("Project already initialized at {}", path.display())]
     ProjectAlreadyInitialized { path: PathBuf },
@@ -79,6 +91,10 @@ pub enum VibeTicketError {
     /// Template error
     #[error("Template error: {0}")]
     Template(#[from] tera::Error),
+
+    /// Dialoguer error (for interactive mode)
+    #[error("Interactive input error: {0}")]
+    Dialoguer(#[from] dialoguer::Error),
 
     /// UUID parsing error
     #[error("UUID error: {0}")]
