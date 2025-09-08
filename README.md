@@ -9,6 +9,7 @@ A high-performance ticket management system for developers, built with Rust. Fea
 
 ## Quick Start
 
+### Traditional Workflow
 ```bash
 # Install
 cargo install vibe-ticket
@@ -31,16 +32,64 @@ vibe-ticket task complete 1
 vibe-ticket close fix-bug --message "Fixed login issue"
 ```
 
+### Spec-Driven Development Workflow (NEW!)
+```bash
+# Create specification from natural language
+vibe-ticket spec specify "Build a REST API for user management"
+
+# Generate implementation plan
+vibe-ticket spec plan --tech-stack rust,actix-web
+
+# Create tasks and export as tickets
+vibe-ticket spec tasks --parallel --export-tickets
+
+# Start working on generated tickets
+vibe-ticket list --open
+vibe-ticket start api-t001-initialize
+```
+
 ## Key Features
 
 - **Git Worktree Support**: Work on multiple tickets simultaneously
 - **Concurrent Edit Protection**: Safe multi-user/multi-process ticket access with automatic lock management
-- **Spec-Driven Development**: Three-phase development with requirements, design, and tasks
-- **Task Management**: Break tickets into trackable tasks
+- **Spec-Driven Development**: AI-powered specification generation from natural language
+  - Create specs from requirements using `/specify`
+  - Generate implementation plans with `/plan`
+  - Create executable task lists with `/tasks`
+  - Validate specifications with `/validate`
+- **Task Management**: Break tickets into trackable tasks with parallel execution support
 - **Flexible Search**: Find tickets with powerful filters
 - **Export/Import**: JSON, YAML, CSV, and Markdown formats
-- **AI Integration**: Claude Code support with CLAUDE.md generation
+- **AI Integration**: Full Claude Code support with slash commands
 - **MCP Server**: Run as Model Context Protocol server for AI assistants
+
+## Spec-Driven Development (NEW!)
+
+Transform natural language requirements into executable specifications:
+
+```bash
+# Create specification from requirements
+vibe-ticket spec specify "Build a REST API for user management"
+
+# Generate implementation plan
+vibe-ticket spec plan --tech-stack rust,actix-web --architecture microservices
+
+# Create executable task list
+vibe-ticket spec tasks --granularity fine --parallel --export-tickets
+
+# Validate specification
+vibe-ticket spec validate --check-ambiguities --generate-report
+```
+
+### Slash Commands in Claude Code
+
+When using Claude Code with MCP integration:
+```
+/specify "Build a REST API with authentication"
+/plan --tech-stack rust,postgresql
+/tasks --parallel --export-tickets
+/validate --generate-report
+```
 
 ## Essential Commands
 
@@ -50,6 +99,7 @@ vibe-ticket check               # Check current status
 vibe-ticket list --open         # Show active tickets
 vibe-ticket search "keyword"    # Search tickets
 vibe-ticket worktree list       # List all worktrees
+vibe-ticket spec list           # List all specifications
 ```
 
 ## Configuration
@@ -68,8 +118,9 @@ project:
 - [Command Reference](docs/commands.md)
 - [Configuration](docs/configuration.md)
 - [Spec-Driven Development](docs/spec-driven-development.md)
+- [Slash Commands Guide](SLASH_COMMANDS.md) - **NEW!**
 - [Git Worktree Guide](docs/git-worktree.md)
-- [Claude Integration](docs/claude-integration.md)
+- [Claude Integration](CLAUDE.md)
 - [MCP Integration Guide](docs/mcp-guide.md)
 - [Data Formats](docs/data-formats.md)
 
@@ -103,16 +154,25 @@ vibe-ticket mcp serve
 When using vibe-ticket with AI assistants via MCP:
 
 1. **All CLI operations are available through MCP** - AI can create tickets, manage tasks, search, and more
-2. **Suggest MCP tools for improvements** - If you notice patterns or repetitive tasks, ask your AI assistant to use vibe-ticket MCP tools to automate them
-3. **Integrated workflow** - AI can seamlessly switch between code editing and ticket management
+2. **Spec-Driven Development with AI** - Use natural language to create specifications and generate implementation plans
+3. **Slash Commands in Claude Code** - Direct commands like `/specify`, `/plan`, `/tasks`, `/validate`
+4. **Integrated workflow** - AI can seamlessly switch between code editing and ticket management
 
 Example AI interactions:
 ```
 "Create a ticket for the bug we just found"
-"Add a task to track the performance optimization"
-"Search for tickets related to authentication"
-"Show me all open high-priority tickets"
+"Generate a specification for a REST API"
+"/specify Build a user authentication system"
+"/plan --tech-stack rust,jwt --architecture layered"
+"/tasks --granularity fine --parallel"
+"Validate the specification and check for ambiguities"
 ```
+
+Available MCP Tools for Spec-Driven Development:
+- `vibe-ticket_spec_specify` - Create specs from natural language
+- `vibe-ticket_spec_plan` - Generate implementation plans
+- `vibe-ticket_spec_generate_tasks` - Create task lists
+- `vibe-ticket_spec_validate` - Validate specifications
 
 See [MCP Integration Guide](docs/mcp-guide.md) for detailed setup and usage.
 

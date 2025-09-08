@@ -3,15 +3,16 @@ slug: test-manual-import-1
 title: Manual Import Test 1
 description: Testing import functionality manually
 priority: high
-status: doing
+status: done
 tags:
 - manual-test
 - import
 created_at: 2025-07-28T10:00:00Z
 started_at: 2025-07-28T06:16:11.917011Z
-closed_at: null
+closed_at: 2025-09-08T08:27:36.791870Z
 assignee: null
 tasks: []
 metadata:
-  archived: true
   archived_at: 2025-07-28T02:58:08.022381+00:00
+  archived: true
+  closing_message: Manual import test 1 completed

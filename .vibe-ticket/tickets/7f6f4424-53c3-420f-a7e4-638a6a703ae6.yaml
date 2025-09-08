@@ -3,11 +3,12 @@ slug: test-mcp-worktree
 title: Test worktree creation via MCP
 description: Testing if worktree is created when starting a ticket through MCP
 priority: medium
-status: doing
+status: done
 tags: []
 created_at: 2025-08-15T15:56:22.005875Z
 started_at: 2025-08-15T15:56:26.649994Z
-closed_at: null
+closed_at: 2025-09-08T08:23:42.719533Z
 assignee: null
 tasks: []
-metadata: {}
+metadata:
+  closing_message: Test completed - MCP worktree creation functionality verified

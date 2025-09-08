@@ -1,0 +1,26 @@
+{
+  "id": "7c963436-8c24-413a-b959-8d70e4f5cb4e",
+  "title": "I want to build a CLI tool for managing todo lists with categories and priorities",
+  "description": "I want to build a CLI tool for managing todo lists with categories and priorities",
+  "ticket_id": null,
+  "created_at": "2025-09-08T08:14:57.587612Z",
+  "updated_at": "2025-09-08T08:14:57.587621Z",
+  "progress": {
+    "requirements_completed": false,
+    "design_completed": false,
+    "tasks_completed": false,
+    "requirements_approved": false,
+    "design_approved": false,
+    "tasks_approved": false,
+    "current_phase": "initial",
+    "approval_status": null
+  },
+  "version": {
+    "major": 0,
+    "minor": 1,
+    "patch": 0
+  },
+  "tags": [
+    "spec-driven"
+  ]
+}

@@ -1,10 +1,19 @@
 # vibe-ticket Project: vibe-ticket
 
-A vibe-ticket managed project
+A vibe-ticket managed project with spec-driven development support.
+
+## Quick Reference
+
+| Feature | Command | Slash Command | MCP Tool |
+|---------|---------|---------------|----------|
+| Create spec from requirements | `vibe-ticket spec specify "..."` | `/specify "..."` | `vibe-ticket_spec_specify` |
+| Generate plan | `vibe-ticket spec plan --tech-stack ...` | `/plan --tech-stack ...` | `vibe-ticket_spec_plan` |
+| Create tasks | `vibe-ticket spec tasks --parallel` | `/tasks --parallel` | `vibe-ticket_spec_generate_tasks` |
+| Validate spec | `vibe-ticket spec validate` | `/validate` | `vibe-ticket_spec_validate` |
 
 ## Overview
 
-This project uses vibe-ticket for ticket management. This document provides guidance for Claude Code when working with this codebase.
+This project uses vibe-ticket for ticket management with advanced spec-driven development capabilities. This document provides guidance for Claude Code when working with this codebase.
 
 ## Common vibe-ticket Commands
 
@@ -125,10 +134,14 @@ When using vibe-ticket through MCP, the following tools are available:
 - `vibe-ticket_task_list` - List tasks for a ticket
 - `vibe-ticket_task_remove` - Remove a task
 
-#### Specification Management (New)
+#### Specification Management (Spec-Driven Development)
 - `vibe-ticket_spec_add` - Add specifications to a ticket
 - `vibe-ticket_spec_update` - Update specifications for a ticket
 - `vibe-ticket_spec_check` - Check specification status
+- `vibe-ticket_spec_specify` - Create specification from natural language (NEW!)
+- `vibe-ticket_spec_plan` - Generate implementation plan (NEW!)
+- `vibe-ticket_spec_generate_tasks` - Create executable task list (NEW!)
+- `vibe-ticket_spec_validate` - Validate specification completeness (NEW!)
 
 #### Worktree Management
 - `vibe-ticket_worktree_list` - List worktrees
@@ -142,11 +155,32 @@ When using vibe-ticket through MCP, the following tools are available:
 - `vibe-ticket_config_show` - Show configuration
 - `vibe-ticket_config_set` - Set configuration values
 
+### Slash Commands for Spec-Driven Development (NEW!)
+
+When using Claude Code, you can use these slash commands for spec-driven development:
+
+- `/specify "requirements"` - Create specification from natural language
+- `/plan --tech-stack rust,actix --architecture microservices` - Generate implementation plan
+- `/tasks --granularity fine --parallel` - Create executable task list
+- `/validate --check-ambiguities` - Validate specification
+
+Example workflow:
+```
+/specify "Build a REST API for user management"
+/plan --tech-stack rust,postgresql
+/tasks --parallel --export-tickets
+/validate --generate-report
+```
+
+For detailed slash command documentation, see [SLASH_COMMANDS.md](SLASH_COMMANDS.md).
+
 ### Using MCP Tools in Your Sessions
 
 When I have access to vibe-ticket MCP tools, I can:
 - Create and manage tickets directly
 - Update ticket status and properties
+- Generate specifications from natural language requirements
+- Create implementation plans and task lists automatically
 - Add and complete tasks
 - Search and filter tickets
 - Manage Git worktrees
@@ -174,13 +208,59 @@ git:
   worktree_cleanup_on_close: false   # Auto-remove worktree when closing ticket
 ```
 
+## Spec-Driven Development Workflow
+
+### Overview
+vibe-ticket now supports spec-driven development, inspired by GitHub's spec-kit. This approach transforms natural language requirements into executable specifications that generate implementations.
+
+### Workflow Steps
+
+1. **Specify** - Create specification from natural language
+   ```bash
+   vibe-ticket spec specify "Build a REST API for user management"
+   # Or in Claude Code: /specify "Build a REST API for user management"
+   ```
+
+2. **Plan** - Generate implementation plan
+   ```bash
+   vibe-ticket spec plan --tech-stack rust,actix-web --architecture microservices
+   # Or in Claude Code: /plan --tech-stack rust,actix-web
+   ```
+
+3. **Tasks** - Create executable task list
+   ```bash
+   vibe-ticket spec tasks --granularity fine --parallel --export-tickets
+   # Or in Claude Code: /tasks --parallel --export-tickets
+   ```
+
+4. **Validate** - Check specification completeness
+   ```bash
+   vibe-ticket spec validate --check-ambiguities --generate-report
+   # Or in Claude Code: /validate --generate-report
+   ```
+
+### Key Concepts
+
+- **[NEEDS CLARIFICATION]** markers: Identify ambiguous requirements
+- **[P]** markers: Tasks that can execute in parallel
+- **Three-phase approach**: Requirements → Design → Tasks
+- **Granularity levels**: fine (20+ tasks), medium (10 tasks), coarse (5 tasks)
+
 ## Workflow Guidelines
 
-1. Create a ticket before starting any work
-2. Use descriptive ticket slugs (e.g., fix-login-bug, add-search-feature)
+1. **For new features**: Start with spec-driven development
+   - Use `/specify` to create specification from requirements
+   - Generate plan and tasks automatically
+   - Export tasks as tickets for tracking
+
+2. **For bug fixes**: Use traditional ticket workflow
+   - Create ticket directly with `vibe-ticket new`
+   - Start work with automatic worktree creation
+
 3. When starting a ticket, a Git worktree is created automatically
    - Work in the worktree directory: `./vibe-ticket-vibeticket-<slug>/`
    - Each ticket has its own isolated working directory
+
 4. Break down complex work into tasks within tickets
 5. Keep ticket status updated as work progresses
 6. Close tickets with meaningful completion messages
@@ -203,12 +283,25 @@ When helping with this project:
 4. Use `vibe-ticket check` to understand current context
 5. Generate new tickets for bugs or features discovered during development
 6. **USE MCP TOOLS**: When users describe repetitive tasks or workflow improvements, proactively suggest using vibe-ticket MCP tools to automate them
-7. **IMPORTANT**: After completing each major task or work session, provide a retrospective that includes:
+7. **USE SLASH COMMANDS**: Leverage spec-driven development commands:
+   - `/specify` when user describes new features
+   - `/plan` to generate implementation strategies
+   - `/tasks` to break down work into manageable pieces
+   - `/validate` to ensure specifications are complete
+8. **IMPORTANT**: After completing each major task or work session, provide a retrospective that includes:
    - What was accomplished
    - What challenges were encountered
    - What could be improved for next time
    - Any vibe-tickets that should be created for follow-up work
    - Lessons learned that could benefit future development
+
+### Proactive Suggestions
+
+When you see opportunities, suggest:
+- "Would you like me to create a specification for this feature using `/specify`?"
+- "I can generate an implementation plan with `/plan --tech-stack <tech>`"
+- "Should I create parallel tasks for this work using `/tasks --parallel`?"
+- "Let me validate the specification to check for ambiguities"
 
 ## MCP Integration for AI Assistants
 
@@ -225,6 +318,68 @@ vibe-ticket provides full MCP support, allowing AI assistants to:
 - Workflow automation opportunities arise
 
 Example: "I notice you're creating several similar tickets. Would you like me to use the vibe-ticket MCP tools to automate this process?"
+
+## Complete Workflow Example
+
+Here's how to use vibe-ticket for a new feature development:
+
+```bash
+# Step 1: Create specification from requirements
+vibe-ticket spec specify "Build a user authentication system with JWT tokens"
+
+# Step 2: Generate implementation plan
+vibe-ticket spec plan --tech-stack rust,jwt,redis --architecture layered
+
+# Step 3: Create tasks with parallel execution
+vibe-ticket spec tasks --granularity fine --parallel --export-tickets
+
+# Step 4: Validate specification
+vibe-ticket spec validate --check-ambiguities --generate-report
+
+# Step 5: Start working on generated tickets
+vibe-ticket list --status todo
+vibe-ticket start auth-t001-initialize
+
+# Step 6: Track progress
+vibe-ticket task add "Set up JWT library"
+vibe-ticket task complete 1
+
+# Step 7: Complete and close
+vibe-ticket close auth-t001-initialize --message "Initialized authentication module"
+```
+
+### Using Slash Commands in Claude Code
+
+```
+User: "I need to build a REST API for managing blog posts"
+
+Claude: I'll help you create a specification for that using spec-driven development.
+
+/specify "Build a REST API for managing blog posts with CRUD operations"
+
+[Specification created successfully]
+
+Now let me generate an implementation plan:
+
+/plan --tech-stack rust,actix-web,postgresql --architecture rest
+
+[Plan generated]
+
+Let's create tasks that can be executed in parallel:
+
+/tasks --granularity medium --parallel --export-tickets
+
+[12 tasks created and exported as tickets]
+
+Finally, let me validate the specification:
+
+/validate --check-ambiguities
+
+[Validation complete - no issues found]
+
+You now have a complete specification with an implementation plan and 12 tickets ready to work on. 
+You can start with: vibe-ticket start api-t001-initialize
+```
 
 ## Lessons Learned from Development
 

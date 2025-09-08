@@ -3,13 +3,14 @@ slug: csv-test-2
 title: CSV Import Test 2
 description: Testing CSV with commas, quotes, and special chars
 priority: medium
-status: doing
+status: done
 tags:
 - csv
 - in-progress
 created_at: 2025-07-28T15:31:00Z
 started_at: 2025-07-28T15:35:00Z
-closed_at: null
+closed_at: 2025-09-08T08:27:47.741727Z
 assignee: csv-tester
 tasks: []
-metadata: {}
+metadata:
+  closing_message: CSV test 2 completed

@@ -5,13 +5,13 @@ description: |
   Multi-line description test
   This tests YAML's multi-line string capability
 priority: medium
-status: todo
+status: done
 tags:
 - yaml
 - multiline
 created_at: 2025-07-28T15:21:00Z
 started_at: null
-closed_at: null
+closed_at: 2025-09-08T08:27:58.110465Z
 assignee: null
 tasks:
 - id: f2234567-89ab-cdef-0123-456789abcdef
@@ -19,4 +19,5 @@ tasks:
   completed: true
   created_at: 2025-07-28T15:21:00Z
   completed_at: 2025-07-28T15:30:00Z
-metadata: {}
+metadata:
+  closing_message: YAML import test 2 completed

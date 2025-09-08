@@ -605,7 +605,8 @@ pub fn handle_spec_validate(
     
     // Generate report
     if report {
-        let report_content = generate_validation_report(&specification, &validation_results);
+        let validation_refs: Vec<&str> = validation_results.iter().map(|s| s.as_str()).collect();
+        let report_content = generate_validation_report(&specification, &validation_refs);
         let report_file = spec_dir.join("validation-report.md");
         fs::write(&report_file, &report_content)?;
         formatter.info(&format!("Validation report saved to: {}", report_file.display()));
@@ -734,6 +735,7 @@ fn analyze_and_mark_ambiguities(content: &str) -> String {
     result
 }
 
+#[allow(dead_code)]
 fn generate_research_document(spec_content: &str, tech_stack: &[String], architecture: Option<&str>) -> String {
     let tech_stack_str = if tech_stack.is_empty() {
         "- No specific technology stack defined".to_string()
@@ -782,6 +784,7 @@ Generated on: {}
     )
 }
 
+#[allow(dead_code)]
 fn generate_data_model(_spec_content: &str, tech_stack: &[String]) -> String {
     let is_rust = tech_stack.iter().any(|t| t.to_lowercase().contains("rust"));
     
@@ -821,6 +824,7 @@ Generated on: {}
     )
 }
 
+#[allow(dead_code)]
 fn generate_implementation_plan(_spec_content: &str, tech_stack: &[String], architecture: Option<&str>) -> String {
     let tech_stack_str = if tech_stack.is_empty() {
         "To be determined".to_string()
@@ -880,7 +884,8 @@ Generated on: {}
     )
 }
 
-fn generate_validation_report(spec: &Specification, results: &[String]) -> String {
+#[allow(dead_code)]
+fn generate_validation_report(spec: &Specification, results: &[&str]) -> String {
     format!(
         r#"# Specification Validation Report
 

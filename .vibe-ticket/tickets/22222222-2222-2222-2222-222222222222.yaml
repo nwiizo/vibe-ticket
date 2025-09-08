@@ -3,12 +3,13 @@ slug: 202507201346-another-import
 title: Another Import Test
 description: Second imported ticket
 priority: medium
-status: todo
+status: done
 tags:
 - imported
 created_at: 2025-07-20T04:46:00Z
 started_at: null
-closed_at: null
+closed_at: 2025-09-08T08:27:26.127716Z
 assignee: test-user
 tasks: []
-metadata: {}
+metadata:
+  closing_message: Test import completed

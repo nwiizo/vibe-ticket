@@ -22,8 +22,10 @@ mod check;
 mod close;
 mod common;
 mod config;
+mod create;
 mod edit;
 mod export;
+mod finish;
 mod import;
 mod init;
 mod list;
@@ -36,6 +38,7 @@ mod spec;
 mod spec_common;
 mod start;
 mod task;
+mod work_on;
 mod worktree;
 
 // Re-export handlers
@@ -43,8 +46,10 @@ pub use archive::handle_archive_command;
 pub use check::handle_check_command;
 pub use close::handle_close_command;
 pub use config::handle_config_command;
+pub use create::handle_create_command;
 pub use edit::handle_edit_command;
 pub use export::handle_export_command;
+pub use finish::handle_finish_command;
 pub use import::handle_import_command;
 pub use init::handle_init;
 pub use list::handle_list_command;
@@ -64,6 +69,7 @@ pub use task::{
     handle_task_add, handle_task_complete, handle_task_list, handle_task_remove,
     handle_task_uncomplete,
 };
+pub use work_on::handle_work_on_command;
 pub use worktree::{handle_worktree_list, handle_worktree_prune, handle_worktree_remove};
 
 use crate::cli::output::OutputFormatter;

@@ -166,6 +166,18 @@ impl ServerHandler for VibeTicketService {
                 "vibe-ticket_spec_check" => {
                     crate::mcp::handlers::spec::handle_check(&service, arguments)
                 },
+                "vibe-ticket_spec_specify" => {
+                    crate::mcp::handlers::spec::handle_specify(&service, arguments)
+                },
+                "vibe-ticket_spec_plan" => {
+                    crate::mcp::handlers::spec::handle_plan(&service, arguments)
+                },
+                "vibe-ticket_spec_generate_tasks" => {
+                    crate::mcp::handlers::spec::handle_generate_tasks(&service, arguments)
+                },
+                "vibe-ticket_spec_validate" => {
+                    crate::mcp::handlers::spec::handle_validate(&service, arguments)
+                },
 
                 _ => Err(format!("Unknown tool: {name}")),
             };
