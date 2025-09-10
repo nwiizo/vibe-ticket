@@ -50,7 +50,7 @@ uuid = { version = "1.18", features = ["v4", "serde"] }
 directories = "5.0"
 
 # Terminal output
-colored = "2.2"
+colored = "3.0"
 indicatif = "0.17"
 dialoguer = "0.11"
 
