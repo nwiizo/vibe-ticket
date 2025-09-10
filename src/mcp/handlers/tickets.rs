@@ -1,7 +1,7 @@
 //! Ticket management MCP tool handlers
 
 use crate::core::{Priority, Status, Ticket, TicketId};
-use crate::mcp::handlers::schema_helper::json_to_schema;
+use crate::mcp::handlers::schema_helper::{create_tool, ticket_properties_schema, filter_properties_schema, json_to_schema};
 use crate::mcp::service::VibeTicketService;
 use crate::storage::{ActiveTicketRepository, TicketRepository};
 use rmcp::model::Tool;
@@ -25,102 +25,35 @@ pub fn register_tools() -> Vec<Tool> {
 }
 
 fn create_new_ticket_tool() -> Tool {
-    Tool {
-        name: Cow::Borrowed("vibe-ticket_new"),
-        description: Some(Cow::Borrowed("Create a new ticket")),
-        input_schema: Arc::new(json_to_schema(json!({
-            "type": "object",
-            "properties": {
-                "slug": {
-                    "type": "string",
-                    "description": "Unique identifier slug for the ticket"
-                },
-                "title": {
-                    "type": "string",
-                    "description": "Title of the ticket"
-                },
-                "description": {
-                    "type": "string",
-                    "description": "Detailed description of the ticket"
-                },
-                "priority": {
-                    "type": "string",
-                    "enum": ["low", "medium", "high", "critical"],
-                    "description": "Priority level",
-                    "default": "medium"
-                },
-                "tags": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                    "description": "Tags for categorization"
-                },
-                "assignee": {
-                    "type": "string",
-                    "description": "Assignee for the ticket"
-                }
-            },
-            "required": ["slug", "title"]
-        }))),
-        annotations: None,
-    }
+    let properties = ticket_properties_schema();
+    let schema = json!({
+        "type": "object",
+        "properties": properties,
+        "required": ["slug", "title"]
+    });
+    create_tool("vibe-ticket_new", "Create a new ticket", schema)
 }
 
 fn create_list_tickets_tool() -> Tool {
-    Tool {
-        name: Cow::Borrowed("vibe-ticket_list"),
-        description: Some(Cow::Borrowed("List tickets with optional filters")),
-        input_schema: Arc::new(json_to_schema(json!({
-            "type": "object",
-            "properties": {
-                "status": {
-                    "type": "string",
-                    "enum": ["todo", "doing", "done", "blocked", "review"],
-                    "description": "Filter by status"
-                },
-                "priority": {
-                    "type": "string",
-                    "enum": ["low", "medium", "high", "critical"],
-                    "description": "Filter by priority"
-                },
-                "assignee": {
-                    "type": "string",
-                    "description": "Filter by assignee"
-                },
-                "open": {
-                    "type": "boolean",
-                    "description": "Show only open tickets"
-                },
-                "closed": {
-                    "type": "boolean",
-                    "description": "Show only closed tickets"
-                },
-                "tags": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                    "description": "Filter by tags"
-                }
-            }
-        }))),
-        annotations: None,
-    }
+    let schema = json!({
+        "type": "object",
+        "properties": filter_properties_schema()
+    });
+    create_tool("vibe-ticket_list", "List tickets with optional filters", schema)
 }
 
 fn create_show_ticket_tool() -> Tool {
-    Tool {
-        name: Cow::Borrowed("vibe-ticket_show"),
-        description: Some(Cow::Borrowed("Show detailed information about a ticket")),
-        input_schema: Arc::new(json_to_schema(json!({
-            "type": "object",
-            "properties": {
-                "ticket": {
-                    "type": "string",
-                    "description": "Ticket ID or slug"
-                }
-            },
-            "required": ["ticket"]
-        }))),
-        annotations: None,
-    }
+    let schema = json!({
+        "type": "object",
+        "properties": {
+            "ticket": {
+                "type": "string",
+                "description": "Ticket ID or slug"
+            }
+        },
+        "required": ["ticket"]
+    });
+    create_tool("vibe-ticket_show", "Show detailed information about a ticket", schema)
 }
 
 fn create_edit_ticket_tool() -> Tool {

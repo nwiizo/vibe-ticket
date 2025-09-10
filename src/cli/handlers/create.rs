@@ -12,25 +12,27 @@ use crate::storage::{FileStorage, TicketRepository};
 use dialoguer::{Confirm, Input, Select, theme::ColorfulTheme};
 use std::env;
 
+/// Parameters for creating a ticket
+pub struct CreateParams {
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub priority: Option<String>,
+    pub tags: Option<String>,
+    pub template: Option<String>,
+    pub interactive: bool,
+    pub quick: bool,
+    pub project_dir: Option<String>,
+}
+
 /// Handle the intent-focused create command
 ///
 /// This provides multiple ways to create a ticket:
 /// 1. Interactive mode with templates
 /// 2. Quick mode with minimal prompts
 /// 3. From command line arguments
-pub fn handle_create_command(
-    title: Option<String>,
-    description: Option<String>,
-    priority: Option<String>,
-    tags: Option<String>,
-    template: Option<String>,
-    interactive: bool,
-    quick: bool,
-    project_dir: Option<&str>,
-    formatter: &OutputFormatter,
-) -> Result<()> {
+pub fn handle_create_command(params: CreateParams, formatter: &OutputFormatter) -> Result<()> {
     // Change to project directory if specified
-    if let Some(project_path) = project_dir {
+    if let Some(ref project_path) = params.project_dir {
         env::set_current_dir(project_path)?;
     }
 
@@ -43,12 +45,17 @@ pub fn handle_create_command(
     }
 
     // Determine creation mode
-    let ticket_data = if interactive || template.is_some() {
+    let ticket_data = if params.interactive || params.template.is_some() {
         // Use full interactive mode
-        create_interactive(template)?
-    } else if quick || (title.is_some() && description.is_some()) {
+        create_interactive(params.template)?
+    } else if params.quick || (params.title.is_some() && params.description.is_some()) {
         // Quick creation with provided data
-        create_quick(title, description, priority, tags)?
+        create_quick(
+            params.title,
+            params.description,
+            params.priority,
+            params.tags,
+        )?
     } else {
         // Guided creation with prompts
         create_guided()?
@@ -56,7 +63,7 @@ pub fn handle_create_command(
 
     // Create the ticket
     let storage = FileStorage::new(tickets_dir);
-    let ticket = build_ticket_from_data(ticket_data)?;
+    let ticket = build_ticket_from_data(ticket_data);
     storage.save(&ticket)?;
 
     // Success message
@@ -78,7 +85,7 @@ pub fn handle_create_command(
             true, // create_branch
             None, // branch_name
             true, // create_worktree
-            project_dir.map(str::to_string),
+            params.project_dir,
             formatter,
         )?;
     }
@@ -160,7 +167,7 @@ fn create_guided() -> Result<InteractiveTicketData> {
 
     // Priority (with smart default)
     let priorities = vec!["Low", "Medium", "High", "Critical"];
-    let default_priority = guess_priority(&title, &description);
+    let default_priority = guess_priority(&title, description.as_ref());
     let priority_index = Select::with_theme(&theme)
         .with_prompt("Priority")
         .items(&priorities)
@@ -175,7 +182,7 @@ fn create_guided() -> Result<InteractiveTicketData> {
         .interact()?;
 
     let tags = if tags_input.is_empty() {
-        suggest_tags(&title, &description)
+        suggest_tags(&title, description.as_ref())
     } else {
         tags_input
             .split(',')
@@ -195,7 +202,7 @@ fn create_guided() -> Result<InteractiveTicketData> {
 }
 
 /// Build a ticket from interactive data
-fn build_ticket_from_data(data: InteractiveTicketData) -> Result<crate::core::Ticket> {
+fn build_ticket_from_data(data: InteractiveTicketData) -> crate::core::Ticket {
     let slug = utils::generate_slug(&data.title);
     let priority = match data.priority.as_str() {
         "low" => Priority::Low,
@@ -215,40 +222,31 @@ fn build_ticket_from_data(data: InteractiveTicketData) -> Result<crate::core::Ti
         builder = builder.description(desc);
     }
 
-    Ok(builder.build())
+    builder.build()
 }
 
 /// Guess priority based on title and description
-fn guess_priority(title: &str, description: &Option<String>) -> usize {
+fn guess_priority(title: &str, description: Option<&String>) -> usize {
     let text = format!(
         "{} {}",
         title.to_lowercase(),
-        description
-            .as_ref()
-            .unwrap_or(&String::new())
-            .to_lowercase()
+        description.unwrap_or(&String::new()).to_lowercase()
     );
 
-    if text.contains("critical") || text.contains("urgent") || text.contains("asap") {
-        3 // Critical
-    } else if text.contains("bug") || text.contains("error") || text.contains("broken") {
-        2 // High
-    } else if text.contains("minor") || text.contains("typo") || text.contains("cleanup") {
-        0 // Low
-    } else {
-        1 // Medium (default)
+    match () {
+        () if text.contains("critical") || text.contains("urgent") || text.contains("asap") => 3,
+        () if text.contains("bug") || text.contains("error") || text.contains("broken") => 2,
+        () if text.contains("minor") || text.contains("typo") || text.contains("cleanup") => 0,
+        () => 1,
     }
 }
 
 /// Suggest tags based on title and description
-fn suggest_tags(title: &str, description: &Option<String>) -> Vec<String> {
+fn suggest_tags(title: &str, description: Option<&String>) -> Vec<String> {
     let text = format!(
         "{} {}",
         title.to_lowercase(),
-        description
-            .as_ref()
-            .unwrap_or(&String::new())
-            .to_lowercase()
+        description.unwrap_or(&String::new()).to_lowercase()
     );
 
     let mut tags = Vec::new();
@@ -284,25 +282,23 @@ mod tests {
 
     #[test]
     fn test_guess_priority() {
-        assert_eq!(guess_priority("Fix critical bug", &None), 3);
-        assert_eq!(guess_priority("Add new feature", &None), 1);
-        assert_eq!(guess_priority("Fix typo", &None), 0);
-        assert_eq!(
-            guess_priority("Normal task", &Some("This is urgent!".to_string())),
-            3
-        );
+        assert_eq!(guess_priority("Fix critical bug", None), 3);
+        assert_eq!(guess_priority("Add new feature", None), 1);
+        assert_eq!(guess_priority("Fix typo", None), 0);
+        let urgent_desc = "This is urgent!".to_string();
+        assert_eq!(guess_priority("Normal task", Some(&urgent_desc)), 3);
     }
 
     #[test]
     fn test_suggest_tags() {
-        let tags = suggest_tags("Fix login bug", &None);
+        let tags = suggest_tags("Fix login bug", None);
         assert!(tags.contains(&"bug".to_string()));
 
-        let tags = suggest_tags("Add new feature to API", &None);
+        let tags = suggest_tags("Add new feature to API", None);
         assert!(tags.contains(&"feature".to_string()));
         assert!(tags.contains(&"backend".to_string()));
 
-        let tags = suggest_tags("Update README documentation", &None);
+        let tags = suggest_tags("Update README documentation", None);
         assert!(tags.contains(&"documentation".to_string()));
     }
 }

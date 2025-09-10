@@ -48,7 +48,7 @@ pub use archive::handle_archive_command;
 pub use check::handle_check_command;
 pub use close::handle_close_command;
 pub use config::handle_config_command;
-pub use create::handle_create_command;
+pub use create::{CreateParams, handle_create_command};
 pub use edit::handle_edit_command;
 pub use export::handle_export_command;
 pub use finish::handle_finish_command;

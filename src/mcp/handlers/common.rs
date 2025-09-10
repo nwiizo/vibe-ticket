@@ -5,7 +5,7 @@ use serde_json::Value;
 use std::path::Path;
 
 #[cfg(feature = "mcp")]
-pub use rmcp::model::CallToolResult;
+pub use rmcp::model::{CallToolResult, Tool};
 
 #[cfg(not(feature = "mcp"))]
 pub struct CallToolResult {
@@ -17,6 +17,7 @@ pub struct TextContent {
     pub type_: String,
     pub text: String,
 }
+
 
 /// Common MCP handler context
 pub struct McpContext {

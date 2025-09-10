@@ -227,9 +227,7 @@ fn get_closing_message(ticket: &Ticket, formatter: &OutputFormatter) -> Result<S
         .allow_empty(true)
         .interact()?;
 
-    if !inline.is_empty() {
-        Ok(inline)
-    } else {
+    if inline.is_empty() {
         // Open editor for longer message
         let template = format!(
             "# Closing ticket: {}\n\
@@ -269,6 +267,8 @@ fn get_closing_message(ticket: &Ticket, formatter: &OutputFormatter) -> Result<S
         } else {
             Ok("Ticket completed.".to_string())
         }
+    } else {
+        Ok(inline)
     }
 }
 
@@ -282,7 +282,7 @@ fn cleanup_worktree(
 
     // Check for worktree
     let output = Command::new("git")
-        .args(&["worktree", "list", "--porcelain"])
+        .args(["worktree", "list", "--porcelain"])
         .output()?;
 
     if !output.status.success() {
@@ -308,13 +308,13 @@ fn cleanup_worktree(
         let theme = ColorfulTheme::default();
 
         if Confirm::with_theme(&theme)
-            .with_prompt(&format!("Remove worktree at {path}?"))
+            .with_prompt(format!("Remove worktree at {path}?"))
             .default(true)
             .interact()?
         {
             // Remove the worktree
             let output = Command::new("git")
-                .args(&["worktree", "remove", &path, "--force"])
+                .args(["worktree", "remove", &path, "--force"])
                 .output()?;
 
             if output.status.success() {
@@ -344,12 +344,11 @@ fn show_completion_summary(
 
     if total_tasks > 0 {
         formatter.info(&format!(
-            "  • Tasks: {}/{} completed",
-            completed_tasks, total_tasks
+            "  • Tasks: {completed_tasks}/{total_tasks} completed"
         ));
     }
 
-    formatter.info(&format!("  • Message: {}", closing_message));
+    formatter.info(&format!("  • Message: {closing_message}"));
 
     Ok(())
 }

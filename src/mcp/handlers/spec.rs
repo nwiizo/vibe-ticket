@@ -11,6 +11,7 @@ use std::sync::Arc;
 
 /// Register all spec-driven development tools
 #[must_use]
+#[allow(clippy::too_many_lines)]
 pub fn register_tools() -> Vec<Tool> {
     vec![
         // Add spec tool
@@ -329,7 +330,7 @@ pub fn handle_specify(_service: &VibeTicketService, arguments: Value) -> Result<
 
     // Create specification
     let spec = Specification::new(
-        title.clone(),
+        title,
         args.requirements.clone(),
         args.ticket,
         vec!["spec-driven".to_string()],
@@ -395,8 +396,7 @@ pub fn handle_plan(_service: &VibeTicketService, arguments: Value) -> Result<Val
     let tech_stack_str = args
         .tech_stack
         .as_ref()
-        .map(|ts| ts.join(", "))
-        .unwrap_or_else(|| "To be determined".to_string());
+        .map_or_else(|| "To be determined".to_string(), |ts| ts.join(", "));
 
     let plan_content = format!(
         r"# Implementation Plan: {}
@@ -573,6 +573,7 @@ Generated on: {}
 }
 
 /// Handle validating specification
+#[allow(clippy::too_many_lines)]
 pub fn handle_validate(_service: &VibeTicketService, arguments: Value) -> Result<Value, String> {
     use crate::specs::SpecManager;
     use std::path::PathBuf;
@@ -613,25 +614,25 @@ pub fn handle_validate(_service: &VibeTicketService, arguments: Value) -> Result
     let mut has_issues = false;
 
     // Check completeness
-    if !spec.metadata.progress.requirements_completed {
+    if spec.metadata.progress.requirements_completed {
+        validation_results.push("✅ Requirements phase complete".to_string());
+    } else {
         validation_results.push("⚠️  Requirements phase not complete".to_string());
         has_issues = true;
-    } else {
-        validation_results.push("✅ Requirements phase complete".to_string());
     }
 
-    if !spec.metadata.progress.design_completed {
+    if spec.metadata.progress.design_completed {
+        validation_results.push("✅ Design phase complete".to_string());
+    } else {
         validation_results.push("⚠️  Design phase not complete".to_string());
         has_issues = true;
-    } else {
-        validation_results.push("✅ Design phase complete".to_string());
     }
 
-    if !spec.metadata.progress.tasks_completed {
+    if spec.metadata.progress.tasks_completed {
+        validation_results.push("✅ Tasks phase complete".to_string());
+    } else {
         validation_results.push("⚠️  Tasks phase not complete".to_string());
         has_issues = true;
-    } else {
-        validation_results.push("✅ Tasks phase complete".to_string());
     }
 
     // Check for ambiguities if requested
@@ -646,8 +647,7 @@ pub fn handle_validate(_service: &VibeTicketService, arguments: Value) -> Result
             let clarification_count = content.matches("[NEEDS CLARIFICATION]").count();
             if clarification_count > 0 {
                 validation_results.push(format!(
-                    "⚠️  Found {} items marked as [NEEDS CLARIFICATION]",
-                    clarification_count
+                    "⚠️  Found {clarification_count} items marked as [NEEDS CLARIFICATION]"
                 ));
                 has_issues = true;
             } else {

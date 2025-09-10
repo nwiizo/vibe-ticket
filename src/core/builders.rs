@@ -133,6 +133,7 @@ impl TicketBuilder {
     }
 
     /// Build the ticket
+    #[must_use]
     pub fn build(self) -> Ticket {
         Ticket {
             id: self.id.unwrap_or_default(),
@@ -205,6 +206,7 @@ impl TaskBuilder {
     }
 
     /// Build the task
+    #[must_use]
     pub fn build(self) -> Task {
         Task {
             id: self.id.unwrap_or_default(),

@@ -158,6 +158,7 @@ impl SpecManager {
     }
 
     /// Get the directory path for a spec
+    #[must_use]
     pub fn get_spec_dir(&self, spec_id: &str) -> PathBuf {
         self.ops.get_subdir(spec_id)
     }

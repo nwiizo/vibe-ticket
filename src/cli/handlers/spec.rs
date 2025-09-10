@@ -200,6 +200,7 @@ pub fn handle_spec_design(
 }
 
 /// Handle spec tasks command
+#[allow(clippy::too_many_arguments)]
 pub fn handle_spec_tasks(
     spec: Option<String>,
     plan: Option<String>,
@@ -404,8 +405,7 @@ pub fn handle_spec_specify(
     let clarification_count = analyzed_content.matches("[NEEDS CLARIFICATION]").count();
     if clarification_count > 0 {
         formatter.warning(&format!(
-            "\n⚠️  Found {} items that need clarification",
-            clarification_count
+            "\n⚠️  Found {clarification_count} items that need clarification"
         ));
         formatter.info("Next steps:");
         formatter.info("  1. Review and clarify ambiguous requirements");
@@ -575,38 +575,38 @@ pub fn handle_spec_validate(
     let mut has_errors = false;
 
     // Check completeness
-    if complete || (!complete && !ambiguities && !report) {
+    if complete || !ambiguities && !report {
         // Check all required documents exist
         let spec_file = spec_dir.join("spec.md");
-        if !spec_file.exists() {
+        if spec_file.exists() {
+            validation_results.push("✅ Specification document exists".to_string());
+        } else {
             validation_results.push("❌ Missing specification document (spec.md)".to_string());
             has_errors = true;
-        } else {
-            validation_results.push("✅ Specification document exists".to_string());
         }
 
         // Check progress
-        if !specification.metadata.progress.requirements_completed {
-            validation_results.push("⚠️  Requirements phase not marked as complete".to_string());
-        } else {
+        if specification.metadata.progress.requirements_completed {
             validation_results.push("✅ Requirements phase complete".to_string());
+        } else {
+            validation_results.push("⚠️  Requirements phase not marked as complete".to_string());
         }
 
-        if !specification.metadata.progress.design_completed {
-            validation_results.push("⚠️  Design phase not marked as complete".to_string());
-        } else {
+        if specification.metadata.progress.design_completed {
             validation_results.push("✅ Design phase complete".to_string());
+        } else {
+            validation_results.push("⚠️  Design phase not marked as complete".to_string());
         }
 
-        if !specification.metadata.progress.tasks_completed {
-            validation_results.push("⚠️  Tasks phase not marked as complete".to_string());
-        } else {
+        if specification.metadata.progress.tasks_completed {
             validation_results.push("✅ Tasks phase complete".to_string());
+        } else {
+            validation_results.push("⚠️  Tasks phase not marked as complete".to_string());
         }
     }
 
     // Check for ambiguities
-    if ambiguities || (!complete && !ambiguities && !report) {
+    if ambiguities || !report {
         let spec_file = spec_dir.join("spec.md");
         if spec_file.exists() {
             let content = fs::read_to_string(&spec_file)?;
@@ -614,8 +614,7 @@ pub fn handle_spec_validate(
 
             if clarification_count > 0 {
                 validation_results.push(format!(
-                    "⚠️  Found {} items marked as [NEEDS CLARIFICATION]",
-                    clarification_count
+                    "⚠️  Found {clarification_count} items marked as [NEEDS CLARIFICATION]"
                 ));
                 has_errors = true;
             } else {
@@ -683,7 +682,7 @@ pub fn handle_spec_template(
     };
 
     for template in templates_to_create {
-        let template_file = output_dir.join(format!("{}-template.md", template));
+        let template_file = output_dir.join(format!("{template}-template.md"));
 
         if template_file.exists() && !force {
             formatter.warning(&format!(
@@ -698,7 +697,7 @@ pub fn handle_spec_template(
             "plan" => include_str!("../../../templates/plan-template.md"),
             "task" => include_str!("../../../templates/task-template.md"),
             _ => {
-                formatter.warning(&format!("Unknown template type: {}", template));
+                formatter.warning(&format!("Unknown template type: {template}"));
                 continue;
             },
         };
@@ -766,7 +765,7 @@ fn analyze_and_mark_ambiguities(content: &str) -> String {
     for term in &vague_terms {
         result = result.replace(
             term,
-            &format!("{} [NEEDS CLARIFICATION: Be more specific]", term),
+            &format!("{term} [NEEDS CLARIFICATION: Be more specific]"),
         );
     }
 
@@ -784,7 +783,7 @@ fn generate_research_document(
     } else {
         tech_stack
             .iter()
-            .map(|t| format!("- {}", t))
+            .map(|t| format!("- {t}"))
             .collect::<Vec<_>>()
             .join("\n")
     };
@@ -1133,7 +1132,7 @@ fn export_tasks_to_tickets(
                 use crate::core::TicketBuilder;
                 let ticket = TicketBuilder::new()
                     .slug(slug.clone())
-                    .title(format!("[{}] {}", task_id, description))
+                    .title(format!("[{task_id}] {description}"))
                     .description(format!("Task from specification: {}", spec.metadata.title))
                     .priority(Priority::Medium)
                     .tags(vec![

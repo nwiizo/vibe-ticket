@@ -14,13 +14,20 @@ pub struct InteractiveMode {
     template_manager: TemplateManager,
 }
 
-impl InteractiveMode {
-    /// Create a new interactive mode handler
-    pub fn new() -> Self {
+impl Default for InteractiveMode {
+    fn default() -> Self {
         Self {
             theme: ColorfulTheme::default(),
             template_manager: TemplateManager::new(),
         }
+    }
+}
+
+impl InteractiveMode {
+    /// Create a new interactive mode handler
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
     }
 
     /// Run interactive ticket creation
@@ -79,7 +86,7 @@ impl InteractiveMode {
                     }
 
                     if let Some(help) = &field.help {
-                        println!("ℹ️  {}", help);
+                        println!("ℹ️  {help}");
                     }
 
                     if field.required {
@@ -91,7 +98,7 @@ impl InteractiveMode {
                 FieldType::LongText => {
                     println!("📝 {} (Press Enter twice when done)", field.label);
                     if let Some(help) = &field.help {
-                        println!("ℹ️  {}", help);
+                        println!("ℹ️  {help}");
                     }
                     self.read_multiline()?
                 },
@@ -117,7 +124,7 @@ impl InteractiveMode {
                 FieldType::List => {
                     println!("📝 {} (Enter items, blank line when done)", field.label);
                     if let Some(help) = &field.help {
-                        println!("ℹ️  {}", help);
+                        println!("ℹ️  {help}");
                     }
                     self.read_list()?
                 },
@@ -248,7 +255,7 @@ impl InteractiveMode {
         }
 
         // Remove trailing empty lines
-        while lines.last().map_or(false, |l| l.is_empty()) {
+        while lines.last().is_some_and(|l| l.is_empty()) {
             lines.pop();
         }
 
@@ -262,7 +269,7 @@ impl InteractiveMode {
         let mut counter = 1;
 
         loop {
-            print!("  {}. ", counter);
+            print!("  {counter}. ");
             use std::io::Write;
             std::io::stdout().flush()?;
 
@@ -274,7 +281,7 @@ impl InteractiveMode {
                 break;
             }
 
-            items.push(format!("{}. {}", counter, trimmed));
+            items.push(format!("{counter}. {trimmed}"));
             counter += 1;
         }
 
@@ -312,7 +319,7 @@ impl InteractiveMode {
 
         let items: Vec<String> = tickets
             .iter()
-            .map(|(id, title)| format!("{} - {}", id, title))
+            .map(|(id, title)| format!("{id} - {title}"))
             .collect();
 
         let selection = Select::with_theme(&self.theme)
@@ -336,15 +343,15 @@ pub struct InteractiveTicketData {
 }
 
 /// Interactive command prompt for continuous interaction
+#[derive(Default)]
 pub struct InteractivePrompt {
     theme: ColorfulTheme,
 }
 
 impl InteractivePrompt {
+    #[must_use]
     pub fn new() -> Self {
-        Self {
-            theme: ColorfulTheme::default(),
-        }
+        Self::default()
     }
 
     /// Run the interactive prompt
@@ -357,7 +364,7 @@ impl InteractivePrompt {
                 .with_prompt("vibe-ticket>")
                 .interact()?;
 
-            let parts: Vec<&str> = input.trim().split_whitespace().collect();
+            let parts: Vec<&str> = input.split_whitespace().collect();
             if parts.is_empty() {
                 continue;
             }
@@ -371,7 +378,7 @@ impl InteractivePrompt {
                             println!("✅ Ticket created: {}", data.title);
                             // TODO: Actually create the ticket
                         },
-                        Err(e) => println!("❌ Error: {}", e),
+                        Err(e) => println!("❌ Error: {e}"),
                     }
                 },
                 "list" => println!("📋 Listing tickets..."), // TODO: Implement

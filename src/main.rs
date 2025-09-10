@@ -492,6 +492,7 @@ fn dispatch_config_command(
     handle_config_command(command, project, formatter)
 }
 
+#[allow(clippy::too_many_lines)]
 fn dispatch_spec_command(
     command: SpecCommands,
     project: Option<&str>,

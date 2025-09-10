@@ -26,6 +26,13 @@ impl HandlerContext {
     ///
     /// Handles project directory resolution, storage initialization,
     /// and common error checking.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - Failed to change to the project directory
+    /// - Failed to get the current directory
+    /// - Project is not initialized (.vibe-ticket directory doesn't exist)
     pub fn new(project_dir: Option<&str>, formatter: OutputFormatter) -> Result<Self> {
         // Change to project directory if specified
         if let Some(project_path) = project_dir {
@@ -51,6 +58,12 @@ impl HandlerContext {
     }
 
     /// Get the currently active ticket ID
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - Failed to read the active ticket file
+    /// - No active ticket is set
     pub fn get_active_ticket_id(&self) -> Result<TicketId> {
         let active_ticket_path = self.tickets_dir.join("active_ticket");
 
@@ -68,6 +81,10 @@ impl HandlerContext {
     }
 
     /// Set the active ticket
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if failed to write the active ticket file
     pub fn set_active_ticket(&self, ticket_id: &TicketId) -> Result<()> {
         let active_ticket_path = self.tickets_dir.join("active_ticket");
         std::fs::write(&active_ticket_path, ticket_id.to_string())?;
@@ -75,6 +92,10 @@ impl HandlerContext {
     }
 
     /// Clear the active ticket
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if failed to remove the active ticket file
     pub fn clear_active_ticket(&self) -> Result<()> {
         let active_ticket_path = self.tickets_dir.join("active_ticket");
         if active_ticket_path.exists() {
@@ -84,6 +105,13 @@ impl HandlerContext {
     }
 
     /// Resolve a ticket reference (ID, slug, or active)
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - The ticket reference is invalid
+    /// - The ticket is not found by ID or slug
+    /// - No active ticket is set when reference is None
     pub fn resolve_ticket_ref(&self, ticket_ref: Option<&str>) -> Result<TicketId> {
         if let Some(ref_str) = ticket_ref {
             // Try to parse as ID first
@@ -109,6 +137,12 @@ impl HandlerContext {
     }
 
     /// Load a ticket by reference
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - Failed to resolve the ticket reference
+    /// - Failed to load the ticket from storage
     pub fn load_ticket_by_ref(&self, ticket_ref: Option<&str>) -> Result<Ticket> {
         let ticket_id = self.resolve_ticket_ref(ticket_ref)?;
         self.storage.load(&ticket_id)
@@ -141,6 +175,10 @@ pub mod validation {
     use crate::error::{Result, VibeTicketError};
 
     /// Validate and parse priority string
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the priority string is not one of: low, medium, high, critical
     pub fn parse_priority(priority: &str) -> Result<Priority> {
         match priority.to_lowercase().as_str() {
             "low" => Ok(Priority::Low),
@@ -154,6 +192,12 @@ pub mod validation {
     }
 
     /// Validate ticket title
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if:
+    /// - The title is empty
+    /// - The title exceeds 200 characters
     pub fn validate_title(title: &str) -> Result<()> {
         if title.trim().is_empty() {
             return Err(VibeTicketError::Custom(
@@ -169,6 +213,7 @@ pub mod validation {
     }
 
     /// Validate tags
+    #[must_use]
     pub fn parse_tags(tags_str: Option<&str>) -> Vec<String> {
         tags_str
             .map(|s| {

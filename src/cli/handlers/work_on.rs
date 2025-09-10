@@ -11,7 +11,7 @@ use crate::storage::{FileStorage, TicketRepository};
 use dialoguer::{Select, theme::ColorfulTheme};
 use std::env;
 use std::fs;
-use std::path::PathBuf;
+use std::path::Path;
 
 /// Handle the intent-focused work-on command
 ///
@@ -51,7 +51,7 @@ pub fn handle_work_on_command(
 
     // Parse ticket ID
     let ticket_id = TicketId::parse_str(&ticket_id_str)
-        .map_err(|_| VibeTicketError::Custom(format!("Invalid ticket ID: {}", ticket_id_str)))?;
+        .map_err(|_| VibeTicketError::Custom(format!("Invalid ticket ID: {ticket_id_str}")))?;
 
     // Load the ticket
     let mut ticket = storage.load(&ticket_id)?;
@@ -82,7 +82,7 @@ pub fn handle_work_on_command(
 
     // Set as active ticket
     let active_ticket_path = tickets_dir.join("active_ticket");
-    fs::write(&active_ticket_path, &ticket.id.to_string())?;
+    fs::write(&active_ticket_path, ticket.id.to_string())?;
 
     // Create worktree if needed
     if !no_worktree && should_create_worktree(&project_root)? {
@@ -160,7 +160,7 @@ fn select_ticket_to_work_on(storage: &FileStorage, formatter: &OutputFormatter) 
 }
 
 /// Check if we should create a worktree
-fn should_create_worktree(project_root: &PathBuf) -> Result<bool> {
+fn should_create_worktree(project_root: &Path) -> Result<bool> {
     // Check git config for worktree preference
     let config_path = project_root.join(".vibe-ticket").join("config.yaml");
 
@@ -176,7 +176,7 @@ fn should_create_worktree(project_root: &PathBuf) -> Result<bool> {
 /// Create a git worktree for the ticket
 fn create_worktree_for_ticket(
     ticket: &Ticket,
-    project_root: &PathBuf,
+    project_root: &Path,
     formatter: &OutputFormatter,
 ) -> Result<()> {
     use std::process::Command;
@@ -207,7 +207,7 @@ fn create_worktree_for_ticket(
 
     // Create worktree
     let output = Command::new("git")
-        .args(&["worktree", "add", "-b", &branch_name])
+        .args(["worktree", "add", "-b", &branch_name])
         .arg(&worktree_path)
         .output()?;
 
@@ -216,7 +216,7 @@ fn create_worktree_for_ticket(
             "📁 Created worktree at: {}",
             worktree_path.display()
         ));
-        formatter.info(&format!("🌿 Branch: {}", branch_name));
+        formatter.info(&format!("🌿 Branch: {branch_name}"));
 
         // Suggest changing to worktree directory
         formatter.info(&format!(
@@ -225,7 +225,7 @@ fn create_worktree_for_ticket(
         ));
     } else {
         let error = String::from_utf8_lossy(&output.stderr);
-        formatter.warning(&format!("⚠️  Could not create worktree: {}", error));
+        formatter.warning(&format!("⚠️  Could not create worktree: {error}"));
     }
 
     Ok(())

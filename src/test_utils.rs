@@ -41,7 +41,7 @@ impl TestProject {
 
     /// Create a test project with sample tickets
     pub fn with_sample_tickets() -> Self {
-        let mut project = Self::new();
+        let project = Self::new();
 
         // Add some sample tickets
         let tickets = vec![

@@ -53,29 +53,55 @@ impl IntegrationService {
         self.event_sender.subscribe()
     }
 
+    /// Send an integration event with logging
+    fn send_event(&self, event: IntegrationEvent) {
+        let _ = self.event_sender.send(event.clone());
+        self.log_event(&event);
+    }
+
+    /// Log integration events
+    fn log_event(&self, event: &IntegrationEvent) {
+        match event {
+            IntegrationEvent::TicketCreated { ticket } => {
+                tracing::info!("Integration: Ticket created - {}", ticket.slug);
+            }
+            IntegrationEvent::TicketUpdated { ticket } => {
+                tracing::info!("Integration: Ticket updated - {}", ticket.slug);
+            }
+            IntegrationEvent::TicketClosed { ticket_id, .. } => {
+                tracing::info!("Integration: Ticket closed - {}", ticket_id.short());
+            }
+            IntegrationEvent::StatusChanged { ticket_id, old_status, new_status } => {
+                tracing::info!(
+                    "Integration: Status changed - {} from {:?} to {:?}",
+                    ticket_id.short(),
+                    old_status,
+                    new_status
+                );
+            }
+        }
+    }
+
     /// Notify about a ticket creation
     pub fn notify_ticket_created(&self, ticket: &Ticket) {
-        let _ = self.event_sender.send(IntegrationEvent::TicketCreated {
+        self.send_event(IntegrationEvent::TicketCreated {
             ticket: ticket.clone(),
         });
-        tracing::info!("Integration: Ticket created - {}", ticket.slug);
     }
 
     /// Notify about a ticket update
     pub fn notify_ticket_updated(&self, ticket: &Ticket) {
-        let _ = self.event_sender.send(IntegrationEvent::TicketUpdated {
+        self.send_event(IntegrationEvent::TicketUpdated {
             ticket: ticket.clone(),
         });
-        tracing::info!("Integration: Ticket updated - {}", ticket.slug);
     }
 
     /// Notify about a ticket closure
     pub fn notify_ticket_closed(&self, ticket_id: &TicketId, message: String) {
-        let _ = self.event_sender.send(IntegrationEvent::TicketClosed {
+        self.send_event(IntegrationEvent::TicketClosed {
             ticket_id: ticket_id.clone(),
             message,
         });
-        tracing::info!("Integration: Ticket closed - {}", ticket_id.short());
     }
 
     /// Notify about a status change
@@ -85,17 +111,11 @@ impl IntegrationService {
         old_status: Status,
         new_status: Status,
     ) {
-        let _ = self.event_sender.send(IntegrationEvent::StatusChanged {
+        self.send_event(IntegrationEvent::StatusChanged {
             ticket_id: ticket_id.clone(),
             old_status,
             new_status,
         });
-        tracing::info!(
-            "Integration: Status changed - {} from {:?} to {:?}",
-            ticket_id.short(),
-            old_status,
-            new_status
-        );
     }
 }
 

@@ -50,15 +50,22 @@ pub struct TemplateManager {
     custom_templates_dir: Option<PathBuf>,
 }
 
-impl TemplateManager {
-    /// Create a new template manager
-    pub fn new() -> Self {
+impl Default for TemplateManager {
+    fn default() -> Self {
         let mut manager = Self {
             templates: HashMap::new(),
             custom_templates_dir: None,
         };
         manager.load_builtin_templates();
         manager
+    }
+}
+
+impl TemplateManager {
+    /// Create a new template manager
+    #[must_use]
+    pub fn new() -> Self {
+        Self::default()
     }
 
     /// Load built-in templates
@@ -223,11 +230,13 @@ impl TemplateManager {
     }
 
     /// Get a template by name
+    #[must_use]
     pub fn get(&self, name: &str) -> Option<&Template> {
         self.templates.get(name)
     }
 
     /// List all available templates
+    #[must_use]
     pub fn list(&self) -> Vec<&Template> {
         self.templates.values().collect()
     }
@@ -262,14 +271,15 @@ impl TemplateManager {
         let mut description = String::new();
         for field in &template.fields {
             if let Some(value) = values.get(&field.name) {
-                description.push_str(&format!("## {}\n{}\n\n", field.label, value));
+                use std::fmt::Write;
+                let _ = write!(description, "## {}\n{}\n\n", field.label, value);
             }
         }
 
         Ok(TicketData {
             title: values
                 .get("title")
-                .or(values.get("summary"))
+                .or_else(|| values.get("summary"))
                 .cloned()
                 .unwrap_or_else(|| template.name.clone()),
             description: Some(description),

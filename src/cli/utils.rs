@@ -41,6 +41,7 @@ pub fn get_vibe_ticket_dir(project_root: &Path) -> PathBuf {
 /// Generate a slug from a title
 ///
 /// Creates a URL-safe slug from the given title string
+#[must_use]
 pub fn generate_slug(title: &str) -> String {
     // Get current date for prefix
     let date_prefix = Utc::now().format("%Y%m%d%H%M").to_string();
@@ -70,7 +71,7 @@ pub fn generate_slug(title: &str) -> String {
         &title_slug
     };
 
-    format!("{}-{}", date_prefix, truncated)
+    format!("{date_prefix}-{truncated}")
 }
 
 /// Validates a ticket slug
@@ -125,6 +126,7 @@ pub fn get_editor() -> String {
 }
 
 /// Parses comma-separated tags
+#[must_use]
 pub fn parse_tags(tags_str: &str) -> Vec<String> {
     tags_str
         .split(',')

@@ -21,9 +21,6 @@ rustflags = [
     "-D", "clippy::all",        # Deny all clippy lints
     "-W", "clippy::pedantic",   # Warn on pedantic clippy lints
     "-W", "clippy::nursery",    # Warn on nursery clippy lints
-    "-A", "clippy::module_name_repetitions",  # Allow module name repetitions
-    "-A", "clippy::must_use_candidate",       # Allow functions without must_use
-    "-A", "clippy::missing_errors_doc",       # Allow missing error documentation
 ]
 
 # Environment variables to set for all builds
