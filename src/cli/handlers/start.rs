@@ -66,7 +66,9 @@ pub fn handle_start_command(
     }
 
     // Update ticket status and start time
+    #[cfg(feature = "mcp")]
     let old_status = ticket.status;
+    
     ticket.status = Status::Doing;
     ticket.started_at = Some(Utc::now());
 

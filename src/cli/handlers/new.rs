@@ -77,7 +77,9 @@ pub fn handle_new_command(
 
     // If --start flag is provided, start working on the ticket immediately
     if start {
+        #[cfg(feature = "mcp")]
         let old_status = ticket.status;
+        
         ticket.start();
         storage.save(&ticket)?;
         storage.set_active(&ticket.id)?;
