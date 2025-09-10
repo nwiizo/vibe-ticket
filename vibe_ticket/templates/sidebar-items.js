@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["FieldType"],"struct":["Template","TemplateField","TemplateManager","TicketData"]};

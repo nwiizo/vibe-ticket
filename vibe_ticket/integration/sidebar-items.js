@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["IntegrationEvent"],"fn":["init_integration","integration","notify_status_changed","notify_ticket_closed","notify_ticket_created","notify_ticket_updated"],"struct":["IntegrationService"]};
