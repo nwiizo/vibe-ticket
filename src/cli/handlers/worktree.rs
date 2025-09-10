@@ -112,10 +112,11 @@ pub fn handle_worktree_remove(
     output.success(&format!("Removed worktree: {}", worktree_path.display()));
 
     // Remove branch if requested
-    if !keep_branch && branch_name.is_some() {
-        let branch = branch_name.unwrap();
-        remove_git_branch(&project_root, &branch)?;
-        output.info(&format!("Removed branch: {branch}"));
+    if !keep_branch {
+        if let Some(branch) = branch_name {
+            remove_git_branch(&project_root, &branch)?;
+            output.info(&format!("Removed branch: {branch}"));
+        }
     }
 
     Ok(())

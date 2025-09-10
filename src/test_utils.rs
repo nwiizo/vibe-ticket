@@ -3,8 +3,6 @@
 //! This module provides common test fixtures and utilities to reduce
 //! duplication in test code across the codebase.
 
-#![cfg(test)]
-
 use crate::core::{Priority, Status, Task, Ticket, TicketId};
 use crate::storage::{FileStorage, TicketRepository};
 use chrono::Utc;
@@ -20,8 +18,15 @@ pub struct TestProject {
     pub storage: FileStorage,
 }
 
+impl Default for TestProject {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TestProject {
     /// Create a new test project with initialized vibe-ticket directory
+    #[must_use]
     pub fn new() -> Self {
         let temp_dir = TempDir::new().expect("Failed to create temp dir");
         let project_root = temp_dir.path().to_path_buf();
@@ -166,11 +171,13 @@ pub fn assert_tickets_equal(left: &Ticket, right: &Ticket) {
 }
 
 /// Test data builder for complex scenarios
+#[derive(Default)]
 pub struct TestDataBuilder {
     tickets: Vec<Ticket>,
 }
 
 impl TestDataBuilder {
+    #[must_use]
     pub fn new() -> Self {
         Self {
             tickets: Vec::new(),
@@ -190,7 +197,7 @@ impl TestDataBuilder {
             self.tickets.push(create_test_ticket(
                 &format!("{:?} ticket {}", status, i),
                 Priority::Medium,
-                status.clone(),
+                status,
             ));
         }
         self

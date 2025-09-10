@@ -18,7 +18,6 @@ pub struct TextContent {
     pub text: String,
 }
 
-
 /// Common MCP handler context
 pub struct McpContext {
     pub storage: FileStorage,

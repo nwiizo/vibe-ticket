@@ -64,21 +64,25 @@ impl IntegrationService {
         match event {
             IntegrationEvent::TicketCreated { ticket } => {
                 tracing::info!("Integration: Ticket created - {}", ticket.slug);
-            }
+            },
             IntegrationEvent::TicketUpdated { ticket } => {
                 tracing::info!("Integration: Ticket updated - {}", ticket.slug);
-            }
+            },
             IntegrationEvent::TicketClosed { ticket_id, .. } => {
                 tracing::info!("Integration: Ticket closed - {}", ticket_id.short());
-            }
-            IntegrationEvent::StatusChanged { ticket_id, old_status, new_status } => {
+            },
+            IntegrationEvent::StatusChanged {
+                ticket_id,
+                old_status,
+                new_status,
+            } => {
                 tracing::info!(
                     "Integration: Status changed - {} from {:?} to {:?}",
                     ticket_id.short(),
                     old_status,
                     new_status
                 );
-            }
+            },
         }
     }
 

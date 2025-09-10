@@ -1,7 +1,9 @@
 //! Ticket management MCP tool handlers
 
 use crate::core::{Priority, Status, Ticket, TicketId};
-use crate::mcp::handlers::schema_helper::{create_tool, ticket_properties_schema, filter_properties_schema, json_to_schema};
+use crate::mcp::handlers::schema_helper::{
+    create_tool, filter_properties_schema, json_to_schema, ticket_properties_schema,
+};
 use crate::mcp::service::VibeTicketService;
 use crate::storage::{ActiveTicketRepository, TicketRepository};
 use rmcp::model::Tool;
@@ -39,7 +41,11 @@ fn create_list_tickets_tool() -> Tool {
         "type": "object",
         "properties": filter_properties_schema()
     });
-    create_tool("vibe-ticket_list", "List tickets with optional filters", schema)
+    create_tool(
+        "vibe-ticket_list",
+        "List tickets with optional filters",
+        schema,
+    )
 }
 
 fn create_show_ticket_tool() -> Tool {
@@ -53,7 +59,11 @@ fn create_show_ticket_tool() -> Tool {
         },
         "required": ["ticket"]
     });
-    create_tool("vibe-ticket_show", "Show detailed information about a ticket", schema)
+    create_tool(
+        "vibe-ticket_show",
+        "Show detailed information about a ticket",
+        schema,
+    )
 }
 
 fn create_edit_ticket_tool() -> Tool {

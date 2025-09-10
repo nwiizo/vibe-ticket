@@ -35,7 +35,7 @@ pub fn create_tool(name: &'static str, description: &'static str, schema: Value)
 }
 
 /// Create common ticket properties schema
-#[must_use] 
+#[must_use]
 pub fn ticket_properties_schema() -> Value {
     json!({
         "slug": {
@@ -43,7 +43,7 @@ pub fn ticket_properties_schema() -> Value {
             "description": "Unique identifier slug for the ticket"
         },
         "title": {
-            "type": "string", 
+            "type": "string",
             "description": "Title of the ticket"
         },
         "description": {
@@ -78,7 +78,7 @@ pub fn filter_properties_schema() -> Value {
             "description": "Filter by status"
         },
         "priority": {
-            "type": "string", 
+            "type": "string",
             "enum": ["low", "medium", "high", "critical"],
             "description": "Filter by priority"
         },
@@ -91,7 +91,7 @@ pub fn filter_properties_schema() -> Value {
             "description": "Show only open tickets"
         },
         "closed": {
-            "type": "boolean", 
+            "type": "boolean",
             "description": "Show only closed tickets"
         },
         "tags": {

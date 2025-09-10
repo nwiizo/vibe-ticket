@@ -24,9 +24,7 @@
 #![allow(clippy::fn_params_excessive_bools)]
 #![allow(clippy::indexing_slicing)]
 #![allow(clippy::branches_sharing_code)]
-#![allow(clippy::match_on_vec_items)]
 #![allow(clippy::map_unwrap_or)]
-
 
 //! # Concurrent Safety
 //!
