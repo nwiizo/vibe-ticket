@@ -2,7 +2,7 @@
 <!-- Provide a brief description of the changes in this PR -->
 
 ## Related Ticket
-<!-- Link to the vide-ticket that this PR addresses -->
+<!-- Link to the vibe-ticket that this PR addresses -->
 Closes #
 
 ## Type of Change

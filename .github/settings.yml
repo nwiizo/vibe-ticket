@@ -2,9 +2,9 @@
 # This file is used with the Settings GitHub App
 
 repository:
-  name: vide-ticket
+  name: vibe-ticket
   description: High-performance ticket management system built with Rust
-  homepage: https://github.com/nwiizo/vide-ticket
+  homepage: https://github.com/nwiizo/vibe-ticket
   topics: 
     - rust
     - cli

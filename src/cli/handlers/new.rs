@@ -79,7 +79,7 @@ pub fn handle_new_command(
     if start {
         #[cfg(feature = "mcp")]
         let old_status = ticket.status;
-        
+
         ticket.start();
         storage.save(&ticket)?;
         storage.set_active(&ticket.id)?;

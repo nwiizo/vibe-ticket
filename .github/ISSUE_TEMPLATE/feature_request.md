@@ -19,7 +19,7 @@ A clear and concise description of any alternative solutions or features you've 
 **Example usage**
 ```bash
 # Show how the feature would be used
-vide-ticket new-command --new-option
+vibe-ticket new-command --new-option
 ```
 
 **Additional context**
