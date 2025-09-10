@@ -148,6 +148,14 @@ cargo clippy --all-features
 
 # ドキュメントテストも確認
 cargo test --doc
+
+# CI環境と同じフラグでチェック（重要！）
+RUSTFLAGS="-D warnings" cargo clippy --all-features
+RUSTFLAGS="-D warnings" cargo build --all-features
+RUSTFLAGS="-D warnings" cargo test --lib
+
+# フォーマットチェック
+cargo fmt --check
 ```
 
 ## TODOリストの活用
@@ -278,6 +286,70 @@ cargo bench > bench_after.txt
 
 # 比較
 diff bench_before.txt bench_after.txt
+```
+
+## CI特有の問題と解決策
+
+### ローカルで通るのにCIで失敗する場合
+
+**原因**: CI環境では `RUSTFLAGS="-D warnings"` が設定されている
+
+**診断方法**:
+```bash
+# CI環境を再現
+export RUSTFLAGS="-D warnings"
+cargo clippy --all-features
+```
+
+**よくあるCI専用エラー**:
+
+1. **削除されたlint**
+```rust
+// エラー: lint `clippy::match_on_vec_items` has been removed
+#![allow(clippy::match_on_vec_items)]  // ❌ 削除する
+```
+
+2. **重複した属性**
+```rust
+// エラー: duplicated attribute
+#![cfg(test)]  // ファイルレベル
+#[cfg(test)]   // モジュールレベル（重複）❌
+```
+
+3. **unnecessary_unwrap**
+```rust
+// Before: 
+if option.is_some() {
+    let value = option.unwrap();  // ❌
+}
+
+// After:
+if let Some(value) = option {  // ✅
+    // use value
+}
+```
+
+4. **new_without_default**
+```rust
+// 解決策1: Default実装を追加
+impl Default for MyStruct {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+// 解決策2: #[must_use]を追加
+#[must_use]
+pub fn new() -> Self { ... }
+```
+
+5. **clone_on_copy**
+```rust
+// Before:
+let copied = my_copy_type.clone();  // ❌
+
+// After:
+let copied = my_copy_type;  // ✅
 ```
 
 ## よくある問題と解決策
