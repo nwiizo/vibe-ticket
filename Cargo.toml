@@ -107,7 +107,7 @@ optional = true
 
 # MCP dependencies
 [dependencies.rmcp]
-version = "0.3.2"
+version = "0.6.4"
 features = ["server"]
 optional = true
 
