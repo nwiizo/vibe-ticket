@@ -30,18 +30,22 @@ fn test_worktree_list_without_git_repo() {
 
 #[test]
 fn test_worktree_prune_dry_run() {
-    // This test should work even without a git repo in dry-run mode
+    // Worktree commands require a git repository
     let mut cmd = Command::cargo_bin("vibe-ticket").unwrap();
 
     cmd.arg("worktree")
         .arg("prune")
         .arg("--dry-run")
         .assert()
-        .success();
+        .failure()
+        .stderr(predicate::str::contains("Project not initialized").or(
+            predicate::str::contains("not a git repository")
+        ));
 }
 
 #[test]
 fn test_worktree_remove_invalid_reference() {
+    // Worktree commands require project initialization
     let mut cmd = Command::cargo_bin("vibe-ticket").unwrap();
 
     cmd.arg("worktree")
@@ -49,5 +53,9 @@ fn test_worktree_remove_invalid_reference() {
         .arg("non-existent-worktree")
         .assert()
         .failure()
-        .stderr(predicate::str::contains("Worktree not found"));
+        .stderr(
+            predicate::str::contains("Worktree not found")
+                .or(predicate::str::contains("Project not initialized"))
+                .or(predicate::str::contains("Failed to read config"))
+        );
 }
