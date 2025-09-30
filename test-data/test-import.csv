@@ -1,4 +1,0 @@
-ID,Slug,Title,Status,Priority,Assignee,Tags,Created At,Started At,Closed At,Tasks Total,Tasks Completed,Description
-e1234567-89ab-cdef-0123-456789abcdef,csv-test-1,CSV Import Test 1,todo,high,,"csv, manual-test",2025-07-28T15:30:00Z,,,0,0,Testing CSV import with basic data
-e2234567-89ab-cdef-0123-456789abcdef,csv-test-2,CSV Import Test 2,doing,medium,csv-tester,"csv, in-progress",2025-07-28T15:31:00Z,2025-07-28T15:35:00Z,,2,1,"Testing CSV with commas, quotes, and special chars"
-e3234567-89ab-cdef-0123-456789abcdef,csv-test-3,CSV Import Test 3,done,low,completed-user,csv,2025-07-28T15:32:00Z,2025-07-28T15:33:00Z,2025-07-28T15:40:00Z,1,1,A completed ticket test
