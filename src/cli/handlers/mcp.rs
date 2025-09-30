@@ -57,7 +57,7 @@ pub fn handle_mcp_serve(
     runtime.block_on(async {
         if let Err(e) = Box::pin(server.start()).await {
             error!("MCP server error: {}", e);
-            return Err(anyhow::anyhow!("MCP server error: {}", e));
+            return Err(anyhow::anyhow!("MCP server error: {e}"));
         }
         Ok(())
     })

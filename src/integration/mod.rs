@@ -61,29 +61,38 @@ impl IntegrationService {
 
     /// Log integration events
     fn log_event(&self, event: &IntegrationEvent) {
+        use IntegrationEvent::{StatusChanged, TicketClosed, TicketCreated, TicketUpdated};
         match event {
-            IntegrationEvent::TicketCreated { ticket } => {
-                tracing::info!("Integration: Ticket created - {}", ticket.slug);
-            },
-            IntegrationEvent::TicketUpdated { ticket } => {
-                tracing::info!("Integration: Ticket updated - {}", ticket.slug);
-            },
-            IntegrationEvent::TicketClosed { ticket_id, .. } => {
-                tracing::info!("Integration: Ticket closed - {}", ticket_id.short());
-            },
-            IntegrationEvent::StatusChanged {
+            TicketCreated { ticket } => Self::log_ticket_created(ticket),
+            TicketUpdated { ticket } => Self::log_ticket_updated(ticket),
+            TicketClosed { ticket_id, .. } => Self::log_ticket_closed(ticket_id),
+            StatusChanged {
                 ticket_id,
                 old_status,
                 new_status,
-            } => {
-                tracing::info!(
-                    "Integration: Status changed - {} from {:?} to {:?}",
-                    ticket_id.short(),
-                    old_status,
-                    new_status
-                );
-            },
+            } => Self::log_status_changed(ticket_id, *old_status, *new_status),
         }
+    }
+
+    fn log_ticket_created(ticket: &Ticket) {
+        tracing::info!("Integration: Ticket created - {}", ticket.slug);
+    }
+
+    fn log_ticket_updated(ticket: &Ticket) {
+        tracing::info!("Integration: Ticket updated - {}", ticket.slug);
+    }
+
+    fn log_ticket_closed(ticket_id: &TicketId) {
+        tracing::info!("Integration: Ticket closed - {}", ticket_id.short());
+    }
+
+    fn log_status_changed(ticket_id: &TicketId, old_status: Status, new_status: Status) {
+        tracing::info!(
+            "Integration: Status changed - {} from {:?} to {:?}",
+            ticket_id.short(),
+            old_status,
+            new_status
+        );
     }
 
     /// Notify about a ticket creation
@@ -162,6 +171,10 @@ pub fn integration() -> Option<&'static Arc<IntegrationService>> {
 }
 
 /// Get the integration service (test version)
+///
+/// # Panics
+///
+/// Panics if the RwLock is poisoned
 #[cfg(test)]
 pub fn integration() -> Option<Arc<IntegrationService>> {
     let integration = INTEGRATION.read().unwrap();

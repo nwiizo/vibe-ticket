@@ -45,6 +45,11 @@ impl TestProject {
     }
 
     /// Create a test project with sample tickets
+    ///
+    /// # Panics
+    ///
+    /// Panics if saving tickets to storage fails
+    #[must_use]
     pub fn with_sample_tickets() -> Self {
         let project = Self::new();
 
@@ -66,16 +71,27 @@ impl TestProject {
     }
 
     /// Get the path to the project root
+    #[must_use]
     pub fn root_path(&self) -> &PathBuf {
         &self.project_root
     }
 
     /// Get the path as a string
+    ///
+    /// # Panics
+    ///
+    /// Panics if the path contains invalid UTF-8
+    #[must_use]
     pub fn root_path_str(&self) -> &str {
         self.project_root.to_str().expect("Invalid path")
     }
 
     /// Create and save a ticket
+    ///
+    /// # Panics
+    ///
+    /// Panics if saving the ticket fails
+    #[must_use]
     pub fn create_ticket(&self, title: &str) -> Ticket {
         let ticket = create_test_ticket(title, Priority::Medium, Status::Todo);
         self.storage.save(&ticket).expect("Failed to save ticket");
@@ -83,6 +99,10 @@ impl TestProject {
     }
 
     /// Set the active ticket
+    ///
+    /// # Panics
+    ///
+    /// Panics if writing the active ticket file fails
     pub fn set_active(&self, ticket_id: &TicketId) {
         let active_path = self.tickets_dir.join("active_ticket");
         std::fs::write(active_path, ticket_id.to_string()).expect("Failed to set active ticket");
@@ -90,12 +110,13 @@ impl TestProject {
 }
 
 /// Create a test ticket with default values
+#[must_use]
 pub fn create_test_ticket(title: &str, priority: Priority, status: Status) -> Ticket {
     Ticket {
         id: TicketId::new(),
         slug: format!("test-{}", title.to_lowercase().replace(' ', "-")),
         title: title.to_string(),
-        description: format!("Description for {}", title),
+        description: format!("Description for {title}"),
         priority,
         status,
         tags: vec!["test".to_string()],
@@ -117,11 +138,12 @@ pub fn create_test_ticket(title: &str, priority: Priority, status: Status) -> Ti
 }
 
 /// Create a test ticket with tasks
+#[must_use]
 pub fn create_ticket_with_tasks(title: &str, task_count: usize) -> Ticket {
     let mut ticket = create_test_ticket(title, Priority::Medium, Status::Todo);
 
     for i in 1..=task_count {
-        let task = Task::new(format!("Task {}", i));
+        let task = Task::new(format!("Task {i}"));
         ticket.tasks.push(task);
     }
 
@@ -129,13 +151,14 @@ pub fn create_ticket_with_tasks(title: &str, task_count: usize) -> Ticket {
 }
 
 /// Create a completed test ticket
+#[must_use]
 pub fn create_completed_ticket(title: &str) -> Ticket {
     let mut ticket = create_test_ticket(title, Priority::Low, Status::Done);
     ticket.closed_at = Some(Utc::now());
 
     // Add some completed tasks
     for i in 1..=3 {
-        let mut task = Task::new(format!("Completed task {}", i));
+        let mut task = Task::new(format!("Completed task {i}"));
         task.completed = true;
         task.completed_at = Some(Utc::now());
         ticket.tasks.push(task);
@@ -145,6 +168,10 @@ pub fn create_completed_ticket(title: &str) -> Ticket {
 }
 
 /// Assert that two tickets are equal (ignoring timestamps)
+///
+/// # Panics
+///
+/// Panics if any fields don't match between the two tickets
 pub fn assert_tickets_equal(left: &Ticket, right: &Ticket) {
     assert_eq!(left.id, right.id, "Ticket IDs don't match");
     assert_eq!(left.slug, right.slug, "Ticket slugs don't match");
@@ -185,6 +212,7 @@ impl TestDataBuilder {
     }
 
     /// Add a ticket with specific properties
+    #[must_use]
     pub fn with_ticket(mut self, title: &str, priority: Priority, status: Status) -> Self {
         self.tickets
             .push(create_test_ticket(title, priority, status));
@@ -192,10 +220,11 @@ impl TestDataBuilder {
     }
 
     /// Add multiple tickets with the same status
+    #[must_use]
     pub fn with_tickets_in_status(mut self, status: Status, count: usize) -> Self {
         for i in 1..=count {
             self.tickets.push(create_test_ticket(
-                &format!("{:?} ticket {}", status, i),
+                &format!("{status:?} ticket {i}"),
                 Priority::Medium,
                 status,
             ));
@@ -204,11 +233,17 @@ impl TestDataBuilder {
     }
 
     /// Build and return the tickets
+    #[must_use]
     pub fn build(self) -> Vec<Ticket> {
         self.tickets
     }
 
     /// Build and save to a test project
+    ///
+    /// # Panics
+    ///
+    /// Panics if saving any ticket fails
+    #[must_use]
     pub fn build_in_project(self) -> TestProject {
         let project = TestProject::new();
 

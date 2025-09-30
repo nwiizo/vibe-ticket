@@ -99,20 +99,20 @@ fn test_import_json_array() {
 
     // Verify tickets were imported
     let storage = FileStorage::new(temp_dir.path().join(".vibe-ticket"));
-    let tickets = storage.load_all_tickets().unwrap();
-    assert_eq!(tickets.len(), 2);
+    let imported_tickets = storage.load_all_tickets().unwrap();
+    assert_eq!(imported_tickets.len(), 2);
 
     // Verify ticket details
-    let ticket1 = storage.find_ticket_by_slug("json-test-1").unwrap().unwrap();
-    assert_eq!(ticket1.title, "First JSON Test Ticket");
-    assert_eq!(ticket1.priority, Priority::High);
-    assert_eq!(ticket1.status, Status::Todo);
-    assert_eq!(ticket1.tags, vec!["json", "test"]);
+    let first_ticket = storage.find_ticket_by_slug("json-test-1").unwrap().unwrap();
+    assert_eq!(first_ticket.title, "First JSON Test Ticket");
+    assert_eq!(first_ticket.priority, Priority::High);
+    assert_eq!(first_ticket.status, Status::Todo);
+    assert_eq!(first_ticket.tags, vec!["json", "test"]);
 
-    let ticket2 = storage.find_ticket_by_slug("json-test-2").unwrap().unwrap();
-    assert_eq!(ticket2.title, "Second JSON Test Ticket");
-    assert_eq!(ticket2.assignee, Some("test-user".to_string()));
-    assert_eq!(ticket2.tasks.len(), 1);
+    let second_ticket = storage.find_ticket_by_slug("json-test-2").unwrap().unwrap();
+    assert_eq!(second_ticket.title, "Second JSON Test Ticket");
+    assert_eq!(second_ticket.assignee, Some("test-user".to_string()));
+    assert_eq!(second_ticket.tasks.len(), 1);
 }
 
 #[test]
@@ -249,18 +249,18 @@ fn test_import_csv() {
 
     // Verify tickets were imported
     let storage = FileStorage::new(temp_dir.path().join(".vibe-ticket"));
-    let tickets = storage.load_all_tickets().unwrap();
-    assert_eq!(tickets.len(), 2);
+    let csv_tickets = storage.load_all_tickets().unwrap();
+    assert_eq!(csv_tickets.len(), 2);
 
-    let ticket1 = storage.find_ticket_by_slug("csv-test-1").unwrap().unwrap();
-    assert_eq!(ticket1.title, "CSV Test Ticket 1");
-    assert_eq!(ticket1.tags, vec!["csv", "test"]);
-    assert!(ticket1.assignee.is_none());
+    let csv_ticket_1 = storage.find_ticket_by_slug("csv-test-1").unwrap().unwrap();
+    assert_eq!(csv_ticket_1.title, "CSV Test Ticket 1");
+    assert_eq!(csv_ticket_1.tags, vec!["csv", "test"]);
+    assert!(csv_ticket_1.assignee.is_none());
 
-    let ticket2 = storage.find_ticket_by_slug("csv-test-2").unwrap().unwrap();
-    assert_eq!(ticket2.status, Status::Done);
-    assert!(ticket2.closed_at.is_some());
-    assert_eq!(ticket2.assignee, Some("csv-user".to_string()));
+    let csv_ticket_2 = storage.find_ticket_by_slug("csv-test-2").unwrap().unwrap();
+    assert_eq!(csv_ticket_2.status, Status::Done);
+    assert!(csv_ticket_2.closed_at.is_some());
+    assert_eq!(csv_ticket_2.assignee, Some("csv-user".to_string()));
 }
 
 #[test]

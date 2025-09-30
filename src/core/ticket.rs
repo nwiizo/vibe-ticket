@@ -177,7 +177,7 @@ mod tests {
 
         ticket.complete_task(&task_id).unwrap();
         assert_eq!(ticket.completed_tasks_count(), 1);
-        assert_eq!(ticket.completion_percentage(), 100.0);
+        assert!((ticket.completion_percentage() - 100.0).abs() < f32::EPSILON);
     }
 
     #[test]
@@ -209,7 +209,7 @@ mod tests {
     #[test]
     fn test_completion_percentage_empty() {
         let ticket = Ticket::new("test", "Test");
-        assert_eq!(ticket.completion_percentage(), 0.0);
+        assert!(ticket.completion_percentage().abs() < f32::EPSILON);
     }
 
     #[test]
@@ -223,7 +223,7 @@ mod tests {
         ticket.complete_task(&task1).unwrap();
         assert_eq!(ticket.completed_tasks_count(), 1);
         assert_eq!(ticket.total_tasks_count(), 4);
-        assert_eq!(ticket.completion_percentage(), 25.0);
+        assert!((ticket.completion_percentage() - 25.0).abs() < f32::EPSILON);
     }
 
     #[test]

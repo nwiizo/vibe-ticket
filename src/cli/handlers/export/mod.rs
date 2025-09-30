@@ -158,7 +158,7 @@ mod tests {
             tags: vec!["test".to_string()],
             assignee: None,
             tasks: vec![],
-            metadata: Default::default(),
+            metadata: std::collections::HashMap::default(),
             created_at: Utc::now(),
             started_at: None,
             closed_at: None,

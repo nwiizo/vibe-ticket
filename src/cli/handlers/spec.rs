@@ -1614,11 +1614,13 @@ mod tests {
         assert!(specs_dir.exists());
 
         // Check that at least one spec directory was created
-        let entries: Vec<_> = std::fs::read_dir(&specs_dir)
-            .unwrap()
-            .filter_map(std::result::Result::ok)
-            .collect();
-        assert!(!entries.is_empty());
+        assert!(
+            !std::fs::read_dir(&specs_dir)
+                .unwrap()
+                .filter_map(std::result::Result::ok)
+                .next()
+                .is_none()
+        );
     }
 
     #[test]

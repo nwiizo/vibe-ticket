@@ -304,6 +304,6 @@ mod tests {
     fn test_regex_validation() {
         assert!(Regex::new("test.*pattern").is_ok());
         // Test that invalid regex patterns are caught
-        assert!(Regex::new(r"\[invalid").is_err());
+        assert!(Regex::new(r"[invalid").is_err());
     }
 }

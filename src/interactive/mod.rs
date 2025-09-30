@@ -365,11 +365,11 @@ impl InteractivePrompt {
                 .interact()?;
 
             let parts: Vec<&str> = input.split_whitespace().collect();
-            if parts.is_empty() {
+            let Some(&command) = parts.first() else {
                 continue;
-            }
+            };
 
-            match parts[0] {
+            match command {
                 "help" => self.show_help(),
                 "create" => {
                     let mode = InteractiveMode::new();
