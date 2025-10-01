@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["handle_add","handle_check","handle_generate_tasks","handle_plan","handle_specify","handle_update","handle_validate","register_tools"]};

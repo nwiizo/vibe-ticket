@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["delete","get_document_path","list","load","save"],"struct":["SpecManager"]};

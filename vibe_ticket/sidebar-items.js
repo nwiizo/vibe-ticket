@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["api","cache","cli","config","core","error","events","integration","interactive","mcp","plugins","specs","storage","templates"]};

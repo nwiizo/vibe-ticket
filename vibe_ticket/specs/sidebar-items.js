@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["SpecDocumentType","SpecPhase"],"mod":["manager","storage","templates"],"struct":["SpecMetadata","SpecProgress","SpecVersion","Specification"]};
