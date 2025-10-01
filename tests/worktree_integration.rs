@@ -38,9 +38,10 @@ fn test_worktree_prune_dry_run() {
         .arg("--dry-run")
         .assert()
         .failure()
-        .stderr(predicate::str::contains("Project not initialized").or(
-            predicate::str::contains("not a git repository")
-        ));
+        .stderr(
+            predicate::str::contains("Project not initialized")
+                .or(predicate::str::contains("not a git repository")),
+        );
 }
 
 #[test]
@@ -56,6 +57,6 @@ fn test_worktree_remove_invalid_reference() {
         .stderr(
             predicate::str::contains("Worktree not found")
                 .or(predicate::str::contains("Project not initialized"))
-                .or(predicate::str::contains("Failed to read config"))
+                .or(predicate::str::contains("Failed to read config")),
         );
 }
