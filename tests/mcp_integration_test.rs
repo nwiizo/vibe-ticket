@@ -9,6 +9,7 @@ mod mcp_tests {
     use vibe_ticket::{
         cli::{OutputFormatter, handlers::handle_new_command},
         core::{Priority, Status},
+        integration::IntegrationEvent,
         storage::FileStorage,
     };
 
@@ -62,7 +63,6 @@ mod mcp_tests {
         sleep(Duration::from_millis(100)).await;
 
         // Check if we received the event
-        use vibe_ticket::integration::IntegrationEvent;
         match receiver.try_recv() {
             Ok(IntegrationEvent::TicketCreated { ticket }) => {
                 assert!(ticket.slug.ends_with("-test-integration"));
@@ -128,7 +128,6 @@ mod mcp_tests {
         sleep(Duration::from_millis(100)).await;
 
         // We should receive two events: TicketCreated and StatusChanged
-        use vibe_ticket::integration::IntegrationEvent;
 
         // First event should be TicketCreated
         match receiver.try_recv() {

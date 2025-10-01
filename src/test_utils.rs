@@ -26,6 +26,10 @@ impl Default for TestProject {
 
 impl TestProject {
     /// Create a new test project with initialized vibe-ticket directory
+    ///
+    /// # Panics
+    ///
+    /// Panics if temporary directory creation fails or if vibe-ticket directory cannot be created
     #[must_use]
     pub fn new() -> Self {
         let temp_dir = TempDir::new().expect("Failed to create temp dir");

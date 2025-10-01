@@ -316,14 +316,14 @@ mod tests {
     fn test_load_all_tickets() {
         let (storage, _temp) = create_test_storage();
 
-        let ticket1 = Ticket::new("ticket-1", "Ticket 1");
-        let ticket2 = Ticket::new("ticket-2", "Ticket 2");
+        let first_ticket = Ticket::new("ticket-1", "Ticket 1");
+        let second_ticket = Ticket::new("ticket-2", "Ticket 2");
 
-        storage.save_ticket(&ticket1).unwrap();
-        storage.save_ticket(&ticket2).unwrap();
+        storage.save_ticket(&first_ticket).unwrap();
+        storage.save_ticket(&second_ticket).unwrap();
 
-        let tickets = storage.load_all_tickets().unwrap();
-        assert_eq!(tickets.len(), 2);
+        let all_tickets = storage.load_all_tickets().unwrap();
+        assert_eq!(all_tickets.len(), 2);
     }
 
     #[test]

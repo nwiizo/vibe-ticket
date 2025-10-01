@@ -174,7 +174,7 @@ pub fn integration() -> Option<&'static Arc<IntegrationService>> {
 ///
 /// # Panics
 ///
-/// Panics if the RwLock is poisoned
+/// Panics if the `RwLock` is poisoned
 #[cfg(test)]
 pub fn integration() -> Option<Arc<IntegrationService>> {
     let integration = INTEGRATION.read().unwrap();
