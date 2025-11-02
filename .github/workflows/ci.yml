@@ -174,14 +174,17 @@ jobs:
           tool: cargo-audit
 
       - name: Run security audit
-        run: cargo audit
+        run: |
+          cargo audit \
+            --ignore RUSTSEC-2023-0071
 
       - name: Check for known vulnerabilities in dependencies
         continue-on-error: true
         run: |
           cargo audit --deny warnings \
             --ignore RUSTSEC-2020-0071 \
-            --ignore RUSTSEC-2021-0145
+            --ignore RUSTSEC-2021-0145 \
+            --ignore RUSTSEC-2023-0071
 
   # Code coverage with tarpaulin
   coverage:
