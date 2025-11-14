@@ -43,6 +43,11 @@ impl FileStorage {
         self.get_path("active_ticket")
     }
 
+    /// Returns the path to the active tickets file (new format supporting multiple tickets)
+    fn active_tickets_path(&self) -> PathBuf {
+        self.get_path("active_tickets.yaml")
+    }
+
     /// Returns the path to the project state file
     fn state_path(&self) -> PathBuf {
         self.get_path("state.yaml")
@@ -225,6 +230,124 @@ impl FileStorage {
         }
 
         Ok(())
+    }
+
+    /// Adds a ticket to the list of active tickets
+    ///
+    /// This method adds a ticket ID to the active tickets list stored in
+    /// `active_tickets.yaml`. If the file doesn't exist, it creates it.
+    pub fn add_active_ticket(&self, id: &TicketId) -> Result<()> {
+        let path = self.active_tickets_path();
+
+        // Acquire lock for the active tickets file
+        let _lock = super::FileLock::acquire(&path, Some("add_active_ticket".to_string()))
+            .map_err(|e| {
+                VibeTicketError::custom(format!(
+                    "Failed to acquire lock for adding active ticket: {e}"
+                ))
+            })?;
+
+        // Load existing active tickets
+        let mut active_ids = if path.exists() {
+            let content = fs::read_to_string(&path).context("Failed to read active tickets")?;
+            serde_yaml::from_str::<Vec<String>>(&content)
+                .context("Failed to parse active tickets")?
+                .into_iter()
+                .filter_map(|s| TicketId::parse_str(&s).ok())
+                .collect::<Vec<_>>()
+        } else {
+            Vec::new()
+        };
+
+        // Add if not already present
+        if !active_ids.contains(id) {
+            active_ids.push(id.clone());
+        }
+
+        // Save back
+        let yaml = serde_yaml::to_string(
+            &active_ids
+                .iter()
+                .map(|id| id.to_string())
+                .collect::<Vec<_>>(),
+        )
+        .context("Failed to serialize active tickets")?;
+
+        fs::write(&path, yaml).context("Failed to write active tickets")?;
+
+        Ok(())
+    }
+
+    /// Removes a ticket from the list of active tickets
+    pub fn remove_active_ticket(&self, id: &TicketId) -> Result<()> {
+        let path = self.active_tickets_path();
+
+        if !path.exists() {
+            return Ok(()); // Nothing to remove
+        }
+
+        // Acquire lock for the active tickets file
+        let _lock = super::FileLock::acquire(&path, Some("remove_active_ticket".to_string()))
+            .map_err(|e| {
+                VibeTicketError::custom(format!(
+                    "Failed to acquire lock for removing active ticket: {e}"
+                ))
+            })?;
+
+        // Load existing active tickets
+        let content = fs::read_to_string(&path).context("Failed to read active tickets")?;
+        let mut active_ids = serde_yaml::from_str::<Vec<String>>(&content)
+            .context("Failed to parse active tickets")?
+            .into_iter()
+            .filter_map(|s| TicketId::parse_str(&s).ok())
+            .collect::<Vec<_>>();
+
+        // Remove the ticket
+        active_ids.retain(|tid| tid != id);
+
+        if active_ids.is_empty() {
+            // Remove file if no active tickets
+            fs::remove_file(&path).context("Failed to remove active tickets file")?;
+        } else {
+            // Save back
+            let yaml = serde_yaml::to_string(
+                &active_ids
+                    .iter()
+                    .map(|id| id.to_string())
+                    .collect::<Vec<_>>(),
+            )
+            .context("Failed to serialize active tickets")?;
+
+            fs::write(&path, yaml).context("Failed to write active tickets")?;
+        }
+
+        Ok(())
+    }
+
+    /// Gets all active ticket IDs
+    ///
+    /// This method reads from both the new `active_tickets.yaml` and legacy
+    /// `active_ticket` files for backward compatibility.
+    pub fn get_all_active_tickets(&self) -> Result<Vec<TicketId>> {
+        let mut active_ids = Vec::new();
+
+        // Try new format first
+        let new_path = self.active_tickets_path();
+        if new_path.exists() {
+            let content = fs::read_to_string(&new_path).context("Failed to read active tickets")?;
+            active_ids = serde_yaml::from_str::<Vec<String>>(&content)
+                .context("Failed to parse active tickets")?
+                .into_iter()
+                .filter_map(|s| TicketId::parse_str(&s).ok())
+                .collect();
+        } else {
+            // Fall back to legacy format
+            if let Some(id) = self.get_active_ticket()? {
+                active_ids.push(id);
+            }
+        }
+
+        Ok(active_ids)
     }
 
     /// Checks if a ticket with the given slug already exists

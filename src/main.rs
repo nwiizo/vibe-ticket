@@ -182,6 +182,17 @@ fn dispatch_command(
             project,
             formatter,
         }),
+        Commands::Board {
+            assignee,
+            active_only,
+            compact,
+        } => dispatch_board_command(
+            assignee.as_deref(),
+            active_only,
+            compact,
+            project.as_deref(),
+            formatter,
+        ),
         Commands::Open {
             sort,
             reverse,
@@ -252,6 +263,20 @@ fn dispatch_remaining_commands(
     formatter: &OutputFormatter,
 ) -> Result<()> {
     match command {
+        Commands::Review { ticket, notes } => {
+            dispatch_review_command(ticket, notes.as_deref(), project, formatter)
+        },
+        Commands::Approve { ticket, message } => {
+            dispatch_approve_command(ticket, message.as_deref(), project, formatter)
+        },
+        Commands::RequestChanges { ticket, changes } => {
+            dispatch_request_changes_command(ticket, &changes, project, formatter)
+        },
+        Commands::Handoff {
+            ticket,
+            assignee,
+            notes,
+        } => dispatch_handoff_command(ticket, &assignee, notes.as_deref(), project, formatter),
         Commands::Show {
             ticket,
             tasks,
@@ -353,6 +378,58 @@ fn dispatch_open_command(
     handle_list_command(
         None, None, None, sort, reverse, limit, false, true, None, None, false, project, formatter,
     )
+}
+
+fn dispatch_board_command(
+    assignee: Option<&str>,
+    active_only: bool,
+    compact: bool,
+    project: Option<&str>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::handle_board_command;
+    handle_board_command(assignee, active_only, compact, project, formatter)
+}
+
+fn dispatch_review_command(
+    ticket: Option<String>,
+    notes: Option<&str>,
+    project: Option<&str>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::handle_review_command;
+    handle_review_command(ticket, notes, project, formatter)
+}
+
+fn dispatch_approve_command(
+    ticket: Option<String>,
+    message: Option<&str>,
+    project: Option<&str>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::handle_approve_command;
+    handle_approve_command(ticket, message, project, formatter)
+}
+
+fn dispatch_request_changes_command(
+    ticket: Option<String>,
+    changes: &str,
+    project: Option<&str>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::handle_request_changes_command;
+    handle_request_changes_command(ticket, changes, project, formatter)
+}
+
+fn dispatch_handoff_command(
+    ticket: Option<String>,
+    assignee: &str,
+    notes: Option<&str>,
+    project: Option<&str>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::handle_handoff_command;
+    handle_handoff_command(ticket, assignee, notes, project, formatter)
 }
 
 fn dispatch_start_command(

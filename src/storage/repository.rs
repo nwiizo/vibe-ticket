@@ -32,16 +32,27 @@ pub trait TicketRepository: Send + Sync {
         F: Fn(&Ticket) -> bool;
 }
 
-/// Repository trait for managing the active ticket
+/// Repository trait for managing active tickets
+///
+/// Supports both single active ticket (legacy) and multiple active tickets
 pub trait ActiveTicketRepository: Send + Sync {
-    /// Sets the active ticket ID
+    /// Sets the active ticket ID (clears other active tickets)
     fn set_active(&self, id: &TicketId) -> Result<()>;
 
-    /// Gets the active ticket ID
+    /// Gets the active ticket ID (returns first active ticket for compatibility)
     fn get_active(&self) -> Result<Option<TicketId>>;
 
-    /// Clears the active ticket
+    /// Clears all active tickets
     fn clear_active(&self) -> Result<()>;
+
+    /// Adds a ticket to the list of active tickets
+    fn add_active(&self, id: &TicketId) -> Result<()>;
+
+    /// Removes a ticket from the list of active tickets
+    fn remove_active(&self, id: &TicketId) -> Result<()>;
+
+    /// Gets all active ticket IDs
+    fn get_all_active(&self) -> Result<Vec<TicketId>>;
 }
 
 /// Combined repository trait
@@ -96,15 +107,40 @@ impl TicketRepository for FileStorage {
 
 impl ActiveTicketRepository for FileStorage {
     fn set_active(&self, id: &TicketId) -> Result<()> {
-        self.set_active_ticket(id)
+        // Clear all active tickets and set this one
+        self.clear_active()?;
+        self.add_active_ticket(id)
     }
 
     fn get_active(&self) -> Result<Option<TicketId>> {
-        self.get_active_ticket()
+        // For backward compatibility, return the first active ticket
+        let active_tickets = self.get_all_active_tickets()?;
+        Ok(active_tickets.first().cloned())
     }
 
     fn clear_active(&self) -> Result<()> {
-        self.clear_active_ticket()
+        // Clear legacy format
+        self.clear_active_ticket()?;
+
+        // Clear new format by removing all active tickets
+        let all_active = self.get_all_active_tickets()?;
+        for id in all_active {
+            self.remove_active_ticket(&id)?;
+        }
+
+        Ok(())
+    }
+
+    fn add_active(&self, id: &TicketId) -> Result<()> {
+        self.add_active_ticket(id)
+    }
+
+    fn remove_active(&self, id: &TicketId) -> Result<()> {
+        self.remove_active_ticket(id)
+    }
+
+    fn get_all_active(&self) -> Result<Vec<TicketId>> {
+        self.get_all_active_tickets()
     }
 }
 

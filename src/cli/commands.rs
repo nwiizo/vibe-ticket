@@ -120,6 +120,21 @@ pub enum Commands {
         include_done: bool,
     },
 
+    /// Show tickets in kanban board view
+    Board {
+        /// Filter by assignee
+        #[arg(short, long)]
+        assignee: Option<String>,
+
+        /// Show only active tickets
+        #[arg(long)]
+        active_only: bool,
+
+        /// Compact view (less spacing)
+        #[arg(short, long)]
+        compact: bool,
+    },
+
     /// Start working on a ticket
     Start {
         /// Ticket ID or slug
@@ -173,6 +188,49 @@ pub enum Commands {
         /// Create a merge/pull request
         #[arg(long)]
         pr: bool,
+    },
+
+    /// Mark a ticket for review
+    Review {
+        /// Ticket ID or slug (defaults to active ticket)
+        ticket: Option<String>,
+
+        /// Review notes/comments
+        #[arg(short, long)]
+        notes: Option<String>,
+    },
+
+    /// Approve a ticket and mark as done
+    Approve {
+        /// Ticket ID or slug (defaults to active ticket)
+        ticket: Option<String>,
+
+        /// Approval message
+        #[arg(short, long)]
+        message: Option<String>,
+    },
+
+    /// Request changes on a ticket
+    RequestChanges {
+        /// Ticket ID or slug (defaults to active ticket)
+        ticket: Option<String>,
+
+        /// Description of requested changes
+        #[arg(short, long)]
+        changes: String,
+    },
+
+    /// Hand off a ticket to another agent/person
+    Handoff {
+        /// Ticket ID or slug (defaults to active ticket)
+        ticket: Option<String>,
+
+        /// New assignee (agent or person name)
+        assignee: String,
+
+        /// Handoff notes
+        #[arg(short, long)]
+        notes: Option<String>,
     },
 
     /// Check the current status

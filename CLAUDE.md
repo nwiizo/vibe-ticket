@@ -6,6 +6,11 @@ A vibe-ticket managed project with spec-driven development support.
 
 | Feature | Command | Slash Command | MCP Tool |
 |---------|---------|---------------|----------|
+| Kanban board view | `vibe-ticket board` | - | `vibe-ticket_board` |
+| Review ticket | `vibe-ticket review <ticket>` | - | `vibe-ticket_review` |
+| Approve ticket | `vibe-ticket approve <ticket>` | - | `vibe-ticket_approve` |
+| Request changes | `vibe-ticket request-changes <ticket>` | - | `vibe-ticket_request_changes` |
+| Handoff ticket | `vibe-ticket handoff <ticket> <assignee>` | - | `vibe-ticket_handoff` |
 | Create spec from requirements | `vibe-ticket spec specify "..."` | `/specify "..."` | `vibe-ticket_spec_specify` |
 | Generate plan | `vibe-ticket spec plan --tech-stack ...` | `/plan --tech-stack ...` | `vibe-ticket_spec_plan` |
 | Create tasks | `vibe-ticket spec tasks --parallel` | `/tasks --parallel` | `vibe-ticket_spec_generate_tasks` |
@@ -53,6 +58,36 @@ vibe-ticket task complete 1
 
 # Close ticket
 vibe-ticket close <ticket> --message "Fixed the login issue"
+```
+
+### Review Workflow (NEW!)
+```bash
+# Mark ticket for review
+vibe-ticket review <ticket> --notes "Ready for review"
+
+# Approve ticket and mark as done
+vibe-ticket approve <ticket> --message "Looks good!"
+
+# Request changes on a ticket
+vibe-ticket request-changes <ticket> --changes "Please add tests"
+
+# Hand off ticket to another agent/person
+vibe-ticket handoff <ticket> <assignee> --notes "Handing off to specialist"
+```
+
+### Kanban Board View (NEW!)
+```bash
+# Show tickets in kanban board format
+vibe-ticket board
+
+# Filter by assignee
+vibe-ticket board --assignee "claude-code"
+
+# Show only active tickets
+vibe-ticket board --active-only
+
+# Compact view
+vibe-ticket board --compact
 ```
 
 ### Search and Filter

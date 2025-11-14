@@ -19,6 +19,7 @@
 
 mod archive;
 pub mod base;
+mod board;
 mod check;
 mod close;
 mod common;
@@ -41,10 +42,12 @@ mod spec_common;
 mod start;
 mod task;
 mod work_on;
+mod workflow;
 mod worktree;
 
 // Re-export handlers
 pub use archive::handle_archive_command;
+pub use board::handle_board_command;
 pub use check::handle_check_command;
 pub use close::handle_close_command;
 pub use config::handle_config_command;
@@ -72,6 +75,10 @@ pub use task::{
     handle_task_uncomplete,
 };
 pub use work_on::handle_work_on_command;
+pub use workflow::{
+    handle_approve_command, handle_handoff_command, handle_request_changes_command,
+    handle_review_command,
+};
 pub use worktree::{handle_worktree_list, handle_worktree_prune, handle_worktree_remove};
 
 use crate::cli::output::OutputFormatter;
