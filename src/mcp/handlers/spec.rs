@@ -37,6 +37,9 @@ pub fn register_tools() -> Vec<Tool> {
                 },
                 "required": ["ticket", "spec_type", "content"]
             }))),
+            title: None,
+            output_schema: None,
+            icons: None,
             annotations: None,
         },
         // Update spec tool
@@ -62,6 +65,9 @@ pub fn register_tools() -> Vec<Tool> {
                 },
                 "required": ["ticket", "spec_type", "content"]
             }))),
+            title: None,
+            output_schema: None,
+            icons: None,
             annotations: None,
         },
         // Check spec tool
@@ -78,6 +84,9 @@ pub fn register_tools() -> Vec<Tool> {
                 },
                 "required": ["ticket"]
             }))),
+            title: None,
+            output_schema: None,
+            icons: None,
             annotations: None,
         },
         // Specify tool - Create specification from natural language
@@ -105,6 +114,9 @@ pub fn register_tools() -> Vec<Tool> {
                 },
                 "required": ["requirements"]
             }))),
+            title: None,
+            output_schema: None,
+            icons: None,
             annotations: None,
         },
         // Plan tool - Generate implementation plan
@@ -132,6 +144,9 @@ pub fn register_tools() -> Vec<Tool> {
                 },
                 "required": []
             }))),
+            title: None,
+            output_schema: None,
+            icons: None,
             annotations: None,
         },
         // Generate tasks tool
@@ -166,6 +181,9 @@ pub fn register_tools() -> Vec<Tool> {
                 },
                 "required": []
             }))),
+            title: None,
+            output_schema: None,
+            icons: None,
             annotations: None,
         },
         // Validate tool
@@ -194,6 +212,9 @@ pub fn register_tools() -> Vec<Tool> {
                 },
                 "required": []
             }))),
+            title: None,
+            output_schema: None,
+            icons: None,
             annotations: None,
         },
     ]

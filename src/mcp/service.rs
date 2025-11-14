@@ -188,7 +188,9 @@ impl ServerHandler for VibeTicketService {
                         serde_json::to_string_pretty(&content)
                             .unwrap_or_else(|_| content.to_string()),
                     )],
+                    structured_content: None,
                     is_error: None,
+                    meta: None,
                 }),
                 Err(e) => Err(ErrorData {
                     code: rmcp::model::ErrorCode(-32603), // Internal error code

@@ -30,6 +30,9 @@ pub fn create_tool(name: &'static str, description: &'static str, schema: Value)
         name: Cow::Borrowed(name),
         description: Some(Cow::Borrowed(description)),
         input_schema: Arc::new(json_to_schema(schema)),
+        title: None,
+        output_schema: None,
+        icons: None,
         annotations: None,
     }
 }

@@ -46,6 +46,9 @@ pub fn register_tools() -> Vec<Tool> {
                     }
                 }
             }))),
+            title: None,
+            output_schema: None,
+            icons: None,
             annotations: None,
         },
         // Set config tool
@@ -65,6 +68,9 @@ pub fn register_tools() -> Vec<Tool> {
                 },
                 "required": ["key", "value"]
             }))),
+            title: None,
+            output_schema: None,
+            icons: None,
             annotations: None,
         },
     ]

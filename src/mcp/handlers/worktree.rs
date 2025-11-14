@@ -26,6 +26,9 @@ pub fn register_tools() -> Vec<Tool> {
                     }
                 }
             }))),
+            title: None,
+            output_schema: None,
+            icons: None,
             annotations: None,
         },
         // Remove worktree tool
@@ -46,6 +49,9 @@ pub fn register_tools() -> Vec<Tool> {
                 },
                 "required": ["ticket"]
             }))),
+            title: None,
+            output_schema: None,
+            icons: None,
             annotations: None,
         },
         // Prune worktrees tool
@@ -56,6 +62,9 @@ pub fn register_tools() -> Vec<Tool> {
                 "type": "object",
                 "properties": {}
             }))),
+            title: None,
+            output_schema: None,
+            icons: None,
             annotations: None,
         },
     ]

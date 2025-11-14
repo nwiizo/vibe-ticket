@@ -38,7 +38,9 @@ impl McpContext {
         {
             CallToolResult {
                 content: vec![rmcp::model::Content::text(message.into())],
+                structured_content: None,
                 is_error: Some(false),
+                meta: None,
             }
         }
         #[cfg(not(feature = "mcp"))]
@@ -55,7 +57,9 @@ impl McpContext {
         {
             CallToolResult {
                 content: vec![rmcp::model::Content::text(format!("Error: {error}"))],
+                structured_content: None,
                 is_error: Some(true),
+                meta: None,
             }
         }
         #[cfg(not(feature = "mcp"))]
@@ -76,7 +80,9 @@ impl McpContext {
         {
             CallToolResult {
                 content: vec![rmcp::model::Content::text(json_str)],
+                structured_content: None,
                 is_error: Some(false),
+                meta: None,
             }
         }
         #[cfg(not(feature = "mcp"))]

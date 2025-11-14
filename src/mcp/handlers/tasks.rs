@@ -32,6 +32,9 @@ pub fn register_tools() -> Vec<Tool> {
                 },
                 "required": ["title"]
             }))),
+            title: None,
+            output_schema: None,
+            icons: None,
             annotations: None,
         },
         // Complete task tool
@@ -52,6 +55,9 @@ pub fn register_tools() -> Vec<Tool> {
                 },
                 "required": ["task_id"]
             }))),
+            title: None,
+            output_schema: None,
+            icons: None,
             annotations: None,
         },
         // List tasks tool
@@ -75,6 +81,9 @@ pub fn register_tools() -> Vec<Tool> {
                     }
                 }
             }))),
+            title: None,
+            output_schema: None,
+            icons: None,
             annotations: None,
         },
         // Remove task tool
@@ -95,6 +104,9 @@ pub fn register_tools() -> Vec<Tool> {
                 },
                 "required": ["task_id"]
             }))),
+            title: None,
+            output_schema: None,
+            icons: None,
             annotations: None,
         },
     ]

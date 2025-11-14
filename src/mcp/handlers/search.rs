@@ -40,6 +40,9 @@ pub fn register_tools() -> Vec<Tool> {
                 },
                 "required": ["query"]
             }))),
+            title: None,
+            output_schema: None,
+            icons: None,
             annotations: None,
         },
         // Export tool
@@ -61,6 +64,9 @@ pub fn register_tools() -> Vec<Tool> {
                 },
                 "required": ["format"]
             }))),
+            title: None,
+            output_schema: None,
+            icons: None,
             annotations: None,
         },
         // Import tool
@@ -83,6 +89,9 @@ pub fn register_tools() -> Vec<Tool> {
                 },
                 "required": ["data"]
             }))),
+            title: None,
+            output_schema: None,
+            icons: None,
             annotations: None,
         },
     ]
