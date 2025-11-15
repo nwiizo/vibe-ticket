@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["TicketEvent"],"fn":["emit_event","event_bus"],"struct":["EventBus"],"trait":["EventHandler"]};

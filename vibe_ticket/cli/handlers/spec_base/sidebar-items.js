@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["validation"],"struct":["SpecBuilder","SpecContext","SpecFormatter"],"trait":["SpecOperation"]};

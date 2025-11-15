@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["TransportType"],"struct":["AuthConfig","McpConfig","ServerConfig"]};

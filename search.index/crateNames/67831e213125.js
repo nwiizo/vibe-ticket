@@ -1,0 +1,1 @@
+rd_("kvibe_ticket")

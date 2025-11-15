@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["handle_set","handle_show","register_tools"]};
