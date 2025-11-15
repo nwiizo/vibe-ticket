@@ -5,6 +5,7 @@ use predicates::prelude::*;
 use tempfile::TempDir;
 
 #[test]
+#[allow(deprecated)]
 fn test_worktree_commands_available() {
     let mut cmd = Command::cargo_bin("vibe-ticket").unwrap();
 
@@ -16,6 +17,7 @@ fn test_worktree_commands_available() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_worktree_list_without_git_repo() {
     let temp_dir = TempDir::new().unwrap();
     let mut cmd = Command::cargo_bin("vibe-ticket").unwrap();
@@ -29,6 +31,7 @@ fn test_worktree_list_without_git_repo() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_worktree_prune_dry_run() {
     // Worktree commands require a git repository
     let mut cmd = Command::cargo_bin("vibe-ticket").unwrap();
@@ -45,6 +48,7 @@ fn test_worktree_prune_dry_run() {
 }
 
 #[test]
+#[allow(deprecated)]
 fn test_worktree_remove_invalid_reference() {
     // Worktree commands require project initialization
     let mut cmd = Command::cargo_bin("vibe-ticket").unwrap();
