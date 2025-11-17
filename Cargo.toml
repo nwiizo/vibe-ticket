@@ -51,7 +51,7 @@ directories = "5.0"
 
 # Terminal output
 colored = "3.0"
-indicatif = "0.17"
+indicatif = "0.18"
 dialoguer = "0.12"
 
 # Testing utilities
