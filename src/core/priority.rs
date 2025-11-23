@@ -4,13 +4,14 @@ use std::fmt;
 /// Represents the priority level of a ticket
 ///
 /// Priority helps in task management and scheduling decisions.
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
 #[serde(rename_all = "lowercase")]
 pub enum Priority {
     /// Low priority - can be deferred
     Low,
 
     /// Medium priority - normal workflow
+    #[default]
     Medium,
 
     /// High priority - should be addressed soon
@@ -87,12 +88,6 @@ impl Priority {
     #[must_use]
     pub const fn is_urgent(&self) -> bool {
         matches!(self, Self::High | Self::Critical)
-    }
-}
-
-impl Default for Priority {
-    fn default() -> Self {
-        Self::Medium
     }
 }
 

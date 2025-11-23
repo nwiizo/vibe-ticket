@@ -5,10 +5,11 @@ use std::fmt;
 ///
 /// The status follows a typical workflow progression from
 /// Todo → Doing → Done, with additional states for special cases.
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Hash, Default)]
 #[serde(rename_all = "lowercase")]
 pub enum Status {
     /// Ticket is created but work hasn't started
+    #[default]
     Todo,
 
     /// Work is actively being done on the ticket
@@ -103,12 +104,6 @@ impl Status {
     #[must_use]
     pub const fn color(&self) -> &'static str {
         self.visual().color
-    }
-}
-
-impl Default for Status {
-    fn default() -> Self {
-        Self::Todo
     }
 }
 

@@ -307,7 +307,7 @@ mod tests {
 
     #[test]
     fn test_review_command() {
-        let (_temp, storage) = setup_test_storage();
+        let (temp, storage) = setup_test_storage();
         let mut ticket = Ticket::new("test".to_string(), "Test".to_string());
         ticket.status = Status::Doing;
         storage.save(&ticket).unwrap();
@@ -318,7 +318,7 @@ mod tests {
         handle_review_command(
             None,
             Some("Ready for review"),
-            Some(_temp.path().to_str().unwrap()),
+            Some(temp.path().to_str().unwrap()),
             &output,
         )
         .unwrap();
@@ -329,7 +329,7 @@ mod tests {
 
     #[test]
     fn test_approve_command() {
-        let (_temp, storage) = setup_test_storage();
+        let (temp, storage) = setup_test_storage();
         let mut ticket = Ticket::new("test".to_string(), "Test".to_string());
         ticket.status = Status::Review;
         storage.save(&ticket).unwrap();
@@ -340,7 +340,7 @@ mod tests {
         handle_approve_command(
             None,
             Some("Looks good!"),
-            Some(_temp.path().to_str().unwrap()),
+            Some(temp.path().to_str().unwrap()),
             &output,
         )
         .unwrap();
