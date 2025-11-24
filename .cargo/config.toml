@@ -136,5 +136,9 @@ root = "/Users/nwiizo/.cargo"
 # rustflags = ["-C", "link-arg=-Tlink.x"]
 
 # Windows specific configuration - increase stack size to 8MB
-[target.'cfg(windows)']
-rustflags = ["-C", "link-args=/STACK:8388608"]
+# Windows default is 1MB, Unix is 8MB - this matches Unix behavior
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C", "link-arg=/STACK:8388608"]
+
+[target.x86_64-pc-windows-gnu]
+rustflags = ["-C", "link-arg=-Wl,--stack,8388608"]
