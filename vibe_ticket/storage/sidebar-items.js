@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":["FileLock","FileStorage","LockGuard","ProjectState"],"trait":["ActiveTicketRepository","Repository","TicketRepository"]};

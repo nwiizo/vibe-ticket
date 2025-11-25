@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["parse_priority","parse_tags","validate_title"]};
