@@ -58,6 +58,12 @@ vibe-ticket start api-t001-initialize
   - Create executable task lists with `/tasks`
   - Validate specifications with `/validate`
 - **Task Management**: Break tickets into trackable tasks with parallel execution support
+- **Bulk Operations**: Update, tag, close, or archive multiple tickets at once
+- **Saved Filters**: Create and reuse custom ticket filters
+- **Custom Aliases**: Define shortcuts for frequently used commands
+- **Time Tracking**: Log time spent on tickets with detailed reports
+- **Custom Hooks**: Execute scripts on ticket lifecycle events
+- **Interactive Selection**: fzf-style fuzzy search for quick ticket selection
 - **Flexible Search**: Find tickets with powerful filters
 - **Export/Import**: JSON, YAML, CSV, and Markdown formats
 - **AI Integration**: Full Claude Code support with slash commands
@@ -100,6 +106,85 @@ vibe-ticket list --open         # Show active tickets
 vibe-ticket search "keyword"    # Search tickets
 vibe-ticket worktree list       # List all worktrees
 vibe-ticket spec list           # List all specifications
+```
+
+## Productivity Features (NEW!)
+
+### Bulk Operations
+```bash
+# Update multiple tickets at once
+vibe-ticket bulk update --status doing --priority high tag1,tag2
+
+# Tag multiple tickets
+vibe-ticket bulk tag "important,urgent" ticket1 ticket2 ticket3
+
+# Close multiple tickets
+vibe-ticket bulk close ticket1 ticket2 --message "Batch close"
+
+# Archive old tickets
+vibe-ticket bulk archive --before 2024-01-01
+```
+
+### Saved Filters
+```bash
+# Create a reusable filter
+vibe-ticket filter create urgent-bugs --status todo --priority high --tags bug
+
+# List saved filters
+vibe-ticket filter list
+
+# Apply a filter
+vibe-ticket filter apply urgent-bugs
+```
+
+### Custom Aliases
+```bash
+# Create command shortcuts
+vibe-ticket alias create today "list --status doing"
+vibe-ticket alias create urgent "list --priority high --priority critical"
+
+# Run an alias
+vibe-ticket alias run today
+```
+
+### Time Tracking
+```bash
+# Start/stop timer
+vibe-ticket time start my-ticket
+vibe-ticket time stop
+
+# Log time manually
+vibe-ticket time log my-ticket 2h30m --description "Implemented feature"
+
+# View time report
+vibe-ticket time report --period week
+vibe-ticket time status
+```
+
+### Custom Hooks
+```bash
+# Create lifecycle hooks
+vibe-ticket hook create notify-slack post-close \
+  --command 'curl -X POST $SLACK_WEBHOOK -d "{\"text\": \"Ticket $TICKET_SLUG closed\"}"' \
+  --description "Notify Slack on ticket close"
+
+# List and manage hooks
+vibe-ticket hook list
+vibe-ticket hook enable notify-slack
+vibe-ticket hook test notify-slack
+```
+
+### Interactive Selection (fzf-style)
+```bash
+# Fuzzy search and select a ticket
+vibe-ticket interactive select
+
+# Multi-select for bulk operations
+vibe-ticket interactive multi --status todo
+
+# Quick status/priority change
+vibe-ticket interactive status my-ticket
+vibe-ticket interactive priority my-ticket
 ```
 
 ## Configuration

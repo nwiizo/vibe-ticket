@@ -15,6 +15,21 @@ A vibe-ticket managed project with spec-driven development support.
 | Generate plan | `vibe-ticket spec plan --tech-stack ...` | `/plan --tech-stack ...` | `vibe-ticket_spec_plan` |
 | Create tasks | `vibe-ticket spec tasks --parallel` | `/tasks --parallel` | `vibe-ticket_spec_generate_tasks` |
 | Validate spec | `vibe-ticket spec validate` | `/validate` | `vibe-ticket_spec_validate` |
+| Bulk update | `vibe-ticket bulk update --status ...` | - | `vibe-ticket_bulk_update` |
+| Bulk tag | `vibe-ticket bulk tag "tags" ...` | - | `vibe-ticket_bulk_tag` |
+| Bulk close | `vibe-ticket bulk close ...` | - | `vibe-ticket_bulk_close` |
+| Bulk archive | `vibe-ticket bulk archive ...` | - | `vibe-ticket_bulk_archive` |
+| Create filter | `vibe-ticket filter create ...` | - | `vibe-ticket_filter_create` |
+| Apply filter | `vibe-ticket filter apply <name>` | - | `vibe-ticket_filter_apply` |
+| Create alias | `vibe-ticket alias create ...` | - | `vibe-ticket_alias_create` |
+| Run alias | `vibe-ticket alias run <name>` | - | `vibe-ticket_alias_run` |
+| Time log | `vibe-ticket time log <ticket> <duration>` | - | `vibe-ticket_time_log` |
+| Time start/stop | `vibe-ticket time start/stop` | - | `vibe-ticket_time_start/stop` |
+| Time report | `vibe-ticket time report` | - | `vibe-ticket_time_report` |
+| Create hook | `vibe-ticket hook create ...` | - | `vibe-ticket_hook_create` |
+| List hooks | `vibe-ticket hook list` | - | `vibe-ticket_hook_list` |
+| Interactive select | `vibe-ticket interactive select` | - | - |
+| Interactive multi | `vibe-ticket interactive multi` | - | - |
 
 ## Overview
 
@@ -100,6 +115,125 @@ vibe-ticket list --status doing
 
 # Filter by priority
 vibe-ticket list --priority high
+```
+
+### Bulk Operations
+```bash
+# Update multiple tickets at once
+vibe-ticket bulk update --status doing --priority high tag1,tag2
+
+# Tag multiple tickets
+vibe-ticket bulk tag "important,urgent" ticket1 ticket2 ticket3
+
+# Close multiple tickets
+vibe-ticket bulk close ticket1 ticket2 --message "Batch close"
+
+# Archive old tickets
+vibe-ticket bulk archive --before 2024-01-01
+```
+
+### Saved Filters
+```bash
+# Create a reusable filter
+vibe-ticket filter create urgent-bugs --status todo --priority high --tags bug
+
+# List saved filters
+vibe-ticket filter list
+
+# Apply a filter
+vibe-ticket filter apply urgent-bugs
+
+# Delete a filter
+vibe-ticket filter delete urgent-bugs
+```
+
+### Custom Aliases
+```bash
+# Create command shortcuts
+vibe-ticket alias create today "list --status doing"
+vibe-ticket alias create urgent "list --priority high --priority critical"
+
+# List all aliases
+vibe-ticket alias list
+
+# Run an alias
+vibe-ticket alias run today
+
+# Delete an alias
+vibe-ticket alias delete today
+```
+
+### Time Tracking
+```bash
+# Start a timer for active work
+vibe-ticket time start my-ticket
+
+# Stop the current timer
+vibe-ticket time stop
+
+# Log time manually
+vibe-ticket time log my-ticket 2h30m --description "Implemented feature"
+
+# Check current timer status
+vibe-ticket time status
+
+# View time report
+vibe-ticket time report --period week
+vibe-ticket time report --period month --ticket my-ticket
+```
+
+### Custom Hooks
+```bash
+# Create a hook for ticket lifecycle events
+vibe-ticket hook create notify-slack post-close \
+  --command 'curl -X POST $SLACK_WEBHOOK -d "{\"text\": \"Ticket $TICKET_SLUG closed\"}"' \
+  --description "Notify Slack on ticket close"
+
+# List all hooks
+vibe-ticket hook list
+
+# Enable/disable a hook
+vibe-ticket hook enable notify-slack
+vibe-ticket hook disable notify-slack
+
+# Test a hook with sample data
+vibe-ticket hook test notify-slack
+
+# Delete a hook
+vibe-ticket hook delete notify-slack
+```
+
+**Available Hook Events:**
+- `post-create` - After a ticket is created
+- `pre-status-change` / `post-status-change` - Before/after status changes
+- `pre-close` / `post-close` - Before/after closing a ticket
+- `post-start` - After starting work on a ticket
+- `post-finish` - After finishing a ticket
+- `post-edit` - After editing a ticket
+- `post-tag-change` - After tags are modified
+
+**Hook Environment Variables:**
+- `TICKET_ID`, `TICKET_SLUG`, `TICKET_TITLE`
+- `TICKET_STATUS`, `TICKET_PRIORITY`
+- `OLD_STATUS`, `NEW_STATUS` (for status change events)
+
+### Interactive Selection (fzf-style)
+```bash
+# Fuzzy search and select a single ticket
+vibe-ticket interactive select
+
+# Filter by status/priority before selection
+vibe-ticket interactive select --status todo --priority high
+
+# Multi-select for bulk operations
+vibe-ticket interactive multi
+vibe-ticket interactive multi --status todo
+
+# Quick status change with interactive menu
+vibe-ticket interactive status my-ticket
+
+# Quick priority change with interactive menu
+vibe-ticket interactive priority my-ticket
 ```
 
 ### Git Worktree Management
