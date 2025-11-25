@@ -41,6 +41,7 @@ pub fn register_tools() -> Vec<Tool> {
             output_schema: None,
             icons: None,
             annotations: None,
+            meta: None,
         },
         // Update spec tool
         Tool {
@@ -69,6 +70,7 @@ pub fn register_tools() -> Vec<Tool> {
             output_schema: None,
             icons: None,
             annotations: None,
+            meta: None,
         },
         // Check spec tool
         Tool {
@@ -88,6 +90,7 @@ pub fn register_tools() -> Vec<Tool> {
             output_schema: None,
             icons: None,
             annotations: None,
+            meta: None,
         },
         // Specify tool - Create specification from natural language
         Tool {
@@ -118,6 +121,7 @@ pub fn register_tools() -> Vec<Tool> {
             output_schema: None,
             icons: None,
             annotations: None,
+            meta: None,
         },
         // Plan tool - Generate implementation plan
         Tool {
@@ -148,6 +152,7 @@ pub fn register_tools() -> Vec<Tool> {
             output_schema: None,
             icons: None,
             annotations: None,
+            meta: None,
         },
         // Generate tasks tool
         Tool {
@@ -185,6 +190,7 @@ pub fn register_tools() -> Vec<Tool> {
             output_schema: None,
             icons: None,
             annotations: None,
+            meta: None,
         },
         // Validate tool
         Tool {
@@ -216,6 +222,7 @@ pub fn register_tools() -> Vec<Tool> {
             output_schema: None,
             icons: None,
             annotations: None,
+            meta: None,
         },
     ]
 }

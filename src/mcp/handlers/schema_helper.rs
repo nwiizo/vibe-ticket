@@ -34,6 +34,7 @@ pub fn create_tool(name: &'static str, description: &'static str, schema: Value)
         output_schema: None,
         icons: None,
         annotations: None,
+        meta: None,
     }
 }
 
