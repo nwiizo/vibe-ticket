@@ -80,7 +80,7 @@ mcp = ["rmcp", "tokio-util", "async-trait"]
 
 # Optional dependencies
 [dependencies.axum]
-version = "0.7"
+version = "0.8"
 optional = true
 
 [dependencies.tower]
