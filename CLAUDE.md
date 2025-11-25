@@ -678,6 +678,58 @@ Successfully managed tickets through MCP tools, added tasks to previously task-l
 Generated on: 2025-08-14
 
 
+## Release Process
+
+Releases are done manually (no CI automation). When releasing a new version:
+
+### Release Steps
+```bash
+# 1. Update version in Cargo.toml
+# Edit version = "X.Y.Z" in Cargo.toml
+
+# 2. Update documentation if needed
+# - README.md for user-facing changes
+# - CLAUDE.md for AI assistant guidance
+
+# 3. Commit version bump and docs
+git add -A
+git commit -m "chore: bump version to vX.Y.Z"
+
+# 4. Create annotated tag with release notes
+git tag -a vX.Y.Z -m "$(cat <<'EOF'
+Release vX.Y.Z - Brief title
+
+## What's New
+- Feature 1
+- Feature 2
+
+## Bug Fixes
+- Fix 1
+
+## Breaking Changes (if any)
+- Change 1
+EOF
+)"
+
+# 5. Push to GitHub
+git push origin main --tags
+
+# 6. Publish to crates.io
+cargo publish
+```
+
+### Version Guidelines
+- **Major (X.0.0)**: Breaking API changes, incompatible updates
+- **Minor (0.X.0)**: New features, backwards compatible
+- **Patch (0.0.X)**: Bug fixes, documentation, minor improvements
+
+### Pre-release Checklist
+- [ ] All tests pass: `cargo test --all-features`
+- [ ] Clippy clean: `cargo clippy --all-features -- -D warnings`
+- [ ] Documentation updated (README.md, CLAUDE.md)
+- [ ] Version in Cargo.toml matches tag
+- [ ] Changelog/release notes prepared
+
 ## Project Initialization
 
 This project was initialized with:

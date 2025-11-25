@@ -316,6 +316,34 @@ cargo install --path . --features mcp
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
+## Release Process
+
+Releases are done manually. Follow these steps:
+
+```bash
+# 1. Update version in Cargo.toml
+# Edit Cargo.toml and change version = "X.Y.Z"
+
+# 2. Commit the version bump
+git add Cargo.toml
+git commit -m "chore: bump version to vX.Y.Z"
+
+# 3. Create annotated tag with release notes
+git tag -a vX.Y.Z -m "Release vX.Y.Z - Brief description"
+
+# 4. Push commits and tags
+git push origin main --tags
+
+# 5. Publish to crates.io
+cargo publish
+```
+
+### Version Guidelines
+
+- **Major (X.0.0)**: Breaking changes, API incompatibilities
+- **Minor (0.X.0)**: New features, backwards compatible
+- **Patch (0.0.X)**: Bug fixes, documentation updates
+
 ## License
 
 [MIT License](LICENSE)
