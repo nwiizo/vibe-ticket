@@ -111,6 +111,7 @@ fn create_edit_ticket_tool() -> Tool {
         output_schema: None,
         icons: None,
         annotations: None,
+        meta: None,
     }
 }
 
@@ -136,6 +137,7 @@ fn create_close_ticket_tool() -> Tool {
         output_schema: None,
         icons: None,
         annotations: None,
+        meta: None,
     }
 }
 
@@ -162,6 +164,7 @@ fn create_start_ticket_tool() -> Tool {
         output_schema: None,
         icons: None,
         annotations: None,
+        meta: None,
     }
 }
 
@@ -177,6 +180,7 @@ fn create_check_status_tool() -> Tool {
         output_schema: None,
         icons: None,
         annotations: None,
+        meta: None,
     }
 }
 

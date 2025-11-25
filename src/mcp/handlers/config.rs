@@ -50,6 +50,7 @@ pub fn register_tools() -> Vec<Tool> {
             output_schema: None,
             icons: None,
             annotations: None,
+            meta: None,
         },
         // Set config tool
         Tool {
@@ -72,6 +73,7 @@ pub fn register_tools() -> Vec<Tool> {
             output_schema: None,
             icons: None,
             annotations: None,
+            meta: None,
         },
     ]
 }

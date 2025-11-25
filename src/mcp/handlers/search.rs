@@ -44,6 +44,7 @@ pub fn register_tools() -> Vec<Tool> {
             output_schema: None,
             icons: None,
             annotations: None,
+            meta: None,
         },
         // Export tool
         Tool {
@@ -68,6 +69,7 @@ pub fn register_tools() -> Vec<Tool> {
             output_schema: None,
             icons: None,
             annotations: None,
+            meta: None,
         },
         // Import tool
         Tool {
@@ -93,6 +95,7 @@ pub fn register_tools() -> Vec<Tool> {
             output_schema: None,
             icons: None,
             annotations: None,
+            meta: None,
         },
     ]
 }

@@ -36,6 +36,7 @@ pub fn register_tools() -> Vec<Tool> {
             output_schema: None,
             icons: None,
             annotations: None,
+            meta: None,
         },
         // Complete task tool
         Tool {
@@ -59,6 +60,7 @@ pub fn register_tools() -> Vec<Tool> {
             output_schema: None,
             icons: None,
             annotations: None,
+            meta: None,
         },
         // List tasks tool
         Tool {
@@ -85,6 +87,7 @@ pub fn register_tools() -> Vec<Tool> {
             output_schema: None,
             icons: None,
             annotations: None,
+            meta: None,
         },
         // Remove task tool
         Tool {
@@ -108,6 +111,7 @@ pub fn register_tools() -> Vec<Tool> {
             output_schema: None,
             icons: None,
             annotations: None,
+            meta: None,
         },
     ]
 }

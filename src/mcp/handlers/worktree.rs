@@ -30,6 +30,7 @@ pub fn register_tools() -> Vec<Tool> {
             output_schema: None,
             icons: None,
             annotations: None,
+            meta: None,
         },
         // Remove worktree tool
         Tool {
@@ -53,6 +54,7 @@ pub fn register_tools() -> Vec<Tool> {
             output_schema: None,
             icons: None,
             annotations: None,
+            meta: None,
         },
         // Prune worktrees tool
         Tool {
@@ -66,6 +68,7 @@ pub fn register_tools() -> Vec<Tool> {
             output_schema: None,
             icons: None,
             annotations: None,
+            meta: None,
         },
     ]
 }
