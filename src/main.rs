@@ -7,8 +7,8 @@
 use clap::Parser;
 use std::process;
 use vibe_ticket::cli::{
-    Cli, Commands, ConfigCommands, OutputFormatter, SpecCommands, TaskCommands, WorktreeCommands,
-    handlers::handle_init,
+    AliasCommands, BulkCommands, Cli, Commands, ConfigCommands, FilterCommands, OutputFormatter,
+    SpecCommands, TaskCommands, TimeCommands, WorktreeCommands, handlers::handle_init,
 };
 use vibe_ticket::error::Result;
 
@@ -327,6 +327,10 @@ fn dispatch_remaining_commands(
         Commands::Worktree { command } => dispatch_worktree_command(command, formatter),
         #[cfg(feature = "mcp")]
         Commands::Mcp { command } => dispatch_mcp_command(command, project, formatter),
+        Commands::Bulk { command } => dispatch_bulk_command(command, project, formatter),
+        Commands::Filter { command } => dispatch_filter_command(command, project, formatter),
+        Commands::Alias { command } => dispatch_alias_command(command, project, formatter),
+        Commands::Time { command } => dispatch_time_command(command, project, formatter),
         _ => unreachable!("All commands should be handled"),
     }
 }
@@ -857,6 +861,118 @@ fn handle_task_command(
             use vibe_ticket::cli::handlers::handle_task_remove;
             handle_task_remove(task, ticket, force, project.map(str::to_string), formatter)
         },
+    }
+}
+
+fn dispatch_bulk_command(
+    command: BulkCommands,
+    project: Option<&str>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::{
+        handle_bulk_archive, handle_bulk_close, handle_bulk_tag, handle_bulk_update,
+    };
+    match command {
+        BulkCommands::Update {
+            filter,
+            status,
+            priority,
+            assignee,
+            dry_run,
+        } => handle_bulk_update(
+            filter, status, priority, assignee, dry_run, project, formatter,
+        ),
+        BulkCommands::Tag {
+            filter,
+            add,
+            remove,
+            dry_run,
+        } => handle_bulk_tag(filter, add, remove, dry_run, project, formatter),
+        BulkCommands::Close {
+            filter,
+            message,
+            archive,
+            dry_run,
+        } => handle_bulk_close(filter, message, archive, dry_run, project, formatter),
+        BulkCommands::Archive { filter, dry_run } => {
+            handle_bulk_archive(filter, dry_run, project, formatter)
+        },
+    }
+}
+
+fn dispatch_filter_command(
+    command: FilterCommands,
+    project: Option<&str>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::{
+        handle_filter_apply, handle_filter_create, handle_filter_delete, handle_filter_list,
+        handle_filter_show,
+    };
+    match command {
+        FilterCommands::Create {
+            name,
+            expression,
+            description,
+        } => handle_filter_create(name, expression, description, project, formatter),
+        FilterCommands::List => handle_filter_list(project, formatter),
+        FilterCommands::Show { name } => handle_filter_show(name, project, formatter),
+        FilterCommands::Delete { name, force } => {
+            handle_filter_delete(name, force, project, formatter)
+        },
+        FilterCommands::Apply { name, additional } => {
+            handle_filter_apply(name, additional, project, formatter)
+        },
+    }
+}
+
+fn dispatch_alias_command(
+    command: AliasCommands,
+    project: Option<&str>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::{
+        handle_alias_create, handle_alias_delete, handle_alias_list, handle_alias_run,
+    };
+    match command {
+        AliasCommands::Create {
+            name,
+            command,
+            description,
+        } => handle_alias_create(name, command, description, project, formatter),
+        AliasCommands::List => handle_alias_list(project, formatter),
+        AliasCommands::Delete { name } => handle_alias_delete(name, project, formatter),
+        AliasCommands::Run { name, args } => handle_alias_run(name, args, project, formatter),
+    }
+}
+
+fn dispatch_time_command(
+    command: TimeCommands,
+    project: Option<&str>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::{
+        handle_time_log, handle_time_report, handle_time_start, handle_time_status,
+        handle_time_stop,
+    };
+    match command {
+        TimeCommands::Log {
+            time,
+            ticket,
+            notes,
+            date,
+        } => handle_time_log(time, ticket, notes, date, project, formatter),
+        TimeCommands::Start { ticket, notes } => {
+            handle_time_start(ticket, notes, project, formatter)
+        },
+        TimeCommands::Stop { notes } => handle_time_stop(notes, project, formatter),
+        TimeCommands::Status => handle_time_status(project, formatter),
+        TimeCommands::Report {
+            ticket,
+            all,
+            since,
+            until,
+        } => handle_time_report(ticket, all, since, until, project, formatter),
     }
 }
 

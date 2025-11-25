@@ -390,6 +390,30 @@ pub enum Commands {
         #[command(subcommand)]
         command: McpCommands,
     },
+
+    /// Bulk operations on multiple tickets
+    Bulk {
+        #[command(subcommand)]
+        command: BulkCommands,
+    },
+
+    /// Manage saved filters (views)
+    Filter {
+        #[command(subcommand)]
+        command: FilterCommands,
+    },
+
+    /// Manage custom command aliases
+    Alias {
+        #[command(subcommand)]
+        command: AliasCommands,
+    },
+
+    /// Time tracking for tickets
+    Time {
+        #[command(subcommand)]
+        command: TimeCommands,
+    },
 }
 
 #[derive(Subcommand, Debug)]
@@ -797,6 +821,222 @@ pub enum WorktreeCommands {
         /// Remove branches for pruned worktrees
         #[arg(long)]
         remove_branches: bool,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+pub enum BulkCommands {
+    /// Update multiple tickets at once
+    Update {
+        /// Filter expression (e.g., "status:todo priority:high")
+        #[arg(short, long)]
+        filter: String,
+
+        /// New status to set
+        #[arg(long)]
+        status: Option<String>,
+
+        /// New priority to set
+        #[arg(long)]
+        priority: Option<String>,
+
+        /// New assignee to set
+        #[arg(long)]
+        assignee: Option<String>,
+
+        /// Dry run - show what would be updated
+        #[arg(short, long)]
+        dry_run: bool,
+    },
+
+    /// Add or remove tags from multiple tickets
+    Tag {
+        /// Filter expression (e.g., "status:doing")
+        #[arg(short, long)]
+        filter: String,
+
+        /// Tags to add (comma-separated)
+        #[arg(long)]
+        add: Option<String>,
+
+        /// Tags to remove (comma-separated)
+        #[arg(long)]
+        remove: Option<String>,
+
+        /// Dry run - show what would be updated
+        #[arg(short, long)]
+        dry_run: bool,
+    },
+
+    /// Close multiple tickets at once
+    Close {
+        /// Filter expression (e.g., "status:review")
+        #[arg(short, long)]
+        filter: String,
+
+        /// Close message
+        #[arg(short, long)]
+        message: Option<String>,
+
+        /// Archive the tickets
+        #[arg(short, long)]
+        archive: bool,
+
+        /// Dry run - show what would be closed
+        #[arg(short, long)]
+        dry_run: bool,
+    },
+
+    /// Archive multiple tickets at once
+    Archive {
+        /// Filter expression
+        #[arg(short, long)]
+        filter: String,
+
+        /// Dry run - show what would be archived
+        #[arg(short, long)]
+        dry_run: bool,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+pub enum FilterCommands {
+    /// Create a new saved filter
+    Create {
+        /// Filter name
+        name: String,
+
+        /// Filter expression (e.g., "status:todo priority:high")
+        expression: String,
+
+        /// Filter description
+        #[arg(short, long)]
+        description: Option<String>,
+    },
+
+    /// List saved filters
+    List,
+
+    /// Show filter details
+    Show {
+        /// Filter name
+        name: String,
+    },
+
+    /// Delete a saved filter
+    Delete {
+        /// Filter name
+        name: String,
+
+        /// Force deletion without confirmation
+        #[arg(short, long)]
+        force: bool,
+    },
+
+    /// Apply a saved filter (alias for `list --filter @name`)
+    Apply {
+        /// Filter name
+        name: String,
+
+        /// Additional filter expression to combine
+        #[arg(short, long)]
+        additional: Option<String>,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+pub enum AliasCommands {
+    /// Create a new alias
+    Create {
+        /// Alias name
+        name: String,
+
+        /// Command to execute (e.g., "list --status todo --priority high")
+        command: String,
+
+        /// Alias description
+        #[arg(short, long)]
+        description: Option<String>,
+    },
+
+    /// List all aliases
+    List,
+
+    /// Delete an alias
+    Delete {
+        /// Alias name
+        name: String,
+    },
+
+    /// Run an alias
+    Run {
+        /// Alias name
+        name: String,
+
+        /// Additional arguments to pass
+        #[arg(trailing_var_arg = true)]
+        args: Vec<String>,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+pub enum TimeCommands {
+    /// Log time spent on a ticket
+    Log {
+        /// Time spent (e.g., "1h30m", "2h", "45m")
+        time: String,
+
+        /// Ticket ID or slug (defaults to active ticket)
+        #[arg(short, long)]
+        ticket: Option<String>,
+
+        /// Notes about the work done
+        #[arg(short, long)]
+        notes: Option<String>,
+
+        /// Date of work (defaults to today)
+        #[arg(short, long)]
+        date: Option<String>,
+    },
+
+    /// Start a timer for the current ticket
+    Start {
+        /// Ticket ID or slug (defaults to active ticket)
+        #[arg(short, long)]
+        ticket: Option<String>,
+
+        /// Notes about the work
+        #[arg(short, long)]
+        notes: Option<String>,
+    },
+
+    /// Stop the current timer and log time
+    Stop {
+        /// Notes about the work done
+        #[arg(short, long)]
+        notes: Option<String>,
+    },
+
+    /// Show current timer status
+    Status,
+
+    /// Show time report for a ticket
+    Report {
+        /// Ticket ID or slug (defaults to active ticket)
+        #[arg(short, long)]
+        ticket: Option<String>,
+
+        /// Show summary for all tickets
+        #[arg(short, long)]
+        all: bool,
+
+        /// Date range start (e.g., "2024-11-01", "last week")
+        #[arg(long)]
+        since: Option<String>,
+
+        /// Date range end
+        #[arg(long)]
+        until: Option<String>,
     },
 }
 

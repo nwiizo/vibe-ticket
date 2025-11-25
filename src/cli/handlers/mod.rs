@@ -45,6 +45,12 @@ mod work_on;
 mod workflow;
 mod worktree;
 
+// New feature handlers
+mod alias;
+mod bulk;
+mod filter;
+mod time;
+
 // Re-export handlers
 pub use archive::handle_archive_command;
 pub use board::handle_board_command;
@@ -80,6 +86,17 @@ pub use workflow::{
     handle_review_command,
 };
 pub use worktree::{handle_worktree_list, handle_worktree_prune, handle_worktree_remove};
+
+// New feature re-exports
+pub use alias::{handle_alias_create, handle_alias_delete, handle_alias_list, handle_alias_run};
+pub use bulk::{handle_bulk_archive, handle_bulk_close, handle_bulk_tag, handle_bulk_update};
+pub use filter::{
+    handle_filter_apply, handle_filter_create, handle_filter_delete, handle_filter_list,
+    handle_filter_show,
+};
+pub use time::{
+    handle_time_log, handle_time_report, handle_time_start, handle_time_status, handle_time_stop,
+};
 
 use crate::cli::output::OutputFormatter;
 use crate::error::Result;
