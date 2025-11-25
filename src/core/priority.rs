@@ -4,7 +4,9 @@ use std::fmt;
 /// Represents the priority level of a ticket
 ///
 /// Priority helps in task management and scheduling decisions.
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+#[derive(
+    Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Hash, Default,
+)]
 #[serde(rename_all = "lowercase")]
 pub enum Priority {
     /// Low priority - can be deferred
