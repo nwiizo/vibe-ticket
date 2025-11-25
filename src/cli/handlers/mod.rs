@@ -126,13 +126,13 @@ pub fn ensure_project_initialized() -> Result<()> {
 /// Returns `VibeTicketError::NoActiveTicket` if no ticket is active.
 pub fn get_active_ticket() -> Result<String> {
     use crate::error::VibeTicketError;
-    use crate::storage::FileStorage;
+    use crate::storage::{ActiveTicketRepository, FileStorage};
 
     ensure_project_initialized()?;
 
     let storage = FileStorage::new(".vibe-ticket");
     storage
-        .get_active_ticket()?
+        .get_active()?
         .map(|ticket_id| ticket_id.to_string())
         .ok_or(VibeTicketError::NoActiveTicket)
 }

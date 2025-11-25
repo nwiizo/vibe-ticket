@@ -2,7 +2,7 @@ use crate::cli::utils::find_project_root;
 use crate::core::Ticket;
 use crate::core::TicketId;
 use crate::error::{Result, VibeTicketError};
-use crate::storage::FileStorage;
+use crate::storage::{ActiveTicketRepository, FileStorage};
 use uuid::Uuid;
 
 /// Common context for all handler operations
@@ -78,7 +78,7 @@ impl TicketOperation for HandlerContext {
 
     fn get_active_ticket_id(&self) -> Result<TicketId> {
         self.storage
-            .get_active_ticket()?
+            .get_active()?
             .ok_or(VibeTicketError::NoActiveTicket)
     }
 }
