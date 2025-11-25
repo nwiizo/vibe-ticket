@@ -414,6 +414,64 @@ pub enum Commands {
         #[command(subcommand)]
         command: TimeCommands,
     },
+
+    /// Manage custom hooks for ticket events
+    Hook {
+        #[command(subcommand)]
+        command: HookCommands,
+    },
+
+    /// Interactive ticket selection (fzf-style)
+    #[command(alias = "i")]
+    Interactive {
+        #[command(subcommand)]
+        command: InteractiveCommands,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+pub enum InteractiveCommands {
+    /// Select and act on a single ticket
+    Select {
+        /// Filter by status
+        #[arg(short, long)]
+        status: Option<String>,
+
+        /// Filter by priority
+        #[arg(short, long)]
+        priority: Option<String>,
+
+        /// Action to perform (show, start, edit, close)
+        #[arg(short, long)]
+        action: Option<String>,
+    },
+
+    /// Select multiple tickets for bulk operations
+    Multi {
+        /// Filter by status
+        #[arg(short, long)]
+        status: Option<String>,
+
+        /// Filter by priority
+        #[arg(short, long)]
+        priority: Option<String>,
+
+        /// Bulk action (close, tag, status)
+        #[arg(short, long, default_value = "close")]
+        action: String,
+    },
+
+    /// Interactively change ticket status
+    Status {
+        /// Ticket ID or slug (optional, will prompt if not provided)
+        ticket: Option<String>,
+    },
+
+    /// Interactively change ticket priority
+    Priority {
+        /// Ticket ID or slug (optional, will prompt if not provided)
+        ticket: Option<String>,
+    },
 }
 
 #[derive(Subcommand, Debug)]
@@ -1037,6 +1095,58 @@ pub enum TimeCommands {
         /// Date range end
         #[arg(long)]
         until: Option<String>,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+pub enum HookCommands {
+    /// Create a new hook
+    Create {
+        /// Hook name
+        name: String,
+
+        /// Event that triggers the hook
+        #[arg(short, long)]
+        event: String,
+
+        /// Command to execute
+        #[arg(short, long)]
+        command: String,
+
+        /// Description of the hook
+        #[arg(short, long)]
+        description: Option<String>,
+
+        /// Abort operation if hook fails (only for pre-* events)
+        #[arg(long)]
+        abort_on_failure: bool,
+    },
+
+    /// List all hooks
+    List,
+
+    /// Delete a hook
+    Delete {
+        /// Hook name
+        name: String,
+    },
+
+    /// Enable a hook
+    Enable {
+        /// Hook name
+        name: String,
+    },
+
+    /// Disable a hook
+    Disable {
+        /// Hook name
+        name: String,
+    },
+
+    /// Test a hook with sample data
+    Test {
+        /// Hook name
+        name: String,
     },
 }
 

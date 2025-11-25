@@ -7,8 +7,9 @@
 use clap::Parser;
 use std::process;
 use vibe_ticket::cli::{
-    AliasCommands, BulkCommands, Cli, Commands, ConfigCommands, FilterCommands, OutputFormatter,
-    SpecCommands, TaskCommands, TimeCommands, WorktreeCommands, handlers::handle_init,
+    AliasCommands, BulkCommands, Cli, Commands, ConfigCommands, FilterCommands, HookCommands,
+    InteractiveCommands, OutputFormatter, SpecCommands, TaskCommands, TimeCommands,
+    WorktreeCommands, handlers::handle_init,
 };
 use vibe_ticket::error::Result;
 
@@ -331,6 +332,10 @@ fn dispatch_remaining_commands(
         Commands::Filter { command } => dispatch_filter_command(command, project, formatter),
         Commands::Alias { command } => dispatch_alias_command(command, project, formatter),
         Commands::Time { command } => dispatch_time_command(command, project, formatter),
+        Commands::Hook { command } => dispatch_hook_command(command, project, formatter),
+        Commands::Interactive { command } => {
+            dispatch_interactive_command(command, project, formatter)
+        },
         _ => unreachable!("All commands should be handled"),
     }
 }
@@ -973,6 +978,68 @@ fn dispatch_time_command(
             since,
             until,
         } => handle_time_report(ticket, all, since, until, project, formatter),
+    }
+}
+
+fn dispatch_hook_command(
+    command: HookCommands,
+    project: Option<&str>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::{
+        handle_hook_create, handle_hook_delete, handle_hook_disable, handle_hook_enable,
+        handle_hook_list, handle_hook_test,
+    };
+    match command {
+        HookCommands::Create {
+            name,
+            event,
+            command,
+            description,
+            abort_on_failure,
+        } => handle_hook_create(
+            name,
+            event,
+            command,
+            description,
+            abort_on_failure,
+            project,
+            formatter,
+        ),
+        HookCommands::List => handle_hook_list(project, formatter),
+        HookCommands::Delete { name } => handle_hook_delete(name, project, formatter),
+        HookCommands::Enable { name } => handle_hook_enable(name, project, formatter),
+        HookCommands::Disable { name } => handle_hook_disable(name, project, formatter),
+        HookCommands::Test { name } => handle_hook_test(name, project, formatter),
+    }
+}
+
+fn dispatch_interactive_command(
+    command: InteractiveCommands,
+    project: Option<&str>,
+    formatter: &OutputFormatter,
+) -> Result<()> {
+    use vibe_ticket::cli::handlers::{
+        handle_interactive_multi_select, handle_interactive_priority, handle_interactive_select,
+        handle_interactive_status,
+    };
+    match command {
+        InteractiveCommands::Select {
+            status,
+            priority,
+            action,
+        } => handle_interactive_select(status, priority, action, project, formatter),
+        InteractiveCommands::Multi {
+            status,
+            priority,
+            action,
+        } => handle_interactive_multi_select(status, priority, action, project, formatter),
+        InteractiveCommands::Status { ticket } => {
+            handle_interactive_status(ticket, project, formatter)
+        },
+        InteractiveCommands::Priority { ticket } => {
+            handle_interactive_priority(ticket, project, formatter)
+        },
     }
 }
 

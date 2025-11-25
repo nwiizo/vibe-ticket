@@ -49,6 +49,8 @@ mod worktree;
 mod alias;
 mod bulk;
 mod filter;
+mod hooks;
+mod interactive;
 mod time;
 
 // Re-export handlers
@@ -93,6 +95,14 @@ pub use bulk::{handle_bulk_archive, handle_bulk_close, handle_bulk_tag, handle_b
 pub use filter::{
     handle_filter_apply, handle_filter_create, handle_filter_delete, handle_filter_list,
     handle_filter_show,
+};
+pub use hooks::{
+    HookContext, HookEvent, execute_hooks, handle_hook_create, handle_hook_delete,
+    handle_hook_disable, handle_hook_enable, handle_hook_list, handle_hook_test,
+};
+pub use interactive::{
+    handle_interactive_multi_select, handle_interactive_priority, handle_interactive_select,
+    handle_interactive_status,
 };
 pub use time::{
     handle_time_log, handle_time_report, handle_time_start, handle_time_status, handle_time_stop,
