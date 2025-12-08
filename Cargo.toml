@@ -88,7 +88,7 @@ version = "0.4"
 optional = true
 
 [dependencies.tower-http]
-version = "0.5"
+version = "0.6"
 features = ["fs", "trace"]
 optional = true
 
