@@ -223,7 +223,7 @@ jobs:
           fail_ci_if_error: false
 
       - name: Archive code coverage results
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: code-coverage-report
           path: |
@@ -287,7 +287,7 @@ jobs:
         run: cargo bench
 
       - name: Upload benchmark results
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: benchmark-results
           path: target/criterion
